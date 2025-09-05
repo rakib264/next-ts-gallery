@@ -14,7 +14,7 @@ import './models/ReturnExchangeRequest';
 import './models/ReturnRequest';
 import './models/User';
 
-const PRIMARY_MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://invalid/placeholder';
+const PRIMARY_MONGODB_URI = process.env.DATABASE_URL || 'mongodb+srv://invalid/placeholder';
 const FALLBACK_MONGODB_URI = process.env.MONGODB_URI_FALLBACK || 'mongodb://127.0.0.1:27017/smartcommerce-bd';
 
 let cached = (global as any).mongoose as
