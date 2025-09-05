@@ -4,9 +4,9 @@
   "description": "RabbitMQ Consumers for NextEcom - Railway Deployment",
   "main": "start-consumers.js",
   "scripts": {
-    "start": "node start-consumers.js",
+    "start": "tsx start-consumers.ts",
     "dev": "tsx start-consumers.ts",
-    "build": "tsc start-consumers.ts --outDir . && tsc ../lib/rabbitmqConsumer.ts --outDir lib && tsc ../lib/rabbitmq.ts --outDir lib && tsc ../lib/eventHandlers.ts --outDir lib && tsc ../lib/consumerService.ts --outDir lib"
+    "build": "echo 'No build step needed - using tsx directly'"
   },
   "dependencies": {
     "amqplib": "^0.10.8",

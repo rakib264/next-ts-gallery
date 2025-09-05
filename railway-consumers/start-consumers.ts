@@ -5,6 +5,7 @@
  * This script starts all RabbitMQ consumers for processing events
  */
 
+import healthCheckServer from './health-check';
 import { EventHandlers } from './lib/eventHandlers';
 import rabbitMQService, { EventType } from './lib/rabbitmq';
 
@@ -15,6 +16,10 @@ class ConsumerManager {
   async start(): Promise<void> {
     try {
       console.log('🚀 Starting RabbitMQ consumers on Railway...');
+      
+      // Start health check server first
+      console.log('🏥 Starting health check server...');
+      healthCheckServer;
       
       // Connect to RabbitMQ
       if (!rabbitMQService.isReady()) {
