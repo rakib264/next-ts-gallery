@@ -1,0 +1,30 @@
+# SMTP Configuration for Email OTP
+# Copy these to your .env.local file
+
+# Example with Gmail (recommended for testing)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+FROM_EMAIL=noreply@nextecom.com
+FROM_NAME=NextEcom
+
+# For Gmail, you need to:
+# 1. Enable 2-factor authentication on your Google account
+# 2. Generate an "App Password" specifically for this application
+# 3. Use the app password (not your regular password) in SMTP_PASS
+
+# Alternative SMTP providers:
+# For Outlook/Hotmail:
+# SMTP_HOST=smtp.live.com
+# SMTP_PORT=587
+
+# For Yahoo:
+# SMTP_HOST=smtp.mail.yahoo.com
+# SMTP_PORT=587
+
+# For custom SMTP servers:
+# SMTP_HOST=your-smtp-server.com
+# SMTP_PORT=587 (or 465 for SSL)
+# SMTP_SECURE=true (for port 465)

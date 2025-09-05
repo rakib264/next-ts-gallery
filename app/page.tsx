@@ -1,0 +1,136 @@
+'use client';
+
+import BestSellingProducts from '@/components/home/BestSellingProducts';
+import CategorySection from '@/components/home/CategorySection';
+import FeaturedProducts from '@/components/home/FeaturedProducts';
+import HeroCarousel from '@/components/home/HeroCarousel';
+import LimitedEdition from '@/components/home/LimitedEdition';
+import NewArrivals from '@/components/home/NewArrivals';
+import Newsletter from '@/components/home/Newsletter';
+import Footer from '@/components/layout/Footer';
+import Header from '@/components/layout/Header';
+import MobileBottomNav from '@/components/layout/MobileBottomNav';
+import ClientOnly from '@/components/providers/ClientOnly';
+import { motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+
+export default function Home() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isClient, setIsClient] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || !isClient) return;
+    
+    // Dynamically import GSAP and ScrollTrigger only after component is fully mounted
+    const initGSAP = async () => {
+      if (typeof window !== 'undefined') {
+        try {
+          const GSAP = await import('gsap');
+          const ST = await import('gsap/ScrollTrigger');
+          
+          const gsap = GSAP.gsap;
+          const ScrollTrigger = ST.ScrollTrigger;
+          
+          gsap.registerPlugin(ScrollTrigger);
+          
+          const ctx = gsap.context(() => {
+            // Only animate scroll reveal elements, not page-load elements (handled by Framer Motion)
+            const scrollRevealElements = document.querySelectorAll('.scroll-reveal');
+
+            if (scrollRevealElements.length > 0) {
+              gsap.utils.toArray('.scroll-reveal').forEach((element: any, index) => {
+                gsap.fromTo(element, 
+                  {
+                    y: 100,
+                    opacity: 0,
+                  },
+                  {
+                    y: 0,
+                    opacity: 1,
+                    duration: 1,
+                    delay: index * 0.1,
+                    ease: 'power3.out',
+                    scrollTrigger: {
+                      trigger: element,
+                      start: 'top 80%',
+                      end: 'bottom 20%',
+                      toggleActions: 'play none none reverse',
+                    },
+                  }
+                );
+              });
+            }
+          }, containerRef);
+
+          return () => ctx.revert();
+        } catch (error) {
+          console.warn('GSAP initialization failed:', error);
+        }
+      }
+    };
+
+    // Delay GSAP initialization to ensure DOM is ready and Framer Motion has completed
+    const timeoutId = setTimeout(initGSAP, 1000);
+    
+    return () => clearTimeout(timeoutId);
+  }, [mounted, isClient]);
+
+  return (
+    <div ref={containerRef} className="min-h-screen bg-background">
+      <ClientOnly>
+        <Header />
+      </ClientOnly>
+      
+      <main className="mb-20 md:mb-0">
+        {/* Hero Carousel section with simple fade-in, no GSAP conflict */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: mounted ? 1 : 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          suppressHydrationWarning
+        >
+          <HeroCarousel />
+        </motion.div>
+
+        {/* Category Section */}
+        <div className="scroll-reveal" suppressHydrationWarning>
+          <CategorySection />
+        </div>
+        
+        {/* Other sections with scroll reveal animations */}
+        <div className="scroll-reveal" suppressHydrationWarning>
+          <FeaturedProducts />
+        </div>
+        
+        <div className="scroll-reveal" suppressHydrationWarning>
+          <NewArrivals />
+        </div>
+        
+        <div className="scroll-reveal" suppressHydrationWarning>
+          <BestSellingProducts />
+        </div>
+        
+        <div className="scroll-reveal" suppressHydrationWarning>
+          <LimitedEdition />
+        </div>
+        
+        {/* <div className="scroll-reveal" suppressHydrationWarning>
+          <Categories />
+        </div> */}
+        
+        <div className="scroll-reveal" suppressHydrationWarning>
+          <Newsletter />
+        </div>
+      </main>
+      
+      <Footer />
+      <MobileBottomNav />
+    </div>
+  );
+}

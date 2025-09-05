@@ -1,0 +1,46 @@
+# Dockerfile for RabbitMQ Consumers
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY consumer-package.json package.json
+COPY package-lock.json* ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy necessary files
+COPY scripts/start-consumers.ts ./scripts/
+COPY lib/rabbitmqConsumer.ts ./lib/
+COPY lib/rabbitmq.ts ./lib/
+COPY lib/eventHandlers.ts ./lib/
+COPY lib/consumerService.ts ./lib/
+COPY lib/mongodb.ts ./lib/
+COPY lib/email.ts ./lib/
+COPY lib/invoice.ts ./lib/
+COPY lib/cloudinary.ts ./lib/
+COPY lib/sslcommerz.ts ./lib/
+COPY lib/twilio.ts ./lib/
+COPY lib/notifications/ ./lib/notifications/
+COPY lib/models/ ./lib/models/
+COPY lib/types/ ./lib/types/
+COPY lib/utils/ ./lib/utils/
+COPY lib/templates/ ./lib/templates/
+COPY lib/store/ ./lib/store/
+
+# Create logs directory
+RUN mkdir -p logs
+
+# Build TypeScript
+RUN npm run build
+
+# Expose port (if needed for health checks)
+EXPOSE 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD node -e "console.log('Consumer health check')" || exit 1
+
+# Start consumers
+CMD ["npm", "run", "start:prod"]

@@ -1,0 +1,31 @@
+{
+  "name": "nextecom-consumers",
+  "version": "1.0.0",
+  "description": "RabbitMQ Consumers for NextEcom",
+  "main": "scripts/start-consumers.ts",
+  "scripts": {
+    "start": "tsx scripts/start-consumers.ts",
+    "dev": "tsx scripts/start-consumers.ts",
+    "build": "tsc scripts/start-consumers.ts --outDir dist && tsc lib/rabbitmqConsumer.ts --outDir dist/lib",
+    "start:prod": "node dist/start-consumers.js"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.8",
+    "dotenv": "^17.2.1",
+    "mongodb": "^6.18.0",
+    "mongoose": "^8.17.0",
+    "nodemailer": "^6.9.9",
+    "puppeteer": "^24.16.2",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.5",
+    "typescript": "^5.6.3",
+    "@types/amqplib": "^0.10.7",
+    "@types/node": "^22.9.0",
+    "@types/nodemailer": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  }
+}
