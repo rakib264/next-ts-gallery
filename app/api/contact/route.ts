@@ -1,13 +1,11 @@
-import emailService from '@/lib/email';
-import GeneralSettings from '@/lib/models/GeneralSettings';
-import connectDB from '@/lib/mongodb';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET() {
   return NextResponse.json({ 
     message: 'Contact API is working',
     methods: ['GET', 'POST', 'OPTIONS'],
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV
   });
 }
 
@@ -20,33 +18,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'All fields are required.' }, { status: 400 });
     }
 
-    const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
-    if (!adminEmail) {
-      return NextResponse.json({ error: 'Admin email not configured.' }, { status: 500 });
-    }
-
-    // Pull branding for logo/colors
-    await connectDB();
-    const settings = await GeneralSettings.findOne();
-    const branding = {
-      siteName: settings?.siteName || process.env.NEXT_PUBLIC_SITE_NAME || 'TSR Gallery',
-      logoUrl: settings?.logo1 || '/lib/assets/images/tsrgallery.png',
-      primaryColor: settings?.primaryColor,
-      secondaryColor: settings?.secondaryColor
-    };
-
-    const sent = await emailService.sendContactFormEmail(
-      adminEmail,
+    // Log the submission for debugging
+    console.log('Contact form submission received:', {
+      name,
       email,
-      { name, email, subject, message },
-      branding
-    );
+      subject,
+      message,
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV
+    });
 
-    if (!sent) {
-      return NextResponse.json({ error: 'Failed to send message.' }, { status: 500 });
-    }
-
-    return NextResponse.json({ success: true });
+    // For now, just return success without sending email
+    // This will help us confirm the API route is working
+    return NextResponse.json({ 
+      success: true,
+      message: 'Contact form received successfully',
+      data: {
+        name,
+        email,
+        subject,
+        message,
+        timestamp: new Date().toISOString()
+      }
+    });
   } catch (error) {
     console.error('Contact form error:', error);
     return NextResponse.json({ 
