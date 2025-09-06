@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import nodemailer from 'nodemailer';
 import path from 'path';
-import winston from 'winston';
+import createLogger from './logger';
 import IntegrationSettings from './models/IntegrationSettings';
 import connectDB from './mongodb';
 import { EmailTemplates } from './templates/email-templates';
@@ -9,22 +9,7 @@ import { EmailTemplateData } from './types/email-settings';
 import { getEmailSettings } from './utils/email-settings';
 
 // Configure Winston logger
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.errors({ stack: true }),
-    winston.format.json()
-  ),
-  defaultMeta: { service: 'email-service' },
-  transports: [
-    new winston.transports.File({ filename: 'logs/email-error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/email-combined.log' }),
-    new winston.transports.Console({
-      format: winston.format.simple()
-    })
-  ]
-});
+const logger = createLogger('email-service');
 
 // Email configuration
 const EMAIL_CONFIG = {

@@ -1,25 +1,10 @@
-import winston from 'winston';
 import emailService from './email';
 import invoiceService, { InvoiceData } from './invoice';
+import createLogger from './logger';
 import { Event, EventType } from './rabbitmq';
 
 // Configure Winston logger
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.errors({ stack: true }),
-    winston.format.json()
-  ),
-  defaultMeta: { service: 'event-handlers' },
-  transports: [
-    new winston.transports.File({ filename: 'logs/event-handlers-error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/event-handlers-combined.log' }),
-    new winston.transports.Console({
-      format: winston.format.simple()
-    })
-  ]
-});
+const logger = createLogger('event-handlers');
 
 // Admin email for notifications
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@nextecom.com';

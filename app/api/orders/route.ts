@@ -4,7 +4,6 @@ import Order from '@/lib/models/Order';
 import PaymentSettings from '@/lib/models/PaymentSettings';
 import Product from '@/lib/models/Product';
 import connectDB from '@/lib/mongodb';
-import rabbitMQService, { EventType } from '@/lib/rabbitmq';
 import mongoose from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -159,31 +158,40 @@ export async function POST(request: NextRequest) {
     
     // Publish events asynchronously (don't block order creation)
     try {
-      // Publish new order creation event
-      await rabbitMQService.publishEvent({
-        type: EventType.NEW_ORDER_CREATION,
-        id: `order-${order._id}-${Date.now()}`,
-        timestamp: new Date(),
-        orderId: order._id.toString(),
-        orderNumber: order.orderNumber,
-        customerEmail: customerEmail,
-        customerId: session?.user?.id,
-        total: order.total
-      });
+      // Only publish events if not in serverless environment or if RabbitMQ is configured
+      const isVercel = process.env.VERCEL === '1';
+      if (!isVercel || process.env.RABBITMQ_URL) {
+        // Import RabbitMQ service dynamically to avoid initialization issues
+        const { default: rabbitMQService, EventType } = await import('@/lib/rabbitmq');
+        
+        // Publish new order creation event
+        await rabbitMQService.publishEvent({
+          type: EventType.NEW_ORDER_CREATION,
+          id: `order-${order._id}-${Date.now()}`,
+          timestamp: new Date(),
+          orderId: order._id.toString(),
+          orderNumber: order.orderNumber,
+          customerEmail: customerEmail,
+          customerId: session?.user?.id,
+          total: order.total
+        });
 
-      // Publish invoice generation event
-      await rabbitMQService.publishEvent({
-        type: EventType.INVOICE_GENERATION,
-        id: `invoice-${order._id}-${Date.now()}`,
-        timestamp: new Date(),
-        orderId: order._id.toString(),
-        orderNumber: order.orderNumber,
-        customerEmail: customerEmail,
-        customerId: session?.user?.id,
-        orderData: populatedOrder.toObject()
-      });
+        // Publish invoice generation event
+        await rabbitMQService.publishEvent({
+          type: EventType.INVOICE_GENERATION,
+          id: `invoice-${order._id}-${Date.now()}`,
+          timestamp: new Date(),
+          orderId: order._id.toString(),
+          orderNumber: order.orderNumber,
+          customerEmail: customerEmail,
+          customerId: session?.user?.id,
+          orderData: populatedOrder.toObject()
+        });
 
-      // console.log('Events published successfully for order:', order.orderNumber);
+        // console.log('Events published successfully for order:', order.orderNumber);
+      } else {
+        console.log('RabbitMQ events skipped in serverless environment for order:', order.orderNumber);
+      }
     } catch (error) {
       console.error('Failed to publish events for order:', order.orderNumber, error);
       // Don't fail the order creation if event publishing fails

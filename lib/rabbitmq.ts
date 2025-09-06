@@ -1,23 +1,8 @@
 import * as amqp from 'amqplib';
-import winston from 'winston';
+import createLogger from './logger';
 
 // Configure Winston logger
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.errors({ stack: true }),
-    winston.format.json()
-  ),
-  defaultMeta: { service: 'rabbitmq-service' },
-  transports: [
-    new winston.transports.File({ filename: 'logs/rabbitmq-error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/rabbitmq-combined.log' }),
-    new winston.transports.Console({
-      format: winston.format.simple()
-    })
-  ]
-});
+const logger = createLogger('rabbitmq-service');
 
 // Event types
 export enum EventType {

@@ -1,24 +1,9 @@
-import winston from 'winston';
 import { EventHandlers } from './eventHandlers';
+import createLogger from './logger';
 import rabbitMQService, { EventType } from './rabbitmq';
 
 // Configure Winston logger
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.errors({ stack: true }),
-    winston.format.json()
-  ),
-  defaultMeta: { service: 'rabbitmq-consumer' },
-  transports: [
-    new winston.transports.File({ filename: 'logs/consumer-error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/consumer-combined.log' }),
-    new winston.transports.Console({
-      format: winston.format.simple()
-    })
-  ]
-});
+const logger = createLogger('rabbitmq-consumer');
 
 class RabbitMQConsumer {
   private isRunning = false;

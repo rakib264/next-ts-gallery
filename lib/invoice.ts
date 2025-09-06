@@ -1,25 +1,10 @@
 import fs from 'fs/promises';
 import path from 'path';
 import * as puppeteer from 'puppeteer';
-import winston from 'winston';
+import createLogger from './logger';
 
 // Configure Winston logger
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.errors({ stack: true }),
-    winston.format.json()
-  ),
-  defaultMeta: { service: 'invoice-service' },
-  transports: [
-    new winston.transports.File({ filename: 'logs/invoice-error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/invoice-combined.log' }),
-    new winston.transports.Console({
-      format: winston.format.simple()
-    })
-  ]
-});
+const logger = createLogger('invoice-service');
 
 // Invoice data interface
 export interface InvoiceData {
