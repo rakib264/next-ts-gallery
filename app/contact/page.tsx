@@ -9,9 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToastWithTypes } from '@/hooks/use-toast';
+import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { Clock, Copy, ExternalLink, Mail, MapPin, Phone, Send, User } from 'lucide-react';
 import maplibregl from 'maplibre-gl';
 import { useEffect, useRef, useState } from 'react';
+import * as Yup from 'yup';
 
 import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -39,22 +41,40 @@ interface ContactForm {
   message: string;
 }
 
+// Validation schema
+const validationSchema = Yup.object({
+  name: Yup.string()
+    .min(2, 'Name must be at least 2 characters')
+    .max(50, 'Name must be less than 50 characters')
+    .required('Name is required'),
+  email: Yup.string()
+    .email('Invalid email address')
+    .required('Email is required'),
+  subject: Yup.string()
+    .min(5, 'Subject must be at least 5 characters')
+    .max(100, 'Subject must be less than 100 characters')
+    .required('Subject is required'),
+  message: Yup.string()
+    .min(10, 'Message must be at least 10 characters')
+    .max(1000, 'Message must be less than 1000 characters')
+    .required('Message is required'),
+});
+
 export default function ContactPage() {
   const [settings, setSettings] = useState<GeneralSettings | null>(null);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<maplibregl.Map | null>(null);
   const { success, error: showError } = useToastWithTypes();
 
-  const [form, setForm] = useState<ContactForm>({
+  const initialValues: ContactForm = {
     name: '',
     email: '',
     subject: '',
     message: ''
-  });
+  };
 
   // Fetch general settings
   useEffect(() => {
@@ -125,10 +145,6 @@ export default function ContactPage() {
     }
   }, [mapLoaded, settings]);
 
-  const handleInputChange = (field: keyof ContactForm, value: string) => {
-    setForm(prev => ({ ...prev, [field]: value }));
-  };
-
   const handleCopy = async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -138,15 +154,12 @@ export default function ContactPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    
+  const handleSubmit = async (values: ContactForm, { setSubmitting, resetForm }: any) => {
     try {
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
+        body: JSON.stringify(values)
       });
 
       if (!response.ok) {
@@ -156,7 +169,7 @@ export default function ContactPage() {
 
       success('Message sent successfully');
       setSubmitted(true);
-      setForm({ name: '', email: '', subject: '', message: '' });
+      resetForm();
     } catch (err) {
       console.error('Error submitting form:', err);
       showError('Failed to send message');
@@ -318,7 +331,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-semibold text-gray-900">Business Hours</h3>
                     <p className="text-gray-600">Sunday - Thursday: 9:00 AM - 6:00 PM</p>
-                    <p className="text-gray-600">Friday, Saturday: Closed</p>
+                    <p className="text-gray-600">Friday: Closed</p>
                   </div>
                 </div>
               </div>
@@ -366,76 +379,88 @@ export default function ContactPage() {
                     </Button>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <Label htmlFor="name">Full Name *</Label>
-                        <Input
-                          id="name"
-                          value={form.name}
-                          onChange={(e) => handleInputChange('name', e.target.value)}
-                          required
-                          placeholder="Enter your full name"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="email">Email Address *</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={form.email}
-                          onChange={(e) => handleInputChange('email', e.target.value)}
-                          required
-                          placeholder="Enter your email address"
-                        />
-                      </div>
-                    </div>
+                  <Formik
+                    initialValues={initialValues}
+                    validationSchema={validationSchema}
+                    onSubmit={handleSubmit}
+                  >
+                    {({ isSubmitting, errors, touched }) => (
+                      <Form className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <Label htmlFor="name">Full Name *</Label>
+                            <Field
+                              as={Input}
+                              id="name"
+                              name="name"
+                              placeholder="Enter your full name"
+                              className={errors.name && touched.name ? 'border-red-500' : ''}
+                            />
+                            <ErrorMessage name="name" component="div" className="text-red-500 text-sm mt-1" />
+                          </div>
+                          <div>
+                            <Label htmlFor="email">Email Address *</Label>
+                            <Field
+                              as={Input}
+                              id="email"
+                              name="email"
+                              type="email"
+                              placeholder="Enter your email address"
+                              className={errors.email && touched.email ? 'border-red-500' : ''}
+                            />
+                            <ErrorMessage name="email" component="div" className="text-red-500 text-sm mt-1" />
+                          </div>
+                        </div>
 
-                    <div>
-                      <Label htmlFor="subject">Subject *</Label>
-                      <Input
-                        id="subject"
-                        value={form.subject}
-                        onChange={(e) => handleInputChange('subject', e.target.value)}
-                        required
-                        placeholder="Enter message subject"
-                      />
-                    </div>
+                        <div>
+                          <Label htmlFor="subject">Subject *</Label>
+                          <Field
+                            as={Input}
+                            id="subject"
+                            name="subject"
+                            placeholder="Enter message subject"
+                            className={errors.subject && touched.subject ? 'border-red-500' : ''}
+                          />
+                          <ErrorMessage name="subject" component="div" className="text-red-500 text-sm mt-1" />
+                        </div>
 
-                    <div>
-                      <Label htmlFor="message">Message *</Label>
-                      <Textarea
-                        id="message"
-                        value={form.message}
-                        onChange={(e) => handleInputChange('message', e.target.value)}
-                        required
-                        rows={6}
-                        placeholder="Enter your message here..."
-                      />
-                    </div>
+                        <div>
+                          <Label htmlFor="message">Message *</Label>
+                          <Field
+                            as={Textarea}
+                            id="message"
+                            name="message"
+                            rows={6}
+                            placeholder="Enter your message here..."
+                            className={errors.message && touched.message ? 'border-red-500' : ''}
+                          />
+                          <ErrorMessage name="message" component="div" className="text-red-500 text-sm mt-1" />
+                        </div>
 
-                    <Button
-                      type="submit"
-                      disabled={submitting}
-                      className="w-full"
-                      style={{ 
-                        backgroundColor: settings?.primaryColor || '#000000',
-                        borderColor: settings?.primaryColor || '#000000'
-                      }}
-                    >
-                      {submitting ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                          Sending...
-                        </>
-                      ) : (
-                        <>
-                          <Send size={16} className="mr-2" />
-                          Send Message
-                        </>
-                      )}
-                    </Button>
-                  </form>
+                        <Button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="w-full"
+                          style={{ 
+                            backgroundColor: settings?.primaryColor || '#000000',
+                            borderColor: settings?.primaryColor || '#000000'
+                          }}
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                              Sending...
+                            </>
+                          ) : (
+                            <>
+                              <Send size={16} className="mr-2" />
+                              Send Message
+                            </>
+                          )}
+                        </Button>
+                      </Form>
+                    )}
+                  </Formik>
                 )}
               </CardContent>
             </Card>

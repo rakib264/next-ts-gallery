@@ -57,9 +57,13 @@ export const {
     }),
   ],
   session: { strategy: 'jwt' },
+  secret: process.env.NEXTAUTH_SECRET,
+  trustHost: true,
   cookies: {
     sessionToken: {
-      name: `__Secure-next-auth.session-token`,
+      name: process.env.NODE_ENV === 'production' 
+        ? `__Secure-next-auth.session-token` 
+        : `next-auth.session-token`,
       options: {
         httpOnly: true,
         sameSite: 'lax',
@@ -69,7 +73,9 @@ export const {
       },
     },
     callbackUrl: {
-      name: `__Secure-next-auth.callback-url`,
+      name: process.env.NODE_ENV === 'production' 
+        ? `__Secure-next-auth.callback-url` 
+        : `next-auth.callback-url`,
       options: {
         httpOnly: true,
         sameSite: 'lax',
@@ -79,7 +85,9 @@ export const {
       },
     },
     csrfToken: {
-      name: `__Host-next-auth.csrf-token`,
+      name: process.env.NODE_ENV === 'production' 
+        ? `__Host-next-auth.csrf-token` 
+        : `next-auth.csrf-token`,
       options: {
         httpOnly: true,
         sameSite: 'lax',

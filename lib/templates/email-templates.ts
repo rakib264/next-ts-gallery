@@ -9,12 +9,15 @@ export class EmailTemplates {
     const logoHtml = settings.logo ? 
       `<img src="${settings.logo}" alt="${settings.siteName}" style="max-height: 60px; margin-bottom: 10px;">` : '';
     
+    const siteNameHtml = !settings.logo ? 
+      `<div class="company-name" style="font-size: 28px; font-weight: bold; color: ${settings.primaryColor}; margin-bottom: 10px;">
+        ${settings.siteName}
+      </div>` : '';
+    
     return `
       <div class="header" style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid ${settings.primaryColor}; padding-bottom: 20px;">
         ${logoHtml}
-        <div class="company-name" style="font-size: 28px; font-weight: bold; color: ${settings.primaryColor}; margin-bottom: 10px;">
-          ${settings.siteName}
-        </div>
+        ${siteNameHtml}
         <div class="company-tagline" style="font-size: 14px; color: #666; margin-bottom: 5px;">
           ${settings.siteDescription}
         </div>
