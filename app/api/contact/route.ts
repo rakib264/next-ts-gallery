@@ -13,7 +13,8 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, subject, message } = await request.json();
+    const body = await request.json();
+    const { name, email, subject, message } = body;
 
     if (!name || !email || !subject || !message) {
       return NextResponse.json({ error: 'All fields are required.' }, { status: 400 });
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
     await connectDB();
     const settings = await GeneralSettings.findOne();
     const branding = {
-      siteName: settings?.siteName || process.env.NEXT_PUBLIC_SITE_NAME || 'NextEcom Admin',
+      siteName: settings?.siteName || process.env.NEXT_PUBLIC_SITE_NAME || 'TSR Gallery',
       logoUrl: settings?.logo1 || '/lib/assets/images/tsrgallery.png',
       primaryColor: settings?.primaryColor,
       secondaryColor: settings?.secondaryColor
@@ -48,17 +49,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Contact form error:', error);
-    return NextResponse.json({ error: 'Unexpected error.' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Unexpected error.',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
 
-// Add OPTIONS method for CORS preflight requests
-export async function OPTIONS(request: NextRequest) {
+export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     },
   });
