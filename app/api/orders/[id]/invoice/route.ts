@@ -20,7 +20,7 @@ export async function GET(
     // Get the order
     const order = await Order.findById(id)
       .populate('customer', 'firstName lastName email phone')
-      .lean();
+      .lean() as any;
     
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
@@ -33,8 +33,8 @@ export async function GET(
     }
 
     // Allow access if user owns the order or is admin
-    const isOwner = order.customer && order.customer._id.toString() === session.user.id;
-    const isAdmin = ['admin', 'manager', 'staff'].includes(session.user.role);
+    const isOwner = order.customer && (order.customer as any)._id.toString() === session.user.id;
+    const isAdmin = ['admin', 'manager', 'staff'].includes((session.user as any).role);
     
     if (!isOwner && !isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -79,7 +79,7 @@ export async function POST(
     // Get the order
     const order = await Order.findById(id)
       .populate('customer', 'firstName lastName email phone')
-      .lean();
+      .lean() as any;
     
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
@@ -92,8 +92,8 @@ export async function POST(
     }
 
     // Allow access if user owns the order or is admin
-    const isOwner = order.customer && order.customer._id.toString() === session.user.id;
-    const isAdmin = ['admin', 'manager', 'staff'].includes(session.user.role);
+    const isOwner = order.customer && (order.customer as any)._id.toString() === session.user.id;
+    const isAdmin = ['admin', 'manager', 'staff'].includes((session.user as any).role);
     
     if (!isOwner && !isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
