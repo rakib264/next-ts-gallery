@@ -10,6 +10,14 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
+    // Add debugging for production
+    console.log('Orders API POST request received:', {
+      method: request.method,
+      url: request.url,
+      headers: Object.fromEntries(request.headers.entries()),
+      timestamp: new Date().toISOString()
+    });
+
     await connectDB();
     
     const data = await request.json();
@@ -248,4 +256,17 @@ export async function OPTIONS(request: NextRequest) {
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   });
+}
+
+// Handle unsupported methods
+export async function PUT(request: NextRequest) {
+  return NextResponse.json({ error: 'Method not allowed. Use POST to create orders.' }, { status: 405 });
+}
+
+export async function DELETE(request: NextRequest) {
+  return NextResponse.json({ error: 'Method not allowed. Use POST to create orders.' }, { status: 405 });
+}
+
+export async function PATCH(request: NextRequest) {
+  return NextResponse.json({ error: 'Method not allowed. Use POST to create orders.' }, { status: 405 });
 }

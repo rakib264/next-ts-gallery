@@ -26,8 +26,8 @@ interface OpenStreetGeocodeResult {
 }
 
 export class OpenStreetMapService {
-  // Using OpenStreetMap Nominatim instead of Barikoi
-  private baseUrl = 'https://nominatim.openstreetmap.org';
+  // Using internal proxy to avoid CORS issues
+  private baseUrl = '/api/openstreetmap/proxy';
 
   constructor(_apiKey?: string) {
     // No API key required for Nominatim; constructor kept for compatibility
@@ -48,8 +48,8 @@ export class OpenStreetMapService {
 
   async searchAddress(query: string): Promise<OpenStreetSuggestion[]> {
     try {
-      // Prioritize Bangladesh results by adding countrycodes parameter
-      const url = `${this.baseUrl}/search?format=json&addressdetails=1&limit=5&countrycodes=bd&q=${encodeURIComponent(query)}`;
+      // Use internal proxy to avoid CORS issues
+      const url = `${this.baseUrl}?endpoint=search&format=json&addressdetails=1&limit=5&countrycodes=bd&q=${encodeURIComponent(query)}`;
       const response = await fetch(url, { headers: this.buildHeaders() });
       if (!response.ok) {
         throw new Error('Failed to search addresses');
@@ -73,7 +73,7 @@ export class OpenStreetMapService {
 
   async getPlaceDetails(placeId: string): Promise<OpenStreetAddress | null> {
     try {
-      const url = `${this.baseUrl}/lookup?format=json&addressdetails=1&place_ids=${encodeURIComponent(placeId)}`;
+      const url = `${this.baseUrl}?endpoint=lookup&format=json&addressdetails=1&place_ids=${encodeURIComponent(placeId)}`;
       const response = await fetch(url, { headers: this.buildHeaders() });
       if (!response.ok) {
         throw new Error('Failed to get place details');
@@ -99,7 +99,7 @@ export class OpenStreetMapService {
 
   async geocodeAddress(address: string): Promise<OpenStreetGeocodeResult | null> {
     try {
-      const url = `${this.baseUrl}/search?format=json&addressdetails=1&limit=1&countrycodes=bd&q=${encodeURIComponent(address)}`;
+      const url = `${this.baseUrl}?endpoint=search&format=json&addressdetails=1&limit=1&countrycodes=bd&q=${encodeURIComponent(address)}`;
       const response = await fetch(url, { headers: this.buildHeaders() });
       if (!response.ok) {
         throw new Error('Failed to geocode address');
@@ -132,6 +132,7 @@ export class OpenStreetMapService {
   }): Promise<OpenStreetGeocodeResult | null> {
     try {
       const qp = new URLSearchParams();
+      qp.set('endpoint', 'search');
       qp.set('format', 'json');
       qp.set('addressdetails', '1');
       qp.set('limit', '1');
@@ -141,7 +142,7 @@ export class OpenStreetMapService {
       if (params.county) qp.set('county', params.county);
       if (params.state) qp.set('state', params.state);
       if (params.postalcode) qp.set('postalcode', params.postalcode);
-      const url = `${this.baseUrl}/search?${qp.toString()}`;
+      const url = `${this.baseUrl}?${qp.toString()}`;
       const response = await fetch(url, { headers: this.buildHeaders() });
       if (!response.ok) {
         throw new Error('Failed to geocode (structured)');
@@ -166,7 +167,7 @@ export class OpenStreetMapService {
 
   async reverseGeocode(latitude: number, longitude: number): Promise<OpenStreetGeocodeResult | null> {
     try {
-      const url = `${this.baseUrl}/reverse?format=json&addressdetails=1&lat=${latitude}&lon=${longitude}`;
+      const url = `${this.baseUrl}?endpoint=reverse&format=json&addressdetails=1&lat=${latitude}&lon=${longitude}`;
       const response = await fetch(url, { headers: this.buildHeaders() });
       if (!response.ok) {
         throw new Error('Failed to reverse geocode');

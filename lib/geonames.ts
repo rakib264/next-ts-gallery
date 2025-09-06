@@ -31,8 +31,13 @@ export interface GeonamesGeocodeResult {
 }
 
 export class GeonamesService {
-  private baseUrl = 'http://api.geonames.org';
   private username = 'redwan_rakib';
+  private isServerSide: boolean;
+
+  constructor() {
+    // Detect if we're running on server-side or client-side
+    this.isServerSide = typeof window === 'undefined';
+  }
 
   /**
    * Search for location by postal code using Geonames API
@@ -49,7 +54,8 @@ export class GeonamesService {
         return null;
       }
 
-      const url = `${this.baseUrl}/postalCodeSearchJSON?postalcode=${encodeURIComponent(postalCode.trim())}&country=${countryCode}&username=${this.username}`;
+      // Use internal proxy API route to avoid CORS issues
+      const url = `/api/geonames/proxy?endpoint=postalCodeSearchJSON&postalcode=${encodeURIComponent(postalCode.trim())}&country=${countryCode}&username=${this.username}`;
       
       const response = await fetch(url);
 
@@ -109,7 +115,8 @@ export class GeonamesService {
         return [];
       }
 
-      const url = `${this.baseUrl}/postalCodeSearchJSON?postalcode=${encodeURIComponent(postalCode.trim())}&country=${countryCode}&username=${this.username}`;
+      // Use internal proxy API route to avoid CORS issues
+      const url = `/api/geonames/proxy?endpoint=postalCodeSearchJSON&postalcode=${encodeURIComponent(postalCode.trim())}&country=${countryCode}&username=${this.username}`;
       
       const response = await fetch(url, {
         headers: {
