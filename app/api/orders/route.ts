@@ -158,13 +158,12 @@ export async function POST(request: NextRequest) {
     
     // Publish events asynchronously (don't block order creation)
     try {
-      // Only publish events if not in serverless environment or if RabbitMQ is configured
-      const isVercel = process.env.VERCEL === '1';
-      if (!isVercel || process.env.RABBITMQ_URL) {
+      // Always publish events to RabbitMQ if URL is configured (Railway consumers will handle them)
+      if (process.env.RABBITMQ_URL) {
         // Import RabbitMQ service dynamically to avoid initialization issues
         const { default: rabbitMQService, EventType } = await import('@/lib/rabbitmq');
         
-        // Publish new order creation event
+        // Publish new order creation event (Railway consumers will handle admin notifications)
         await rabbitMQService.publishEvent({
           type: EventType.NEW_ORDER_CREATION,
           id: `order-${order._id}-${Date.now()}`,
@@ -176,7 +175,7 @@ export async function POST(request: NextRequest) {
           total: order.total
         });
 
-        // Publish invoice generation event
+        // Publish invoice generation event (Railway consumers will handle invoice creation and customer emails)
         await rabbitMQService.publishEvent({
           type: EventType.INVOICE_GENERATION,
           id: `invoice-${order._id}-${Date.now()}`,
@@ -188,9 +187,9 @@ export async function POST(request: NextRequest) {
           orderData: populatedOrder.toObject()
         });
 
-        // console.log('Events published successfully for order:', order.orderNumber);
+        console.log('Events published to RabbitMQ for order:', order.orderNumber);
       } else {
-        console.log('RabbitMQ events skipped in serverless environment for order:', order.orderNumber);
+        console.warn('RABBITMQ_URL not configured - events not published for order:', order.orderNumber);
       }
     } catch (error) {
       console.error('Failed to publish events for order:', order.orderNumber, error);
