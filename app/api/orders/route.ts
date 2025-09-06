@@ -181,13 +181,27 @@ export async function POST(request: NextRequest) {
       // Don't fail the order creation if event publishing fails
     }
     
-    return NextResponse.json({ 
+    const response = NextResponse.json({ 
       message: 'Order placed successfully',
       order: populatedOrder 
     }, { status: 201 });
+    
+    // Add CORS headers
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    return response;
   } catch (error) {
     console.error('Create order error:', error);
-    return NextResponse.json({ error: 'Failed to place order' }, { status: 500 });
+    const response = NextResponse.json({ error: 'Failed to place order' }, { status: 500 });
+    
+    // Add CORS headers to error response
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    return response;
   }
 }
 
@@ -204,9 +218,34 @@ export async function GET(request: NextRequest) {
       .populate('items.product', 'name thumbnailImage')
       .sort({ createdAt: -1 });
     
-    return NextResponse.json({ orders });
+    const response = NextResponse.json({ orders });
+    
+    // Add CORS headers
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    return response;
   } catch (error) {
     console.error('Get orders error:', error);
-    return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
+    const response = NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
+    
+    // Add CORS headers to error response
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    return response;
   }
+}
+
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  });
 }

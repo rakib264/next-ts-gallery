@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
 import emailService from '@/lib/email';
 import GeneralSettings from '@/lib/models/GeneralSettings';
 import connectDB from '@/lib/mongodb';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET() {
   return NextResponse.json({ 

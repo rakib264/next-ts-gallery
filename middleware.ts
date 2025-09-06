@@ -42,4 +42,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: ['/admin/:path*'],
+  // Exclude API routes from middleware
+  exclude: ['/api/:path*']
 };
