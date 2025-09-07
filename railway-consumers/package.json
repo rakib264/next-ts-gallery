@@ -6,7 +6,10 @@
   "scripts": {
     "start": "tsx start-consumers.ts",
     "dev": "tsx start-consumers.ts",
-    "build": "echo 'No build step needed - using tsx directly'"
+    "build": "echo 'No build step needed - using tsx directly'",
+    "debug": "tsx debug-rabbitmq.ts",
+    "validate-env": "tsx validate-env.ts",
+    "test-connection": "tsx debug-rabbitmq.ts && tsx validate-env.ts"
   },
   "dependencies": {
     "amqplib": "^0.10.8",

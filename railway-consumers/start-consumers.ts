@@ -13,16 +13,45 @@ class ConsumerManager {
   private isRunning = false;
   private consumers: EventType[] = [];
 
+  private validateEnvironmentVariables(): void {
+    const requiredVars = [
+      'RABBITMQ_URL',
+      'DATABASE_URL',
+      'SMTP_HOST',
+      'SMTP_USER',
+      'SMTP_PASS',
+      'FROM_EMAIL',
+      'ADMIN_EMAIL'
+    ];
+
+    const missingVars = requiredVars.filter(varName => !process.env[varName]);
+    
+    if (missingVars.length > 0) {
+      console.error('❌ Missing required environment variables:', missingVars);
+      console.error('Please set the following environment variables in Railway:');
+      missingVars.forEach(varName => {
+        console.error(`  - ${varName}`);
+      });
+      process.exit(1);
+    }
+
+    console.log('✅ All required environment variables are set');
+  }
+
   async start(): Promise<void> {
     try {
       console.log('🚀 Starting RabbitMQ consumers on Railway...');
       
+      // Validate required environment variables
+      this.validateEnvironmentVariables();
+      
       // Start health check server first
       console.log('🏥 Starting health check server...');
-      healthCheckServer;
+      await healthCheckServer;
       
       // Connect to RabbitMQ
       if (!rabbitMQService.isReady()) {
+        console.log('🔌 Connecting to RabbitMQ...');
         await rabbitMQService.connect();
       }
 
@@ -57,11 +86,13 @@ class ConsumerManager {
 
       for (const config of consumerConfigs) {
         try {
+          console.log(`🔄 Starting ${config.name} consumer...`);
           await rabbitMQService.consumeEvents(config.eventType, config.handler);
-          console.log(`✅ ${config.name} consumer started`);
+          console.log(`✅ ${config.name} consumer started successfully`);
           this.consumers.push(config.eventType);
         } catch (error) {
           console.error(`❌ Failed to start ${config.name} consumer:`, error);
+          // Don't exit on individual consumer failures, but log them
         }
       }
 

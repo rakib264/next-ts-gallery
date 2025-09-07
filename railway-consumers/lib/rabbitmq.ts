@@ -122,9 +122,33 @@ class RabbitMQService {
 
   async connect(): Promise<void> {
     try {
-      logger.info('Connecting to RabbitMQ...');
-      this.connection = await amqp.connect(RABBITMQ_URL);
+      logger.info('Connecting to RabbitMQ...', { url: RABBITMQ_URL.replace(/\/\/.*@/, '//***:***@') });
+      
+      if (!RABBITMQ_URL || RABBITMQ_URL === 'amqp://localhost:5672') {
+        throw new Error('RABBITMQ_URL environment variable is not properly configured');
+      }
+      
+      this.connection = await amqp.connect(RABBITMQ_URL, {
+        heartbeat: 60,
+        connection_timeout: 30000
+      });
+      
       this.channel = await this.connection.createChannel();
+      
+      // Set up connection event handlers
+      this.connection.on('error', (error: any) => {
+        logger.error('RabbitMQ connection error:', error);
+        this.isConnected = false;
+      });
+      
+      this.connection.on('close', () => {
+        logger.warn('RabbitMQ connection closed');
+        this.isConnected = false;
+      });
+      
+      this.channel.on('error', (error: any) => {
+        logger.error('RabbitMQ channel error:', error);
+      });
       
       // Set up exchanges and queues
       await this.setupExchangesAndQueues();
@@ -133,6 +157,7 @@ class RabbitMQService {
       logger.info('Successfully connected to RabbitMQ');
     } catch (error) {
       logger.error('Failed to connect to RabbitMQ:', error);
+      this.isConnected = false;
       throw error;
     }
   }
@@ -163,11 +188,12 @@ class RabbitMQService {
   async publishEvent(event: Event): Promise<boolean> {
     try {
       if (!this.isConnected || !this.channel) {
+        logger.info('Reconnecting to RabbitMQ for event publishing...');
         await this.connect();
       }
 
       if (!this.channel) {
-        throw new Error('Channel not available');
+        throw new Error('Channel not available after reconnection');
       }
 
       const config = QUEUE_CONFIGS[event.type];
@@ -192,7 +218,11 @@ class RabbitMQService {
       );
 
       if (success) {
-        logger.info(`Event published successfully: ${event.type}`, { eventId: event.id });
+        logger.info(`Event published successfully: ${event.type}`, { 
+          eventId: event.id,
+          routingKey: config.routingKey,
+          queueName: config.name
+        });
         return true;
       } else {
         logger.error(`Failed to publish event: ${event.type}`, { eventId: event.id });
@@ -200,6 +230,7 @@ class RabbitMQService {
       }
     } catch (error) {
       logger.error(`Error publishing event ${event.type}:`, error);
+      this.isConnected = false; // Mark as disconnected on error
       return false;
     }
   }

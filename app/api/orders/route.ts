@@ -160,11 +160,13 @@ export async function POST(request: NextRequest) {
     try {
       // Always publish events to RabbitMQ if URL is configured (Railway consumers will handle them)
       if (process.env.RABBITMQ_URL) {
+        console.log('Publishing events to RabbitMQ for order:', order.orderNumber);
+        
         // Import RabbitMQ service dynamically to avoid initialization issues
         const { default: rabbitMQService, EventType } = await import('@/lib/rabbitmq');
         
         // Publish new order creation event (Railway consumers will handle admin notifications)
-        await rabbitMQService.publishEvent({
+        const orderEventResult = await rabbitMQService.publishEvent({
           type: EventType.NEW_ORDER_CREATION,
           id: `order-${order._id}-${Date.now()}`,
           timestamp: new Date(),
@@ -175,8 +177,14 @@ export async function POST(request: NextRequest) {
           total: order.total
         });
 
+        if (orderEventResult) {
+          console.log('✅ New order creation event published successfully for order:', order.orderNumber);
+        } else {
+          console.error('❌ Failed to publish new order creation event for order:', order.orderNumber);
+        }
+
         // Publish invoice generation event (Railway consumers will handle invoice creation and customer emails)
-        await rabbitMQService.publishEvent({
+        const invoiceEventResult = await rabbitMQService.publishEvent({
           type: EventType.INVOICE_GENERATION,
           id: `invoice-${order._id}-${Date.now()}`,
           timestamp: new Date(),
@@ -187,12 +195,20 @@ export async function POST(request: NextRequest) {
           orderData: populatedOrder.toObject()
         });
 
-        console.log('Events published to RabbitMQ for order:', order.orderNumber);
+        if (invoiceEventResult) {
+          console.log('✅ Invoice generation event published successfully for order:', order.orderNumber);
+        } else {
+          console.error('❌ Failed to publish invoice generation event for order:', order.orderNumber);
+        }
+
+        console.log('📨 All events published to RabbitMQ for order:', order.orderNumber);
       } else {
-        console.warn('RABBITMQ_URL not configured - events not published for order:', order.orderNumber);
+        console.warn('⚠️ RABBITMQ_URL not configured - events not published for order:', order.orderNumber);
+        console.warn('⚠️ Admin notifications and customer invoices will not be sent automatically');
       }
     } catch (error) {
-      console.error('Failed to publish events for order:', order.orderNumber, error);
+      console.error('💥 Failed to publish events for order:', order.orderNumber, error);
+      console.error('💥 Admin notifications and customer invoices may not be sent');
       // Don't fail the order creation if event publishing fails
     }
     
