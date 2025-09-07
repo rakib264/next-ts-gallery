@@ -7,7 +7,7 @@ import 'react-quill/dist/quill.snow.css';
 // React 19 removed ReactDOM.findDOMNode. Some older editors still call it.
 // Provide a minimal client-side polyfill so libraries like react-quill keep working.
 if (typeof window !== 'undefined') {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line
   const ReactDOM: any = require('react-dom');
   if (ReactDOM && typeof ReactDOM.findDOMNode !== 'function') {
     ReactDOM.findDOMNode = (instance: any) => {
