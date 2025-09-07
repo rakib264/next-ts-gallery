@@ -1,44 +1,36 @@
-import startupService from '@/lib/startup';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    // Initialize startup service
-    const initialized = await startupService.initialize();
+    // Get queue service status
+    const { default: queueService } = await import('@/lib/queue');
+    const stats = await queueService.getQueueStats();
     
-    // Only get consumer status if not in serverless environment
-    let status = {};
     const isVercel = process.env.VERCEL === '1';
     
-    if (!isVercel) {
-      try {
-        const { default: consumerService } = await import('@/lib/consumerService');
-        status = consumerService.getStatus();
-      } catch (error) {
-        console.warn('Could not get consumer status:', error);
-        status = { error: 'Consumer service not available' };
-      }
-    } else {
-      status = { 
-        message: 'Consumer service disabled in serverless environment',
-        isRunning: false,
-        consumers: []
-      };
-    }
-    
     return NextResponse.json({
-      message: 'Startup check completed',
-      autoStartEnabled: process.env.AUTO_START_CONSUMERS === 'true',
-      startupInitialized: startupService.isInitialized(),
-      initializationSuccess: initialized,
-      isServerless: isVercel,
-      ...status
+      message: 'System status check completed',
+      queueSystem: {
+        type: 'Upstash Redis + Resend',
+        status: 'active',
+        stats
+      },
+      environment: {
+        isServerless: isVercel,
+        platform: isVercel ? 'Vercel' : 'Unknown'
+      },
+      services: {
+        queueProcessor: '/api/processQueue',
+        emailService: 'Resend',
+        pdfService: 'Puppeteer'
+      },
+      timestamp: new Date().toISOString()
     });
 
   } catch (error) {
-    console.error('Startup error:', error);
+    console.error('System status check error:', error);
     return NextResponse.json({ 
-      error: 'Startup check failed',
+      error: 'System status check failed',
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }

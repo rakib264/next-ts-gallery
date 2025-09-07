@@ -1,6 +1,3 @@
-import emailService from '@/lib/email';
-import GeneralSettings from '@/lib/models/GeneralSettings';
-import connectDB from '@/lib/mongodb';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET() {
@@ -38,40 +35,34 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // Pull branding for logo/colors
-      await connectDB();
-      const settings = await GeneralSettings.findOne();
-      const branding = {
-        siteName: settings?.siteName || process.env.NEXT_PUBLIC_SITE_NAME || 'TSR Gallery',
-        logoUrl: settings?.logo1 || '/lib/assets/images/tsrgallery.png',
-        primaryColor: settings?.primaryColor,
-        secondaryColor: settings?.secondaryColor
-      };
-
-      console.log('Sending email to:', adminEmail);
-      const sent = await emailService.sendContactFormEmail(
-        adminEmail,
+      console.log('Queueing contact form notification job for:', adminEmail);
+      
+      // Import queue service dynamically
+      const { default: queueService, JobType } = await import('@/lib/queue');
+      
+      // Queue contact form notification job
+      const jobId = await queueService.enqueue({
+        type: JobType.CONTACT_FORM_NOTIFICATION,
+        name,
         email,
-        { name, email, subject, message },
-        branding
-      );
+        subject,
+        message,
+        adminEmail
+      } as any);
 
-      if (!sent) {
-        console.error('Failed to send email');
-        return NextResponse.json({ error: 'Failed to send message.' }, { status: 500 });
-      }
-
-      console.log('Email sent successfully');
+      console.log('✅ Contact form notification job queued:', jobId);
+      
       return NextResponse.json({ 
         success: true,
-        message: 'Contact form submitted and email sent successfully'
+        message: 'Contact form submitted successfully. We will get back to you soon!',
+        jobId
       });
-    } catch (emailError) {
-      console.error('Email sending error:', emailError);
-      // Return success even if email fails, but log the error
+    } catch (queueError) {
+      console.error('Queue error:', queueError);
+      // Return success even if queueing fails, but log the error
       return NextResponse.json({ 
         success: true,
-        message: 'Contact form received, but email delivery failed',
+        message: 'Contact form received, but notification queueing failed',
         warning: 'Please contact us directly if urgent'
       });
     }

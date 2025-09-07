@@ -1,5 +1,5 @@
 import { auth } from '@/lib/auth';
-import rabbitMQService from '@/lib/rabbitmq';
+import queueService from '@/lib/queue';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -9,28 +9,30 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const queueStats = await queueService.getQueueStats();
+    
     const systemStatus = {
       timestamp: new Date().toISOString(),
       environment: {
         nodeEnv: process.env.NODE_ENV,
-        rabbitmqUrl: process.env.RABBITMQ_URL ? 'Set' : 'Not Set',
-        smtpHost: process.env.SMTP_HOST || 'Not Set',
-        smtpUser: process.env.SMTP_USER ? 'Set' : 'Not Set',
-        smtpPass: process.env.SMTP_PASS ? 'Set' : 'Not Set',
-        fromEmail: process.env.FROM_EMAIL || 'Not Set',
+        upstashRedisUrl: process.env.UPSTASH_REDIS_REST_URL ? 'Set' : 'Not Set',
+        upstashRedisToken: process.env.UPSTASH_REDIS_REST_TOKEN ? 'Set' : 'Not Set',
+        resendApiKey: process.env.RESEND_API_KEY ? 'Set' : 'Not Set',
+        fromEmail: process.env.FROM_EMAIL || 'Default (onboarding@resend.dev)',
         adminEmail: process.env.ADMIN_EMAIL || 'Not Set',
         smsApiKey: process.env.SMS_API_KEY ? 'Set' : 'Not Set',
         smsApiBaseUrl: process.env.SMS_API_BASE_URL || 'Not Set',
         smsSenderId: process.env.SMS_SENDER_ID || 'Not Set'
       },
       services: {
-        rabbitmq: {
-          isReady: rabbitMQService.isReady(),
-          status: rabbitMQService.isReady() ? 'Connected' : 'Disconnected'
+        queue: {
+          pending: queueStats.pending,
+          failed: queueStats.failed,
+          status: 'Connected'
         },
         email: {
-          configured: !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS),
-          status: (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) ? 'Configured' : 'Not Configured'
+          configured: !!(process.env.RESEND_API_KEY),
+          status: process.env.RESEND_API_KEY ? 'Configured (Resend)' : 'Not Configured'
         },
         sms: {
           configured: !!(process.env.SMS_API_KEY && process.env.SMS_API_BASE_URL),
@@ -41,12 +43,12 @@ export async function GET(request: NextRequest) {
     };
 
     // Add recommendations based on missing configurations
-    if (!systemStatus.services.rabbitmq.isReady) {
-      systemStatus.recommendations.push('RabbitMQ is not connected. Check RABBITMQ_URL and ensure RabbitMQ server is running.');
+    if (queueStats.failed > 0) {
+      systemStatus.recommendations.push(`${queueStats.failed} jobs have failed. Check queue processing logs.`);
     }
 
     if (!systemStatus.services.email.configured) {
-      systemStatus.recommendations.push('Email service is not configured. Set SMTP_HOST, SMTP_USER, and SMTP_PASS environment variables.');
+      systemStatus.recommendations.push('Email service is not configured. Set RESEND_API_KEY environment variable.');
     }
 
     if (!systemStatus.services.sms.configured) {
@@ -55,6 +57,10 @@ export async function GET(request: NextRequest) {
 
     if (!systemStatus.environment.adminEmail || systemStatus.environment.adminEmail === 'Not Set') {
       systemStatus.recommendations.push('ADMIN_EMAIL is not set. Admin notifications will not be sent.');
+    }
+
+    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+      systemStatus.recommendations.push('Upstash Redis is not configured. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.');
     }
 
     return NextResponse.json(systemStatus);

@@ -1,5 +1,4 @@
 import { auth } from '@/lib/auth';
-import consumerService from '@/lib/consumerService';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -9,38 +8,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const status = consumerService.getStatus();
-    
-    if (status.isRunning) {
-      return NextResponse.json({ 
-        message: 'Consumers are already running',
-        status: 'already_running',
-        ...status
-      });
-    }
+    // Process queue manually
+    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/processQueue`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-    // console.log('Starting RabbitMQ consumers...');
-    
-    const success = await consumerService.startAll();
+    const result = await response.json();
 
-    if (success) {
-      const newStatus = consumerService.getStatus();
+    if (response.ok) {
       return NextResponse.json({ 
-        message: 'RabbitMQ consumers started successfully',
-        status: 'started',
-        ...newStatus
+        message: 'Queue processed successfully',
+        status: 'processed',
+        ...result
       });
     } else {
       return NextResponse.json({ 
-        error: 'Failed to start some or all consumers',
-        status: 'partial_failure'
+        error: 'Failed to process queue',
+        status: 'failed',
+        details: result
       }, { status: 500 });
     }
 
   } catch (error) {
-    console.error('Error starting consumers:', error);
+    console.error('Error processing queue:', error);
     return NextResponse.json({ 
-      error: 'Failed to start consumers',
+      error: 'Failed to process queue',
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
@@ -53,13 +48,28 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const status = consumerService.getStatus();
-    return NextResponse.json(status);
+    const { default: queueService } = await import('@/lib/queue');
+    const stats = await queueService.getQueueStats();
+    
+    return NextResponse.json({
+      message: 'Queue system status',
+      type: 'Upstash Redis + Resend',
+      status: 'active',
+      processing: 'Automatic via Vercel Cron (every minute)',
+      stats,
+      endpoints: {
+        process: '/api/processQueue',
+        stats: '/api/processQueue?action=stats',
+        health: '/api/processQueue?action=health'
+      },
+      timestamp: new Date().toISOString()
+    });
 
   } catch (error) {
-    console.error('Error checking consumer status:', error);
+    console.error('Error checking queue status:', error);
     return NextResponse.json({ 
-      error: 'Failed to check consumer status'
+      error: 'Failed to check queue status',
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
 }

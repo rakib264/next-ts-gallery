@@ -1,10 +1,19 @@
 {
   "functions": {
-    "app/api/**/*.ts": {
+    "app/api/processQueue/route.ts": {
       "maxDuration": 30
     }
   },
-  "env": {
-    "AUTO_START_CONSUMERS": "false"
-  }
+  "crons": [
+    {
+      "path": "/api/processQueue",
+      "schedule": "* * * * *"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    }
+  ]
 }

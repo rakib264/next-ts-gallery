@@ -1,8 +1,8 @@
-import emailService from '@/lib/email';
 import AuthSettings from '@/lib/models/AuthSettings';
 import OTP from '@/lib/models/OTP';
 import User from '@/lib/models/User';
 import connectDB from '@/lib/mongodb';
+import resendService from '@/lib/resend';
 import { SMSService } from '@/lib/sms/smsService';
 import { generateOTP } from '@/lib/twilio';
 import { NextRequest, NextResponse } from 'next/server';
@@ -96,7 +96,8 @@ export async function POST(request: NextRequest) {
     if (email) {
       try {
         const userName = email.split('@')[0]; // Simple username extraction
-        emailResult = await emailService.sendOTPEmail(email, otpCode, userName, type);
+        await resendService.sendOTPEmail(email, { otp: otpCode, userName, type });
+        emailResult = true;
         if (!emailResult) {
           console.error('Email OTP failed');
         }

@@ -1,5 +1,5 @@
 import { auth } from '@/lib/auth';
-import emailService from '@/lib/email';
+import resendService from '@/lib/resend';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -18,29 +18,36 @@ export async function POST(request: NextRequest) {
     let result = false;
 
     if (type === 'admin') {
-      result = await emailService.sendAdminNotification(
+      await resendService.sendAdminNotification(
         email,
         'Test Email from NextEcom Admin',
-        `
-          <h3>🧪 Test Email</h3>
-          <p>This is a test email sent from the NextEcom admin panel.</p>
-          <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
-          <p>If you received this email, your email configuration is working correctly!</p>
-        `
-      );
-    } else if (type === 'invoice') {
-      result = await emailService.sendInvoiceEmail(
-        email,
-        'Test Customer',
         {
+          title: '🧪 Test Email',
+          content: `
+            <p>This is a test email sent from the NextEcom admin panel.</p>
+            <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
+            <p>If you received this email, your email configuration is working correctly!</p>
+          `
+        }
+      );
+      result = true;
+    } else if (type === 'invoice') {
+      await resendService.sendInvoiceEmail(
+        email,
+        {
+          customerName: 'Test Customer',
           orderNumber: 'TEST-ORDER-123',
           orderDate: new Date().toLocaleDateString(),
-          total: '৳1,000',
-          paymentMethod: 'COD',
-          deliveryType: 'regular'
-        },
-        '' // invoicePath - empty for test
+          total: new Intl.NumberFormat('en-BD', {
+            style: 'currency',
+            currency: 'BDT',
+            minimumFractionDigits: 0
+          }).format(1000),
+          paymentMethod: 'Cash on Delivery',
+          deliveryType: 'Home Delivery'
+        }
       );
+      result = true;
     }
 
     if (result) {

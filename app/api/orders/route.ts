@@ -156,60 +156,68 @@ export async function POST(request: NextRequest) {
     // Get customer email from session or shipping address
     const customerEmail = session?.user?.email || data.shippingAddress?.email;
     
-    // Publish events asynchronously (don't block order creation)
+    // Queue jobs asynchronously (don't block order creation)
     try {
-      // Always publish events to RabbitMQ if URL is configured (Railway consumers will handle them)
-      if (process.env.RABBITMQ_URL) {
-        console.log('Publishing events to RabbitMQ for order:', order.orderNumber);
-        
-        // Import RabbitMQ service dynamically to avoid initialization issues
-        const { default: rabbitMQService, EventType } = await import('@/lib/rabbitmq');
-        
-        // Publish new order creation event (Railway consumers will handle admin notifications)
-        const orderEventResult = await rabbitMQService.publishEvent({
-          type: EventType.NEW_ORDER_CREATION,
-          id: `order-${order._id}-${Date.now()}`,
-          timestamp: new Date(),
-          orderId: order._id.toString(),
-          orderNumber: order.orderNumber,
-          customerEmail: customerEmail,
-          customerId: session?.user?.id,
-          total: order.total
-        });
+      console.log('Queueing jobs for order:', order.orderNumber);
+      
+      // Import queue service dynamically to avoid initialization issues
+      const { default: queueService, JobType } = await import('@/lib/queue');
+      
+      // Queue admin notification job
+      const adminNotificationJobId = await queueService.enqueue({
+        type: JobType.NEW_ORDER_NOTIFICATION,
+        orderId: order._id.toString(),
+        orderNumber: order.orderNumber,
+        customerEmail: customerEmail,
+        customerId: session?.user?.id,
+        total: order.total
+      } as any);
 
-        if (orderEventResult) {
-          console.log('✅ New order creation event published successfully for order:', order.orderNumber);
-        } else {
-          console.error('❌ Failed to publish new order creation event for order:', order.orderNumber);
-        }
+      console.log('✅ Admin notification job queued:', adminNotificationJobId);
 
-        // Publish invoice generation event (Railway consumers will handle invoice creation and customer emails)
-        const invoiceEventResult = await rabbitMQService.publishEvent({
-          type: EventType.INVOICE_GENERATION,
-          id: `invoice-${order._id}-${Date.now()}`,
-          timestamp: new Date(),
-          orderId: order._id.toString(),
-          orderNumber: order.orderNumber,
-          customerEmail: customerEmail,
-          customerId: session?.user?.id,
-          orderData: populatedOrder.toObject()
-        });
+      // Queue invoice generation job
+      const invoiceJobId = await queueService.enqueue({
+        type: JobType.GENERATE_INVOICE,
+        orderId: order._id.toString(),
+        orderData: populatedOrder.toObject()
+      } as any);
 
-        if (invoiceEventResult) {
-          console.log('✅ Invoice generation event published successfully for order:', order.orderNumber);
-        } else {
-          console.error('❌ Failed to publish invoice generation event for order:', order.orderNumber);
-        }
+      console.log('✅ Invoice generation job queued:', invoiceJobId);
 
-        console.log('📨 All events published to RabbitMQ for order:', order.orderNumber);
-      } else {
-        console.warn('⚠️ RABBITMQ_URL not configured - events not published for order:', order.orderNumber);
-        console.warn('⚠️ Admin notifications and customer invoices will not be sent automatically');
+      // Queue order confirmation email for customer (if email exists)
+      if (customerEmail) {
+        const orderConfirmationJobId = await queueService.enqueue({
+          type: JobType.SEND_EMAIL,
+          emailType: 'order_confirmation',
+          to: customerEmail,
+          subject: `Order Confirmation - ${order.orderNumber}`,
+          data: {
+            customerName: populatedOrder.shippingAddress.name,
+            orderNumber: order.orderNumber,
+            orderDate: new Date(order.createdAt).toLocaleDateString(),
+            total: new Intl.NumberFormat('en-BD', {
+              style: 'currency',
+              currency: 'BDT',
+              minimumFractionDigits: 0
+            }).format(order.total),
+            paymentMethod: order.paymentMethod,
+            deliveryType: order.deliveryType,
+            items: populatedOrder.items.map((item: any) => ({
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price
+            }))
+          }
+        } as any);
+
+        console.log('✅ Order confirmation email job queued:', orderConfirmationJobId);
       }
+
+      console.log('📨 All jobs queued successfully for order:', order.orderNumber);
     } catch (error) {
-      console.error('💥 Failed to publish events for order:', order.orderNumber, error);
-      console.error('💥 Admin notifications and customer invoices may not be sent');
-      // Don't fail the order creation if event publishing fails
+      console.error('💥 Failed to queue jobs for order:', order.orderNumber, error);
+      console.error('💥 Admin notifications and customer emails may not be sent');
+      // Don't fail the order creation if job queueing fails
     }
     
     const response = NextResponse.json({ 

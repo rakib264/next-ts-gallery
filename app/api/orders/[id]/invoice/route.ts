@@ -100,37 +100,33 @@ export async function POST(
     }
 
     // Trigger invoice generation if not exists
-    if (!order.invoicePath && process.env.RABBITMQ_URL) {
+    if (!order.invoicePath) {
       try {
-        // Import RabbitMQ service dynamically
-        const { default: rabbitMQService, EventType } = await import('@/lib/rabbitmq');
+        // Import queue service dynamically
+        const { default: queueService, JobType } = await import('@/lib/queue');
         
-        // Publish invoice generation event
-        await rabbitMQService.publishEvent({
-          type: EventType.INVOICE_GENERATION,
-          id: `invoice-${order._id}-${Date.now()}`,
-          timestamp: new Date(),
+        // Queue invoice generation job
+        const jobId = await queueService.enqueue({
+          type: JobType.GENERATE_INVOICE,
           orderId: order._id.toString(),
-          orderNumber: order.orderNumber,
-          customerEmail: order.customer?.email || order.shippingAddress?.email,
-          customerId: order.customer?._id.toString(),
           orderData: order
-        });
+        } as any);
 
         return NextResponse.json({
-          message: 'Invoice generation triggered',
-          orderNumber: order.orderNumber
+          message: 'Invoice generation queued',
+          orderNumber: order.orderNumber,
+          jobId
         });
       } catch (error) {
-        console.error('Failed to trigger invoice generation:', error);
+        console.error('Failed to queue invoice generation:', error);
         return NextResponse.json({ 
-          error: 'Failed to trigger invoice generation' 
+          error: 'Failed to queue invoice generation' 
         }, { status: 500 });
       }
     }
 
     return NextResponse.json({
-      message: 'Invoice already exists or RabbitMQ not configured',
+      message: 'Invoice already exists',
       invoicePath: order.invoicePath
     });
 

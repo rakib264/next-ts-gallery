@@ -1,8 +1,8 @@
 import { auth } from '@/lib/auth';
-import emailService from '@/lib/email';
 import Order from '@/lib/models/Order';
 import connectDB from '@/lib/mongodb';
-import rabbitMQService, { EventType } from '@/lib/rabbitmq';
+import queueService, { JobType } from '@/lib/queue';
+import resendService from '@/lib/resend';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
@@ -35,70 +35,87 @@ export async function POST(
 
     // Try direct email sending first
     try {
+      const customerName = order.customer?.firstName ? 
+        `${order.customer.firstName} ${order.customer.lastName}` : 
+        order.shippingAddress?.name || 'Customer';
       
-      const emailResult = await emailService.sendOrderConfirmation(
-        customerEmail,
-        order.customer?.firstName ? `${order.customer.firstName} ${order.customer.lastName}` : order.shippingAddress?.name || 'Customer',
-        {
-          orderNumber: order.orderNumber,
-          orderDate: new Date(order.createdAt).toLocaleDateString(),
-          total: new Intl.NumberFormat('en-BD', {
-            style: 'currency',
-            currency: 'BDT',
-            minimumFractionDigits: 0
-          }).format(order.total),
-          paymentMethod: order.paymentMethod,
-          deliveryType: order.deliveryType,
-          items: order.items.map((item: any) => ({
-            name: item.name,
-            quantity: item.quantity,
-            price: item.price
-          }))
+      await resendService.sendOrderConfirmation(customerEmail, {
+        customerName,
+        orderNumber: order.orderNumber,
+        orderDate: new Date(order.createdAt).toLocaleDateString(),
+        items: order.items.map((item: any) => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          total: item.price * item.quantity
+        })),
+        subtotal: order.subtotal || order.total,
+        shippingCost: order.shippingCost || 0,
+        total: order.total,
+        paymentMethod: order.paymentMethod,
+        deliveryType: order.deliveryType,
+        shippingAddress: {
+          name: order.shippingAddress?.name || customerName,
+          phone: order.shippingAddress?.phone || '',
+          address: `${order.shippingAddress?.address || ''}, ${order.shippingAddress?.city || ''} ${order.shippingAddress?.postalCode || ''}`.trim()
         }
-      );
+      });
 
-      if (emailResult) {
-        return NextResponse.json({ 
-          message: 'Confirmation email sent successfully (direct)',
-          email: customerEmail,
-          method: 'direct'
-        });
-      }
+      return NextResponse.json({ 
+        message: 'Confirmation email sent successfully',
+        email: customerEmail,
+        method: 'direct'
+      });
     } catch (directEmailError) {
       console.error('Direct confirmation email failed:', directEmailError);
     }
 
-    // Fallback to RabbitMQ event
+    // Fallback to queue
     try {
-      // console.log('Falling back to RabbitMQ event for confirmation');
-      
-      const eventPublished = await rabbitMQService.publishEvent({
-        type: EventType.NEW_ORDER_CREATION,
-        id: `confirmation-resend-${order._id}-${Date.now()}`,
-        timestamp: new Date(),
-        orderId: order._id.toString(),
-        orderNumber: order.orderNumber,
-        customerEmail: customerEmail,
-        customerId: order.customer?._id?.toString(),
-        total: order.total
-      });
-
-      // console.log('Confirmation RabbitMQ event published:', eventPublished);
+      const jobId = await queueService.enqueue({
+        type: JobType.SEND_EMAIL,
+        emailType: 'order_confirmation',
+        to: customerEmail,
+        subject: `Order Confirmation - ${order.orderNumber}`,
+        data: {
+          customerName: order.customer?.firstName ? 
+            `${order.customer.firstName} ${order.customer.lastName}` : 
+            order.shippingAddress?.name || 'Customer',
+          orderNumber: order.orderNumber,
+          orderDate: new Date(order.createdAt).toLocaleDateString(),
+          items: order.items.map((item: any) => ({
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            total: item.price * item.quantity
+          })),
+          subtotal: order.subtotal || order.total,
+          shippingCost: order.shippingCost || 0,
+          total: order.total,
+          paymentMethod: order.paymentMethod,
+          deliveryType: order.deliveryType,
+          shippingAddress: {
+            name: order.shippingAddress?.name || 'Customer',
+            phone: order.shippingAddress?.phone || '',
+            address: `${order.shippingAddress?.address || ''}, ${order.shippingAddress?.city || ''} ${order.shippingAddress?.postalCode || ''}`.trim()
+          }
+        }
+      } as any);
 
       return NextResponse.json({ 
-        message: eventPublished ? 'Confirmation event queued successfully' : 'Confirmation queued but may be delayed',
+        message: 'Confirmation email queued successfully',
         email: customerEmail,
-        method: 'rabbitmq',
-        eventPublished
+        method: 'queue',
+        jobId
       });
-    } catch (rabbitmqError) {
-      console.error('RabbitMQ confirmation publishing failed:', rabbitmqError);
+    } catch (queueError) {
+      console.error('Queue confirmation failed:', queueError);
       
       return NextResponse.json({ 
         error: 'Failed to send confirmation - both direct and queue methods failed',
         details: {
           directEmailError: 'Direct email failed',
-          rabbitmqError: rabbitmqError instanceof Error ? rabbitmqError.message : 'Queue failed'
+          queueError: queueError instanceof Error ? queueError.message : 'Queue failed'
         }
       }, { status: 500 });
     }
