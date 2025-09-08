@@ -197,3 +197,5 @@ If you're still having issues:
 5. **Check Emails:** Verify admin and customer emails are sent
 
 Your RabbitMQ message queue should now work end-to-end! 🎉
+
+

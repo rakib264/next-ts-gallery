@@ -121,3 +121,4 @@ If issues persist:
 2. Verify all environment variables are correctly set
 3. Test Resend API key independently
 4. Monitor queue processing statistics
+

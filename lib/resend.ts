@@ -241,11 +241,23 @@ class ResendService {
         </html>
       `;
 
+      console.log('📧 Sending email via Resend:', {
+        from: `${FROM_NAME} <${FROM_EMAIL}>`,
+        to: [to],
+        subject: `Order Confirmation - ${data.orderNumber} - ${emailSettings.siteName}`
+      });
+
       const result = await this.resend.emails.send({
         from: `${FROM_NAME} <${FROM_EMAIL}>`,
         to: [to],
         subject: `Order Confirmation - ${data.orderNumber} - ${emailSettings.siteName}`,
         html
+      });
+
+      console.log('📧 Resend response:', {
+        success: !!result.data?.id,
+        emailId: result.data?.id,
+        error: result.error
       });
 
       logger.info(`Order confirmation email sent successfully`, {
@@ -256,6 +268,7 @@ class ResendService {
 
       return true;
     } catch (error) {
+      console.error('❌ Resend error:', error);
       logger.error(`Error sending order confirmation email to ${to}:`, error);
       return false;
     }
@@ -594,12 +607,25 @@ class ResendService {
         </html>
       `;
 
+      console.log('📧 Sending email via Resend:', {
+        from: `${FROM_NAME} <${FROM_EMAIL}>`,
+        to: [to],
+        subject: `[${emailSettings.siteName}] ${data.subject}`,
+        replyTo: `${data.name} <${data.email}>`
+      });
+
       const result = await this.resend.emails.send({
         from: `${FROM_NAME} <${FROM_EMAIL}>`,
         to: [to],
         subject: `[${emailSettings.siteName}] ${data.subject}`,
         html,
         replyTo: `${data.name} <${data.email}>`
+      });
+
+      console.log('📧 Resend response:', {
+        success: !!result.data?.id,
+        emailId: result.data?.id,
+        error: result.error
       });
 
       logger.info(`Contact form notification sent successfully`, {
@@ -610,6 +636,7 @@ class ResendService {
 
       return true;
     } catch (error) {
+      console.error('❌ Resend error:', error);
       logger.error(`Error sending contact form notification to ${to}:`, error);
       return false;
     }
