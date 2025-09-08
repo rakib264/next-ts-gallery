@@ -214,6 +214,22 @@ export async function POST(request: NextRequest) {
       }
 
       console.log('📨 All jobs queued successfully for order:', order.orderNumber);
+      
+      // Process jobs immediately to ensure emails are sent
+      try {
+        console.log('🔄 Processing order jobs immediately...');
+        const result = await queueService.processJobs(5); // Process up to 5 jobs
+        console.log('📧 Order jobs processing result:', result);
+        
+        if (result.processed > 0) {
+          console.log('✅ Order emails sent successfully');
+        } else if (result.failed > 0) {
+          console.log('❌ Some order emails failed to send');
+        }
+      } catch (processError) {
+        console.error('❌ Error processing order jobs immediately:', processError);
+        // Don't fail the order creation, just log the error
+      }
     } catch (error) {
       console.error('💥 Failed to queue jobs for order:', order.orderNumber, error);
       console.error('💥 Admin notifications and customer emails may not be sent');
