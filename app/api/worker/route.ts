@@ -91,7 +91,17 @@ export async function POST(request: NextRequest) {
 
         let job;
         try {
-          job = JSON.parse(jobData);
+          // Handle double-stringified JSON
+          let parsedData = jobData;
+          if (typeof jobData === 'string') {
+            parsedData = JSON.parse(jobData);
+          }
+          if (typeof parsedData === 'string') {
+            job = JSON.parse(parsedData);
+          } else {
+            job = parsedData;
+          }
+          
           console.log('✅ Job parsed successfully:', {
             id: job.id,
             type: job.type,
