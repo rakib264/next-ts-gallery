@@ -228,6 +228,45 @@ export async function POST(request: NextRequest) {
             
             failed++;
           }
+        } else if (job.type === 'generate_invoice') {
+          console.log('📄 Processing invoice generation job...');
+          
+          try {
+            // Import queue service to use the processGenerateInvoiceJob method
+            const { default: queueService } = await import('@/lib/queue');
+            
+            // Process the invoice generation job
+            await (queueService as any).processGenerateInvoiceJob(job);
+            
+            console.log('✅ Invoice generation job processed successfully:', {
+              jobId: job.id,
+              orderNumber: job.orderNumber
+            });
+            
+            processed++;
+            
+          } catch (invoiceError) {
+            console.error('❌ Invoice generation failed:', invoiceError);
+            
+            // Put job back in queue for retry (with retry limit)
+            if (job.retries < (job.maxRetries || 3)) {
+              job.retries = (job.retries || 0) + 1;
+              await redis.lpush(queueName, JSON.stringify(job));
+              console.log('🔄 Invoice job requeued for retry:', {
+                jobId: job.id,
+                retries: job.retries,
+                maxRetries: job.maxRetries || 3
+              });
+            } else {
+              console.error('💀 Invoice job failed permanently:', {
+                jobId: job.id,
+                retries: job.retries,
+                maxRetries: job.maxRetries || 3
+              });
+            }
+            
+            failed++;
+          }
         } else {
           console.log('⚠️ Unknown job type:', job.type);
           failed++;

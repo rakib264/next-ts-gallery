@@ -231,6 +231,46 @@ export async function POST(request: NextRequest) {
           envCheck
         }, { status: 500 });
       }
+    } else if (job.type === 'generate_invoice') {
+      console.log('📄 Processing invoice generation job...');
+      
+      try {
+        // Import queue service to use the processGenerateInvoiceJob method
+        const { default: queueService } = await import('@/lib/queue');
+        
+        // Process the invoice generation job
+        await (queueService as any).processGenerateInvoiceJob(job);
+        
+        console.log('✅ Invoice generation job processed successfully');
+        
+        return NextResponse.json({
+          success: true,
+          message: 'Invoice generation job processed successfully',
+          jobId: job.id,
+          jobType: job.type,
+          orderNumber: job.orderNumber,
+          queueLength: queueLength - 1,
+          processed: 1,
+          envCheck
+        });
+        
+      } catch (invoiceError) {
+        console.error('❌ Invoice generation failed:', invoiceError);
+        
+        // Put job back in queue for retry
+        await redis.lpush(queueName, jobData);
+        
+        return NextResponse.json({
+          success: false,
+          error: 'Invoice generation failed',
+          jobId: job.id,
+          jobType: job.type,
+          invoiceError: invoiceError instanceof Error ? invoiceError.message : 'Unknown error',
+          queueLength,
+          processed: 0,
+          envCheck
+        }, { status: 500 });
+      }
     } else {
       console.log('⚠️ Unknown job type:', job.type);
       return NextResponse.json({
