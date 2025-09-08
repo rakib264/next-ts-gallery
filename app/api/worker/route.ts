@@ -161,6 +161,72 @@ export async function POST(request: NextRequest) {
             
             failed++;
           }
+        } else if (job.type === 'contact_form_notification') {
+          console.log('📧 Processing contact form notification:', {
+            to: job.adminEmail,
+            from: job.email,
+            subject: job.subject
+          });
+
+          try {
+            const emailResult = await resend.emails.send({
+              from: process.env.FROM_EMAIL ? 
+                `${process.env.FROM_NAME || 'TSR Gallery'} <${process.env.FROM_EMAIL}>` : 
+                'TSR Gallery <onboarding@resend.dev>',
+              to: [job.adminEmail],
+              subject: `[TSR Gallery] ${job.subject}`,
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                  <h2 style="color: #3949AB;">New Contact Form Submission</h2>
+                  <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <p><strong>Name:</strong> ${job.name}</p>
+                    <p><strong>Email:</strong> ${job.email}</p>
+                    <p><strong>Subject:</strong> ${job.subject}</p>
+                    <p><strong>Message:</strong></p>
+                    <div style="background: white; padding: 15px; border-radius: 5px; border-left: 4px solid #3949AB;">
+                      ${job.message.replace(/\n/g, '<br>')}
+                    </div>
+                  </div>
+                  <p style="color: #666; font-size: 14px;">
+                    This message was sent via the TSR Gallery contact form.
+                  </p>
+                </div>
+              `,
+              replyTo: `${job.name} <${job.email}>`
+            });
+
+            console.log('📧 Contact form notification sent successfully:', {
+              jobId: job.id,
+              emailId: emailResult.data?.id,
+              to: job.adminEmail,
+              from: job.email,
+              subject: job.subject
+            });
+
+            processed++;
+
+          } catch (emailError) {
+            console.error('❌ Contact form email sending failed:', emailError);
+            
+            // Put job back in queue for retry (with retry limit)
+            if (job.retries < (job.maxRetries || 3)) {
+              job.retries = (job.retries || 0) + 1;
+              await redis.lpush(queueName, JSON.stringify(job));
+              console.log('🔄 Job requeued for retry:', {
+                jobId: job.id,
+                retries: job.retries,
+                maxRetries: job.maxRetries || 3
+              });
+            } else {
+              console.error('💀 Job failed permanently:', {
+                jobId: job.id,
+                retries: job.retries,
+                maxRetries: job.maxRetries || 3
+              });
+            }
+            
+            failed++;
+          }
         } else {
           console.log('⚠️ Unknown job type:', job.type);
           failed++;

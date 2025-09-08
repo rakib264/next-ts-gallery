@@ -158,6 +158,78 @@ export async function POST(request: NextRequest) {
           envCheck
         }, { status: 500 });
       }
+    } else if (job.type === 'contact_form_notification') {
+      console.log('📧 Processing contact form notification:', {
+        to: job.adminEmail,
+        from: job.email,
+        subject: job.subject
+      });
+
+      try {
+        const emailResult = await resend.emails.send({
+          from: process.env.FROM_EMAIL ? 
+            `${process.env.FROM_NAME || 'TSR Gallery'} <${process.env.FROM_EMAIL}>` : 
+            'TSR Gallery <onboarding@resend.dev>',
+          to: [job.adminEmail],
+          subject: `[TSR Gallery] ${job.subject}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #3949AB;">New Contact Form Submission</h2>
+              <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Name:</strong> ${job.name}</p>
+                <p><strong>Email:</strong> ${job.email}</p>
+                <p><strong>Subject:</strong> ${job.subject}</p>
+                <p><strong>Message:</strong></p>
+                <div style="background: white; padding: 15px; border-radius: 5px; border-left: 4px solid #3949AB;">
+                  ${job.message.replace(/\n/g, '<br>')}
+                </div>
+              </div>
+              <p style="color: #666; font-size: 14px;">
+                This message was sent via the TSR Gallery contact form.
+              </p>
+            </div>
+          `,
+          replyTo: `${job.name} <${job.email}>`
+        });
+
+        console.log('📧 Contact form notification sent successfully:', {
+          jobId: job.id,
+          emailId: emailResult.data?.id,
+          to: job.adminEmail,
+          from: job.email,
+          subject: job.subject
+        });
+
+        return NextResponse.json({
+          success: true,
+          message: 'Contact form notification processed successfully',
+          jobId: job.id,
+          jobType: job.type,
+          emailResult: {
+            id: emailResult.data?.id,
+            error: emailResult.error
+          },
+          queueLength: queueLength - 1,
+          processed: 1,
+          envCheck
+        });
+
+      } catch (emailError) {
+        console.error('❌ Contact form email sending failed:', emailError);
+        
+        // Put job back in queue for retry
+        await redis.lpush(queueName, jobData);
+        
+        return NextResponse.json({
+          success: false,
+          error: 'Contact form email sending failed',
+          jobId: job.id,
+          emailError: emailError instanceof Error ? emailError.message : 'Unknown error',
+          queueLength,
+          processed: 0,
+          envCheck
+        }, { status: 500 });
+      }
     } else {
       console.log('⚠️ Unknown job type:', job.type);
       return NextResponse.json({
