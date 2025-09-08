@@ -337,7 +337,7 @@ class QueueService {
       
       // Generate invoice PDF in memory
       logger.info(`Generating PDF for order: ${job.orderNumber}`);
-      const invoiceBuffer = await pdfService.generateInvoice(job.orderData);
+      const invoiceBuffer: Buffer = await pdfService.generateInvoice(job.orderData);
       
       // Upload PDF to Cloudinary
       logger.info(`Uploading invoice to Cloudinary for order: ${job.orderNumber}`);

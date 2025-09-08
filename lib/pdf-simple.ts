@@ -38,7 +38,7 @@ export interface InvoiceData {
 }
 
 class SimplePDFService {
-  generateInvoice(data: InvoiceData): Promise<string> {
+  generateInvoice(data: InvoiceData): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       try {
         logger.info(`Generating invoice PDF for order: ${data.orderNumber}`);
