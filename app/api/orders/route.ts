@@ -175,6 +175,22 @@ export async function POST(request: NextRequest) {
 
       console.log('✅ Invoice generation job queued:', invoiceJobId);
       console.log('📨 Invoice generation will be processed asynchronously for order:', order.orderNumber);
+      
+      // Process the job immediately to ensure invoice and emails are generated
+      try {
+        console.log('🔄 Processing invoice generation job immediately...');
+        const result = await queueService.processJobs(1);
+        console.log('📧 Invoice generation processing result:', result);
+        
+        if (result.processed > 0) {
+          console.log('✅ Invoice generated and emails sent successfully');
+        } else if (result.failed > 0) {
+          console.log('❌ Invoice generation failed');
+        }
+      } catch (processError) {
+        console.error('❌ Error processing invoice generation job immediately:', processError);
+        // Don't fail the order creation, just log the error
+      }
     } catch (error) {
       console.error('💥 Failed to queue invoice generation job for order:', order.orderNumber, error);
       console.error('💥 Invoice and emails will not be generated automatically');
