@@ -19,6 +19,8 @@ export default function Home() {
   const [isClient, setIsClient] = useState(false);
   const [mounted, setMounted] = useState(false);
 
+  // Email system deployment trigger - v1.0.1
+
   useEffect(() => {
     setMounted(true);
     setIsClient(true);
