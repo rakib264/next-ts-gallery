@@ -335,15 +335,9 @@ class QueueService {
         api_secret: process.env.CLOUDINARY_API_SECRET,
       });
       
-      // Generate invoice PDF
+      // Generate invoice PDF in memory
       logger.info(`Generating PDF for order: ${job.orderNumber}`);
-      const invoicePath = await pdfService.generateInvoice(job.orderData);
-      
-      // Read the generated PDF file
-      const fs = await import('fs/promises');
-      const path = await import('path');
-      const invoiceFilePath = path.join(process.cwd(), 'public', invoicePath);
-      const invoiceBuffer = await fs.readFile(invoiceFilePath);
+      const invoiceBuffer = await pdfService.generateInvoice(job.orderData);
       
       // Upload PDF to Cloudinary
       logger.info(`Uploading invoice to Cloudinary for order: ${job.orderNumber}`);
@@ -454,14 +448,6 @@ class QueueService {
       );
       
       logger.info(`Admin notification sent successfully for order: ${job.orderNumber}`);
-      
-      // Clean up local PDF file
-      try {
-        await fs.unlink(invoiceFilePath);
-        logger.info(`Local invoice file cleaned up: ${invoiceFilePath}`);
-      } catch (cleanupError) {
-        logger.warn(`Failed to clean up local invoice file: ${cleanupError}`);
-      }
       
       logger.info(`Invoice generation completed successfully for order: ${job.orderNumber}`);
       

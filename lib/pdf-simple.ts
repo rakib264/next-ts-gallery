@@ -201,30 +201,14 @@ class SimplePDFService {
         doc.text('Thank you for your business!', 20, 290);
         doc.text('TSR Gallery - Premium Fashion E-commerce Platform', 20, 295);
         
-        // Generate filename
-        const filename = `invoice-${data.orderNumber}.pdf`;
-        const filepath = `invoices/${filename}`;
-        
-        // Save the PDF
+        // Generate PDF in memory (Vercel-compatible)
         const pdfOutput = doc.output('arraybuffer');
+        const pdfBuffer = Buffer.from(pdfOutput);
         
-        // Convert to base64 for storage
-        const base64 = Buffer.from(pdfOutput).toString('base64');
-        
-        // Save to public directory
-        const fs = require('fs');
-        const path = require('path');
-        
-        const publicDir = path.join(process.cwd(), 'public', 'invoices');
-        if (!fs.existsSync(publicDir)) {
-          fs.mkdirSync(publicDir, { recursive: true });
-        }
-        
-        const fullPath = path.join(publicDir, filename);
-        fs.writeFileSync(fullPath, pdfOutput);
-        
-        logger.info(`Invoice PDF generated successfully: ${filepath}`);
-        resolve(filepath);
+        // For Vercel, we'll return the buffer directly
+        // The queue service will handle Cloudinary upload
+        logger.info(`Invoice PDF generated successfully in memory for order: ${data.orderNumber}`);
+        resolve(pdfBuffer);
         
       } catch (error) {
         logger.error('Error generating invoice PDF:', error);
