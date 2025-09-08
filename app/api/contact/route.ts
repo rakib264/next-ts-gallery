@@ -52,6 +52,22 @@ export async function POST(request: NextRequest) {
 
       console.log('✅ Contact form notification job queued:', jobId);
       
+      // Process the job immediately to ensure email is sent
+      try {
+        console.log('🔄 Processing contact form job immediately...');
+        const result = await queueService.processJobs(1);
+        console.log('📧 Contact form job processing result:', result);
+        
+        if (result.processed > 0) {
+          console.log('✅ Contact form email sent successfully');
+        } else if (result.failed > 0) {
+          console.log('❌ Contact form email failed to send');
+        }
+      } catch (processError) {
+        console.error('❌ Error processing contact form job immediately:', processError);
+        // Don't fail the request, just log the error
+      }
+      
       return NextResponse.json({ 
         success: true,
         message: 'Contact form submitted successfully. We will get back to you soon!',
