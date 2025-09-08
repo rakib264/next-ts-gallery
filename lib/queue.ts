@@ -324,7 +324,7 @@ class QueueService {
     try {
       logger.info(`Processing invoice generation for order: ${job.orderNumber}`);
       
-      const pdfService = (await import('./pdf' as any)).default;
+      const pdfService = (await import('./pdf-simple' as any)).default;
       const resendService = (await import('./resend')).default;
       const { v2: cloudinary } = await import('cloudinary');
       

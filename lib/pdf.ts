@@ -45,7 +45,9 @@ class PDFService {
   async initialize(): Promise<void> {
     try {
       logger.info('Initializing Puppeteer browser...');
-      this.browser = await puppeteer.launch({
+      
+      // Vercel-compatible Puppeteer configuration
+      const launchOptions: any = {
         headless: true,
         args: [
           '--no-sandbox', 
@@ -54,9 +56,42 @@ class PDFService {
           '--disable-accelerated-2d-canvas',
           '--no-first-run',
           '--no-zygote',
-          '--disable-gpu'
+          '--disable-gpu',
+          '--disable-web-security',
+          '--disable-features=VizDisplayCompositor',
+          '--single-process'
         ]
-      });
+      };
+
+      // For Vercel, try different Chromium paths
+      if (process.env.VERCEL) {
+        const possiblePaths = [
+          '/usr/bin/chromium-browser',
+          '/usr/bin/chromium',
+          '/usr/bin/google-chrome',
+          '/usr/bin/google-chrome-stable'
+        ];
+        
+        for (const path of possiblePaths) {
+          try {
+            const fs = await import('fs');
+            if (fs.existsSync(path)) {
+              launchOptions.executablePath = path;
+              logger.info(`Using Chromium path: ${path}`);
+              break;
+            }
+          } catch (e) {
+            // Continue to next path
+          }
+        }
+        
+        // If no path found, try without executablePath
+        if (!launchOptions.executablePath) {
+          logger.info('No Chromium path found, using default');
+        }
+      }
+
+      this.browser = await puppeteer.launch(launchOptions);
       logger.info('Puppeteer browser initialized successfully');
     } catch (error) {
       logger.error('Failed to initialize Puppeteer browser:', error);
