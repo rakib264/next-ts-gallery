@@ -75,6 +75,8 @@ export interface IOrder extends Document {
     failedAt?: Date;
   };
   invoiceUrl?: string;
+  invoiceGenerated?: boolean;
+  invoiceGeneratedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -169,7 +171,9 @@ const OrderSchema = new Schema<IOrder>({
     cancelledAt: Date,
     failedAt: Date
   },
-  invoiceUrl: String
+  invoiceUrl: String,
+  invoiceGenerated: { type: Boolean, default: false },
+  invoiceGeneratedAt: Date
 }, {
   timestamps: true
 });

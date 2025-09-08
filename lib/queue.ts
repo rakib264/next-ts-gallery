@@ -46,6 +46,9 @@ export interface SendEmailJob extends BaseJob {
 export interface GenerateInvoiceJob extends BaseJob {
   type: JobType.GENERATE_INVOICE;
   orderId: string;
+  orderNumber: string;
+  customerEmail?: string;
+  customerId?: string;
   orderData: any;
 }
 
@@ -318,45 +321,153 @@ class QueueService {
   }
 
   private async processGenerateInvoiceJob(job: GenerateInvoiceJob): Promise<void> {
-    const pdfService = (await import('./pdf' as any)).default;
-    const resendService = (await import('./resend')).default;
-    
-    // Generate invoice PDF
-    const invoicePath = await pdfService.generateInvoice(job.orderData);
-    
-    // Update order with invoice URL
-    const Order = (await import('./models/Order')).default;
-    await Order.findByIdAndUpdate(job.orderId, { invoiceUrl: invoicePath });
-    
-    // Send invoice email if customer email exists
-    if (job.orderData.shippingAddress?.email) {
+    try {
+      logger.info(`Processing invoice generation for order: ${job.orderNumber}`);
+      
+      const pdfService = (await import('./pdf' as any)).default;
+      const resendService = (await import('./resend')).default;
+      const { v2: cloudinary } = await import('cloudinary');
+      
+      // Configure Cloudinary
+      cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET,
+      });
+      
+      // Generate invoice PDF
+      logger.info(`Generating PDF for order: ${job.orderNumber}`);
+      const invoicePath = await pdfService.generateInvoice(job.orderData);
+      
+      // Read the generated PDF file
       const fs = await import('fs/promises');
       const path = await import('path');
-      
-      // Read invoice file
       const invoiceFilePath = path.join(process.cwd(), 'public', invoicePath);
       const invoiceBuffer = await fs.readFile(invoiceFilePath);
       
-      await resendService.sendInvoiceEmail(
-        job.orderData.shippingAddress.email,
+      // Upload PDF to Cloudinary
+      logger.info(`Uploading invoice to Cloudinary for order: ${job.orderNumber}`);
+      const uploadResult = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          {
+            resource_type: 'raw',
+            public_id: `invoices/invoice-${job.orderNumber}`,
+            folder: 'tsr-gallery/invoices',
+            format: 'pdf'
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        ).end(invoiceBuffer);
+      }) as any;
+      
+      const cloudinaryUrl = uploadResult.secure_url;
+      logger.info(`Invoice uploaded to Cloudinary: ${cloudinaryUrl}`);
+      
+      // Update order with Cloudinary invoice URL
+      const Order = (await import('./models/Order')).default;
+      await Order.findByIdAndUpdate(job.orderId, { 
+        invoiceUrl: cloudinaryUrl,
+        invoiceGenerated: true,
+        invoiceGeneratedAt: new Date()
+      });
+      
+      logger.info(`Order updated with invoice URL: ${job.orderId}`);
+      
+      // Send customer order confirmation email with invoice attachment
+      if (job.customerEmail) {
+        logger.info(`Sending customer order confirmation email to: ${job.customerEmail}`);
+        
+        await resendService.sendOrderConfirmation(
+          job.customerEmail,
+          {
+            customerName: job.orderData.shippingAddress?.name || 'Customer',
+            orderNumber: job.orderNumber,
+            orderDate: new Date(job.orderData.createdAt).toLocaleDateString(),
+            total: new Intl.NumberFormat('en-BD', {
+              style: 'currency',
+              currency: 'BDT',
+              minimumFractionDigits: 0
+            }).format(job.orderData.total),
+            paymentMethod: job.orderData.paymentMethod,
+            deliveryType: job.orderData.deliveryType,
+            items: job.orderData.items?.map((item: any) => ({
+              name: item.product?.name || item.name,
+              quantity: item.quantity,
+              price: item.price,
+              total: item.quantity * item.price
+            })) || [],
+            shippingAddress: job.orderData.shippingAddress
+          }
+        );
+        
+        // Also send invoice email with PDF attachment
+        await resendService.sendInvoiceEmail(
+          job.customerEmail,
+          {
+            customerName: job.orderData.shippingAddress?.name || 'Customer',
+            orderNumber: job.orderNumber,
+            orderDate: new Date(job.orderData.createdAt).toLocaleDateString(),
+            total: new Intl.NumberFormat('en-BD', {
+              style: 'currency',
+              currency: 'BDT',
+              minimumFractionDigits: 0
+            }).format(job.orderData.total),
+            paymentMethod: job.orderData.paymentMethod,
+            deliveryType: job.orderData.deliveryType
+          },
+          {
+            filename: `invoice-${job.orderNumber}.pdf`,
+            content: invoiceBuffer,
+            contentType: 'application/pdf'
+          }
+        );
+        
+        logger.info(`Customer emails sent successfully for order: ${job.orderNumber}`);
+      }
+      
+      // Send admin notification email
+      const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'info.tsrgallery@gmail.com';
+      logger.info(`Sending admin notification email to: ${ADMIN_EMAIL}`);
+      
+      await resendService.sendAdminNotification(
+        ADMIN_EMAIL,
+        `New Order Received - #${job.orderNumber}`,
         {
-          customerName: job.orderData.shippingAddress.name,
-          orderNumber: job.orderData.orderNumber,
-          orderDate: new Date(job.orderData.createdAt).toLocaleDateString(),
-          total: new Intl.NumberFormat('en-BD', {
-            style: 'currency',
-            currency: 'BDT',
-            minimumFractionDigits: 0
-          }).format(job.orderData.total),
-          paymentMethod: job.orderData.paymentMethod,
-          deliveryType: job.orderData.deliveryType
-        },
-        {
-          filename: `invoice-${job.orderData.orderNumber}.pdf`,
-          content: invoiceBuffer,
-          contentType: 'application/pdf'
+          title: '🛒 New Order Received',
+          content: `
+            <div style="background: #f3f4f6; padding: 15px; border-radius: 5px; border-left: 4px solid #8b5cf6;">
+              <h4>Order Details:</h4>
+              <p><strong>Order Number:</strong> ${job.orderNumber}</p>
+              <p><strong>Order ID:</strong> ${job.orderId}</p>
+              <p><strong>Customer:</strong> ${job.customerEmail || 'Guest User'}</p>
+              <p><strong>Email:</strong> ${job.customerEmail || 'N/A'}</p>
+              <p><strong>Total Amount:</strong> ৳${job.orderData.total.toLocaleString()}</p>
+              <p><strong>Order Date:</strong> ${new Date().toLocaleDateString()}</p>
+              <p><strong>Invoice:</strong> <a href="${cloudinaryUrl}" target="_blank">View Invoice</a></p>
+            </div>
+            <p>A new order has been placed and requires processing.</p>
+            <p><strong>Invoice has been generated and uploaded to Cloudinary.</strong></p>
+          `
         }
       );
+      
+      logger.info(`Admin notification sent successfully for order: ${job.orderNumber}`);
+      
+      // Clean up local PDF file
+      try {
+        await fs.unlink(invoiceFilePath);
+        logger.info(`Local invoice file cleaned up: ${invoiceFilePath}`);
+      } catch (cleanupError) {
+        logger.warn(`Failed to clean up local invoice file: ${cleanupError}`);
+      }
+      
+      logger.info(`Invoice generation completed successfully for order: ${job.orderNumber}`);
+      
+    } catch (error) {
+      logger.error(`Error processing invoice generation for order ${job.orderNumber}:`, error);
+      throw error;
     }
   }
 

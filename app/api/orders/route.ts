@@ -156,83 +156,28 @@ export async function POST(request: NextRequest) {
     // Get customer email from session or shipping address
     const customerEmail = session?.user?.email || data.shippingAddress?.email;
     
-    // Queue jobs asynchronously (don't block order creation)
+    // Queue invoice generation job asynchronously (don't block order creation)
     try {
-      console.log('Queueing jobs for order:', order.orderNumber);
+      console.log('Queueing invoice generation job for order:', order.orderNumber);
       
       // Import queue service dynamically to avoid initialization issues
       const { default: queueService, JobType } = await import('@/lib/queue');
       
-      // Queue admin notification job
-      const adminNotificationJobId = await queueService.enqueue({
-        type: JobType.NEW_ORDER_NOTIFICATION,
+      // Queue invoice generation job (this will handle PDF creation, Cloudinary upload, DB update, and emails)
+      const invoiceJobId = await queueService.enqueue({
+        type: JobType.GENERATE_INVOICE,
         orderId: order._id.toString(),
         orderNumber: order.orderNumber,
         customerEmail: customerEmail,
         customerId: session?.user?.id,
-        total: order.total
-      } as any);
-
-      console.log('✅ Admin notification job queued:', adminNotificationJobId);
-
-      // Queue invoice generation job
-      const invoiceJobId = await queueService.enqueue({
-        type: JobType.GENERATE_INVOICE,
-        orderId: order._id.toString(),
         orderData: populatedOrder.toObject()
       } as any);
 
       console.log('✅ Invoice generation job queued:', invoiceJobId);
-
-      // Queue order confirmation email for customer (if email exists)
-      if (customerEmail) {
-        const orderConfirmationJobId = await queueService.enqueue({
-          type: JobType.SEND_EMAIL,
-          emailType: 'order_confirmation',
-          to: customerEmail,
-          subject: `Order Confirmation - ${order.orderNumber}`,
-          data: {
-            customerName: populatedOrder.shippingAddress.name,
-            orderNumber: order.orderNumber,
-            orderDate: new Date(order.createdAt).toLocaleDateString(),
-            total: new Intl.NumberFormat('en-BD', {
-              style: 'currency',
-              currency: 'BDT',
-              minimumFractionDigits: 0
-            }).format(order.total),
-            paymentMethod: order.paymentMethod,
-            deliveryType: order.deliveryType,
-            items: populatedOrder.items.map((item: any) => ({
-              name: item.name,
-              quantity: item.quantity,
-              price: item.price
-            }))
-          }
-        } as any);
-
-        console.log('✅ Order confirmation email job queued:', orderConfirmationJobId);
-      }
-
-      console.log('📨 All jobs queued successfully for order:', order.orderNumber);
-      
-      // Process jobs immediately to ensure emails are sent
-      try {
-        console.log('🔄 Processing order jobs immediately...');
-        const result = await queueService.processJobs(5); // Process up to 5 jobs
-        console.log('📧 Order jobs processing result:', result);
-        
-        if (result.processed > 0) {
-          console.log('✅ Order emails sent successfully');
-        } else if (result.failed > 0) {
-          console.log('❌ Some order emails failed to send');
-        }
-      } catch (processError) {
-        console.error('❌ Error processing order jobs immediately:', processError);
-        // Don't fail the order creation, just log the error
-      }
+      console.log('📨 Invoice generation will be processed asynchronously for order:', order.orderNumber);
     } catch (error) {
-      console.error('💥 Failed to queue jobs for order:', order.orderNumber, error);
-      console.error('💥 Admin notifications and customer emails may not be sent');
+      console.error('💥 Failed to queue invoice generation job for order:', order.orderNumber, error);
+      console.error('💥 Invoice and emails will not be generated automatically');
       // Don't fail the order creation if job queueing fails
     }
     

@@ -26,14 +26,13 @@ export async function getEmailSettings(): Promise<EmailSettings> {
   }
 
 
-
   return {
     siteName: dbSettings?.siteName || process.env.NEXT_PUBLIC_SITE_NAME || 'TSR Gallery',
     siteDescription: dbSettings?.siteDescription || process.env.NEXT_PUBLIC_SITE_DESCRIPTION || 'Your Trusted Online Shopping Destination',
     siteUrl: dbSettings?.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000',
-    contactEmail: dbSettings?.contactEmail || process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'support@tsrgallery.com',
-    contactPhone: dbSettings?.contactPhone || process.env.NEXT_PUBLIC_CONTACT_PHONE || '8801828123264',
-    contactAddress: dbSettings?.address || process.env.NEXT_PUBLIC_CONTACT_ADDRESS || '123 Technology Street, Dhaka, Bangladesh',
+    contactEmail: dbSettings?.contactEmail || process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'info.tsrgallery@gmail.com',
+    contactPhone: dbSettings?.contactPhone || process.env.NEXT_PUBLIC_CONTACT_PHONE || '8801339561702',
+    contactAddress: dbSettings?.address || process.env.NEXT_PUBLIC_CONTACT_ADDRESS || 'Kazipara Metro Station, Begum Rokeya Sharani, Kazipara, Dhaka, 1216, Bangladesh',
     logo: dbSettings?.logo1 || undefined,
     primaryColor: dbSettings?.primaryColor || '#3949AB',
     secondaryColor: dbSettings?.secondaryColor || '#10b981'

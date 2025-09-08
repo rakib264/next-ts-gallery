@@ -128,7 +128,6 @@ class ResendService {
       <div class="header">
         ${logoHtml}
         <h1 style="margin: 0; font-size: 28px; font-weight: 700;">${title}</h1>
-        <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 16px;">${data.siteName}</p>
       </div>
     `;
   }
@@ -231,7 +230,6 @@ class ResendService {
                 </div>
               ` : ''}
 
-              <p>We'll send you another email with tracking information once your order ships.</p>
               <p>If you have any questions, please don't hesitate to contact us.</p>
             </div>
 
