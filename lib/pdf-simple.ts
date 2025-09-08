@@ -100,8 +100,8 @@ class SimplePDFService {
         
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(10);
-        doc.text(data.customerName, 25, yPos + 15);
-        doc.text(data.customerPhone, 25, yPos + 20);
+        doc.text(data.customerName || 'Customer', 25, yPos + 15);
+        doc.text(data.customerPhone || 'N/A', 25, yPos + 20);
         if (data.customerEmail) {
           doc.text(data.customerEmail, 25, yPos + 25);
         }
@@ -118,9 +118,9 @@ class SimplePDFService {
         
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(10);
-        doc.text(data.shippingAddress.street, 25, yPos + 15);
-        doc.text(`${data.shippingAddress.city}, ${data.shippingAddress.district}`, 25, yPos + 20);
-        doc.text(data.shippingAddress.division, 25, yPos + 25);
+        doc.text(data.shippingAddress?.street || 'N/A', 25, yPos + 15);
+        doc.text(`${data.shippingAddress?.city || 'N/A'}, ${data.shippingAddress?.district || 'N/A'}`, 25, yPos + 20);
+        doc.text(data.shippingAddress?.division || 'N/A', 25, yPos + 25);
         
         // Items table header
         yPos += 40;
@@ -140,16 +140,16 @@ class SimplePDFService {
         doc.setTextColor(textColor);
         doc.setFont('helvetica', 'normal');
         
-        data.items.forEach((item, index) => {
+        (data.items || []).forEach((item, index) => {
           if (yPos > 250) {
             doc.addPage();
             yPos = 20;
           }
           
-          doc.text(item.name, 25, yPos);
-          doc.text(item.quantity.toString(), 120, yPos);
-          doc.text(formatPrice(item.price), 140, yPos);
-          doc.text(formatPrice(item.price * item.quantity), 170, yPos);
+          doc.text(item.name || 'Unknown Item', 25, yPos);
+          doc.text((item.quantity || 0).toString(), 120, yPos);
+          doc.text(formatPrice(item.price || 0), 140, yPos);
+          doc.text(formatPrice((item.price || 0) * (item.quantity || 0)), 170, yPos);
           
           yPos += 8;
         });
@@ -163,29 +163,29 @@ class SimplePDFService {
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         doc.text('Subtotal:', 130, yPos + 8);
-        doc.text(formatPrice(data.subtotal), 170, yPos + 8);
+        doc.text(formatPrice(data.subtotal || 0), 170, yPos + 8);
         
-        if (data.discountAmount > 0) {
+        if ((data.discountAmount || 0) > 0) {
           doc.text('Discount:', 130, yPos + 15);
-          doc.text(`-${formatPrice(data.discountAmount)}`, 170, yPos + 15);
+          doc.text(`-${formatPrice(data.discountAmount || 0)}`, 170, yPos + 15);
         }
         
-        if (data.tax > 0) {
+        if ((data.tax || 0) > 0) {
           doc.text('Tax:', 130, yPos + 22);
-          doc.text(formatPrice(data.tax), 170, yPos + 22);
+          doc.text(formatPrice(data.tax || 0), 170, yPos + 22);
         }
         
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(12);
         doc.text('Total:', 130, yPos + 30);
-        doc.text(formatPrice(data.total), 170, yPos + 30);
+        doc.text(formatPrice(data.total || 0), 170, yPos + 30);
         
         // Payment and delivery info
         yPos += 50;
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Payment Method: ${data.paymentMethod.replace('_', ' ').toUpperCase()}`, 20, yPos);
-        doc.text(`Delivery Type: ${data.deliveryType.replace('_', ' ').toUpperCase()}`, 20, yPos + 8);
+        doc.text(`Payment Method: ${(data.paymentMethod || 'N/A').replace('_', ' ').toUpperCase()}`, 20, yPos);
+        doc.text(`Delivery Type: ${(data.deliveryType || 'N/A').replace('_', ' ').toUpperCase()}`, 20, yPos + 8);
         
         if (data.expectedDelivery) {
           doc.text(`Expected Delivery: ${data.expectedDelivery}`, 20, yPos + 16);
