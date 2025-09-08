@@ -360,7 +360,7 @@ class QueueService {
       logger.info(`Invoice uploaded to Cloudinary: ${cloudinaryUrl}`);
       
       // Update order with Cloudinary invoice URL
-      const { connectDB } = await import('./mongodb');
+      const connectDB = (await import('./mongodb')).default;
       await connectDB(); // Ensure MongoDB connection is established
       
       const Order = (await import('./models/Order')).default;
