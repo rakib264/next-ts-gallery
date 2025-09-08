@@ -91,16 +91,17 @@ export async function POST(request: NextRequest) {
 
         let job;
         try {
-          // Handle double-stringified JSON
-          let parsedData = jobData;
+          // Handle different data types from Redis
+          let jobString: string;
           if (typeof jobData === 'string') {
-            parsedData = JSON.parse(jobData);
-          }
-          if (typeof parsedData === 'string') {
-            job = JSON.parse(parsedData);
+            jobString = jobData;
+          } else if (typeof jobData === 'object') {
+            jobString = JSON.stringify(jobData);
           } else {
-            job = parsedData;
+            throw new Error(`Invalid job data type: ${typeof jobData}`);
           }
+
+          job = JSON.parse(jobString);
           
           console.log('✅ Job parsed successfully:', {
             id: job.id,

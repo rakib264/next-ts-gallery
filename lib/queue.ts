@@ -128,7 +128,8 @@ class QueueService {
       } as Job;
 
       // Add job to the queue (Redis list)
-      await this.redis.lpush(QUEUE_NAME, JSON.stringify(fullJob));
+      const jobString = JSON.stringify(fullJob);
+      await this.redis.lpush(QUEUE_NAME, jobString);
       
       logger.info(`Job enqueued successfully`, { 
         jobId, 
@@ -160,7 +161,17 @@ class QueueService {
         }
 
         try {
-          const job: Job = JSON.parse(jobData as string);
+          // Handle different data types from Redis
+          let jobString: string;
+          if (typeof jobData === 'string') {
+            jobString = jobData;
+          } else if (typeof jobData === 'object') {
+            jobString = JSON.stringify(jobData);
+          } else {
+            throw new Error(`Invalid job data type: ${typeof jobData}`);
+          }
+
+          const job: Job = JSON.parse(jobString);
           
           logger.info(`Processing job`, { 
             jobId: job.id, 
@@ -180,7 +191,17 @@ class QueueService {
           logger.error('Error processing job:', error);
           
           try {
-            const job: Job = JSON.parse(jobData as string);
+            // Handle different data types for failed job parsing
+            let jobString: string;
+            if (typeof jobData === 'string') {
+              jobString = jobData;
+            } else if (typeof jobData === 'object') {
+              jobString = JSON.stringify(jobData);
+            } else {
+              throw new Error(`Invalid job data type: ${typeof jobData}`);
+            }
+            
+            const job: Job = JSON.parse(jobString);
             await this.handleJobFailure(job, error);
           } catch (parseError) {
             logger.error('Error parsing failed job:', parseError);
