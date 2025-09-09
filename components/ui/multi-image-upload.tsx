@@ -195,9 +195,9 @@ export default function MultiImageUpload({
                   <Upload className="text-primary" size={24} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Uploading...</p>
+                  <p className="text-sm font-medium text-foreground">Uploading...</p>
                   <Progress value={progress} className="mt-2" />
-                  <p className="text-xs text-gray-500 mt-1">{progress}% complete</p>
+                  <p className="text-xs text-muted-foreground mt-1">{progress}% complete</p>
                 </div>
               </motion.div>
             ) : (
@@ -208,20 +208,20 @@ export default function MultiImageUpload({
                 exit={{ opacity: 0, scale: 0.8 }}
                 className="space-y-4"
               >
-                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
-                  <Plus className="text-gray-400" size={24} />
+                <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto">
+                  <Plus className="text-muted-foreground" size={24} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium text-foreground">
                     {uploadedImages.length === 0 
                       ? 'Drop images here or click to upload' 
                       : 'Add more images'
                     }
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     Images up to {Math.round(maxSize / 1024 / 1024)}MB each
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     {uploadedImages.length}/{maxFiles} images uploaded
                   </p>
                 </div>
