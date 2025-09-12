@@ -380,7 +380,7 @@ export default function ProductView() {
                       )}
                     </div>
                     {[product.thumbnailImage, ...(product.images || []).filter((img) => img !== product.thumbnailImage)].length > 1 && (
-                      <div className="flex gap-2 p-3 bg-background">
+                      <div className="flex gap-2 p-3 bg-white">
                         {[product.thumbnailImage, ...(product.images || []).filter((img) => img !== product.thumbnailImage)].map((image, index) => (
                           <button
                             key={index}

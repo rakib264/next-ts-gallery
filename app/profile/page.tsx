@@ -13,8 +13,8 @@ import { toast } from '@/hooks/use-toast';
 import { addToCart } from '@/lib/store/slices/cartSlice';
 import { removeFromWishlist } from '@/lib/store/slices/wishlistSlice';
 import { RootState } from '@/lib/store/store';
-import { Camera, Heart, ShoppingCart, Trash2, Upload, User, X } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import { Camera, Heart, LogOut, RotateCcw, ShoppingCart, Trash2, Upload, User } from 'lucide-react';
+import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -175,6 +175,16 @@ export default function ProfilePage() {
     } catch (e) {}
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut({ callbackUrl: '/auth/signin' });
+      toast({ title: 'Signed out', description: 'You have been successfully signed out.', variant: 'success' });
+    } catch (error) {
+      console.error('Sign out error:', error);
+      toast({ title: 'Sign out failed', description: 'Please try again.', variant: 'error' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-violet-50">
       <Header />
@@ -191,36 +201,38 @@ export default function ProfilePage() {
           <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm border border-slate-200/60 shadow-lg rounded-xl p-1">
             <TabsTrigger 
               value="info" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-violet-600 data-[state=active]:text-white rounded-lg transition-all duration-300"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-violet-600 data-[state=active]:text-white rounded-lg transition-all duration-300 flex items-center justify-center gap-2"
             >
-              <User className="w-4 h-4 mr-2" />
-              Personal Info
+              <User className="w-4 h-4" />
+              <span className="hidden sm:inline">Personal Info</span>
             </TabsTrigger>
             <TabsTrigger 
               value="orders"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-violet-600 data-[state=active]:text-white rounded-lg transition-all duration-300"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-violet-600 data-[state=active]:text-white rounded-lg transition-all duration-300 flex items-center justify-center gap-2"
             >
-              Orders
+              <ShoppingCart className="w-4 h-4" />
+              <span className="hidden sm:inline">Orders</span>
             </TabsTrigger>
             <TabsTrigger 
               value="returns"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-violet-600 data-[state=active]:text-white rounded-lg transition-all duration-300"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-violet-600 data-[state=active]:text-white rounded-lg transition-all duration-300 flex items-center justify-center gap-2"
             >
-              Returns
+              <RotateCcw className="w-4 h-4" />
+              <span className="hidden sm:inline">Returns</span>
             </TabsTrigger>
             <TabsTrigger 
               value="wishlist"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-violet-600 data-[state=active]:text-white rounded-lg transition-all duration-300"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-violet-600 data-[state=active]:text-white rounded-lg transition-all duration-300 flex items-center justify-center gap-2"
             >
-              <Heart className="w-4 h-4 mr-2" />
-              Wishlist
+              <Heart className="w-4 h-4" />
+              <span className="hidden sm:inline">Wishlist</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="info" className="space-y-6">
             <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl rounded-2xl overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white p-8">
-                <CardTitle className="text-2xl font-semibold flex items-center">
+                <CardTitle className="text-2xl text-white font-semibold flex items-center">
                   <User className="w-6 h-6 mr-3" />
                   Personal Information
                 </CardTitle>
@@ -313,7 +325,7 @@ export default function ProfilePage() {
                       <Input 
                         value={session?.user?.email || ''} 
                         disabled 
-                        className="h-12 rounded-xl bg-slate-50 border-slate-200 text-slate-500"
+                        className="h-12 rounded-xl border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 transition-all duration-300"
                       />
                     </div>
                     <div className="space-y-2">
@@ -327,7 +339,15 @@ export default function ProfilePage() {
                       />
                     </div>
                   </div>
-                  <div className="flex justify-end pt-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4">
+                    <Button 
+                      onClick={handleSignOut}
+                      variant="outline"
+                      className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 px-6 py-3 rounded-xl font-medium transition-all duration-300"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </Button>
                     <Button 
                       onClick={saveProfile}
                       className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white px-8 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
@@ -342,17 +362,17 @@ export default function ProfilePage() {
 
           <TabsContent value="orders" className="space-y-6">
             <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl rounded-2xl overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white p-8">
-                <CardTitle className="text-2xl font-semibold flex items-center">
-                  <ShoppingCart className="w-6 h-6 mr-3" />
+              <CardHeader className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white p-8">
+                <CardTitle className="text-2xl font-semibold flex items-center text-white">
+                  <ShoppingCart className="w-6 h-6 mr-3 white" />
                   Order History
                 </CardTitle>
-                <p className="text-green-100 mt-2">Track and manage your orders</p>
+                <p className="text-primary-100 mt-2">Track and manage your orders</p>
               </CardHeader>
               <CardContent className="p-8">
                 {loading ? (
                   <div className="py-12 text-center">
-                    <div className="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto mb-4"></div>
+                    <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-4"></div>
                     <p className="text-slate-600">Loading your orders...</p>
                   </div>
                 ) : orders.length === 0 ? (
@@ -361,7 +381,7 @@ export default function ProfilePage() {
                     <h3 className="text-lg font-medium text-slate-600 mb-2">No orders yet</h3>
                     <p className="text-slate-500 mb-6">Start shopping to see your orders here</p>
                     <Link href="/products">
-                      <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-xl">
+                      <Button className="bg-gradient-to-r from-primary-600 to-emerald-600 hover:from-primary-700 hover:to-emerald-700 text-white px-6 py-3 rounded-xl">
                         Start Shopping
                       </Button>
                     </Link>
@@ -378,7 +398,7 @@ export default function ProfilePage() {
                                 order.orderStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                                 order.orderStatus === 'confirmed' ? 'bg-indigo-100 text-indigo-800' :
                                 order.orderStatus === 'shipped' ? 'bg-purple-100 text-purple-800' :
-                                order.orderStatus === 'delivered' ? 'bg-green-100 text-green-800' :
+                                order.orderStatus === 'delivered' ? 'bg-primary-100 text-primary-800' :
                                 order.orderStatus === 'cancelled' ? 'bg-red-100 text-red-800' :
                                 'bg-gray-100 text-gray-800'
                               }`}>
@@ -428,12 +448,12 @@ export default function ProfilePage() {
 
           <TabsContent value="returns" className="space-y-6">
             <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl rounded-2xl overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-orange-600 to-amber-600 text-white p-8">
-                <CardTitle className="text-2xl font-semibold flex items-center">
+              <CardHeader className="bg-gradient-to-r from-primary-600 to-violet-600 text-white p-8">
+                <CardTitle className="text-2xl text-white font-semibold flex items-center">
                   <span className="w-6 h-6 mr-3">↩️</span>
                   Returns & Exchanges
                 </CardTitle>
-                <p className="text-orange-100 mt-2">Manage your returns and exchanges</p>
+                <p className="text-primary-100 mt-2">Manage your returns and exchanges</p>
               </CardHeader>
               <CardContent className="p-8">
                 <ReturnsSection />
@@ -443,12 +463,12 @@ export default function ProfilePage() {
 
           <TabsContent value="wishlist" className="space-y-6">
             <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl rounded-2xl overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-pink-600 to-rose-600 text-white p-8">
-                <CardTitle className="text-2xl font-semibold flex items-center">
-                  <Heart className="w-6 h-6 mr-3" />
+              <CardHeader className="bg-gradient-to-r from-primary-600 to-violet-600 text-white p-8">
+                <CardTitle className="text-2xl font-semibold flex items-center text-white">
+                  <Heart className="w-6 h-6 mr-3 text-white" />
                   My Wishlist
                 </CardTitle>
-                <p className="text-pink-100 mt-2">Your favorite items saved for later</p>
+                <p className="text-primary-100 mt-2">Your favorite items saved for later</p>
               </CardHeader>
               <CardContent className="p-8">
                 {wishlist.length === 0 ? (
@@ -457,72 +477,97 @@ export default function ProfilePage() {
                     <h3 className="text-lg font-medium text-slate-600 mb-2">Your wishlist is empty</h3>
                     <p className="text-slate-500 mb-6">Start adding items you love to your wishlist</p>
                     <Link href="/products">
-                      <Button className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white px-6 py-3 rounded-xl">
+                      <Button className="bg-gradient-to-r from-primary-600 to-rose-600 hover:from-primary-700 hover:to-rose-700 text-white px-6 py-3 rounded-xl">
                         Browse Products
                       </Button>
                     </Link>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  <div className="space-y-4">
                     {wishlist.map((item) => (
-                      <div key={item.id} className="group relative bg-white rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-xl transition-all duration-300 overflow-hidden">
-                        {/* Remove Button */}
-                        <button
-                          onClick={() => handleRemoveFromWishlist(item.id)}
-                          className="absolute top-3 right-3 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-red-50 hover:text-red-600 transition-all duration-200 opacity-0 group-hover:opacity-100"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-
-                        {/* Product Image */}
-                        <div className="aspect-square overflow-hidden bg-slate-100">
-                          <img 
-                            src={item.image || '/placeholder-product.jpg'} 
-                            alt={item.name} 
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
-                          />
-                        </div>
-
-                        {/* Product Info */}
-                        <div className="p-4 space-y-3">
-                          <h3 className="font-semibold text-slate-900 line-clamp-2 group-hover:text-slate-700 transition-colors duration-200">
-                            {item.name}
-                          </h3>
-                          
-                          <div className="flex items-center justify-between">
-                            <div className="space-y-1">
-                              <div className="text-lg font-bold text-slate-900">৳{item.price}</div>
-                              {item.comparePrice && item.comparePrice > item.price && (
-                                <div className="text-sm text-slate-500 line-through">৳{item.comparePrice}</div>
-                              )}
+                      <div key={item.id} className="group bg-white rounded-xl border border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all duration-300">
+                        <div className="p-4">
+                          <div className="flex space-x-4">
+                            {/* Product Image */}
+                            <div className="relative flex-shrink-0">
+                              <div className="w-20 h-20 bg-slate-100 rounded-lg overflow-hidden">
+                                <img
+                                  src={item.image || '/placeholder-product.jpg'}
+                                  alt={item.name}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                              </div>
+                              {/* Wishlist badge */}
+                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-sm">
+                                <Heart size={10} className="text-white fill-white" />
+                              </div>
                             </div>
-                            <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              item.inStock 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-red-100 text-red-800'
-                            }`}>
-                              {item.inStock ? 'In Stock' : 'Out of Stock'}
-                            </div>
-                          </div>
 
-                          {/* Action Buttons */}
-                          <div className="flex gap-2 pt-2">
-                            <Button
-                              onClick={() => handleAddToCart(item)}
-                              disabled={!item.inStock}
-                              className="flex-1 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              <ShoppingCart className="w-4 h-4 mr-2" />
-                              Add to Cart
-                            </Button>
-                            <Button
-                              onClick={() => handleRemoveFromWishlist(item.id)}
-                              variant="outline"
-                              size="sm"
-                              className="px-3 rounded-lg hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all duration-200"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            {/* Product Details */}
+                            <div className="flex-1 min-w-0">
+                              {/* Product Name and Price */}
+                              <div className="flex justify-between items-start mb-2">
+                                <div className="flex-1 min-w-0 pr-2">
+                                  <h3 className="font-semibold text-slate-900 leading-tight line-clamp-2 text-sm md:text-base">
+                                    {item.name}
+                                  </h3>
+                                  <div className="flex items-center space-x-2 mt-1">
+                                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                      item.inStock 
+                                        ? 'bg-primary-100 text-primary-800' 
+                                        : 'bg-red-100 text-red-800'
+                                    }`}>
+                                      {item.inStock ? 'In Stock' : 'Out of Stock'}
+                                    </div>
+                                    {item.comparePrice && item.comparePrice > item.price && (
+                                      <div className="px-2 py-1 rounded-full text-xs font-medium bg-red-500 text-white">
+                                        {Math.round(((item.comparePrice - item.price) / item.comparePrice) * 100)}% OFF
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                
+                                <div className="text-right">
+                                  <div className="font-bold text-slate-900 text-sm md:text-base">
+                                    ৳{item.price}
+                                  </div>
+                                  {item.comparePrice && item.comparePrice > item.price && (
+                                    <div className="text-xs text-slate-500 line-through">
+                                      ৳{item.comparePrice}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Actions */}
+                              <div className="flex items-center justify-between">
+                                <div className="text-xs text-slate-600">
+                                  Saved for later
+                                </div>
+                                
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleAddToCart(item)}
+                                    disabled={!item.inStock}
+                                    className="h-8 px-3 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-50"
+                                  >
+                                    <ShoppingCart size={12} className="mr-1" />
+                                    Add to Cart
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleRemoveFromWishlist(item.id)}
+                                    className="h-8 px-3 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  >
+                                    <Trash2 size={12} className="mr-1" />
+                                    Remove
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>

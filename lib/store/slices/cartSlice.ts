@@ -1,3 +1,4 @@
+import { cartToasts } from '@/lib/utils/toast-notifications';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface CartItem {
@@ -99,25 +100,50 @@ const cartSlice = createSlice({
         item.id === action.payload.id && item.variant === action.payload.variant
       );
       
+      let isNewItem = false;
       if (existingItem) {
+        const oldQuantity = existingItem.quantity;
         existingItem.quantity = Math.min(
           existingItem.quantity + action.payload.quantity,
           existingItem.maxQuantity
         );
+        // Show appropriate toast based on quantity change
+        if (existingItem.quantity > oldQuantity) {
+          cartToasts.updated(existingItem.name, existingItem.quantity);
+        } else {
+          // Item is at max quantity, show already exists toast
+          cartToasts.alreadyExists(existingItem.name);
+        }
       } else {
         state.items.push(action.payload);
+        isNewItem = true;
       }
       
       cartSlice.caseReducers.calculateTotals(state);
       saveCartToStorage(state);
+      
+      // Show added toast for new items
+      if (isNewItem) {
+        cartToasts.added(action.payload.name, action.payload.price);
+      }
     },
     
-    removeFromCart: (state, action: PayloadAction<{ id: string; variant?: string }>) => {
+    removeFromCart: (state, action: PayloadAction<{ id: string; variant?: string; name?: string }>) => {
+      const itemToRemove = state.items.find(item => 
+        item.id === action.payload.id && item.variant === action.payload.variant
+      );
+      
       state.items = state.items.filter(item => 
         !(item.id === action.payload.id && item.variant === action.payload.variant)
       );
+      
       cartSlice.caseReducers.calculateTotals(state);
       saveCartToStorage(state);
+      
+      // Show removed toast
+      if (itemToRemove) {
+        cartToasts.removed(action.payload.name || itemToRemove.name);
+      }
     },
     
     updateQuantity: (state, action: PayloadAction<{ id: string; variant?: string; quantity: number }>) => {
@@ -134,6 +160,7 @@ const cartSlice = createSlice({
     },
     
     clearCart: (state) => {
+      const hadItems = state.items.length > 0;
       state.items = [];
       state.total = 0;
       state.itemCount = 0;
@@ -142,6 +169,11 @@ const cartSlice = createSlice({
       state.discount = 0;
       state.couponCode = undefined;
       saveCartToStorage(state);
+      
+      // Show cleared toast only if there were items
+      if (hadItems) {
+        cartToasts.cleared();
+      }
     },
     
     toggleCart: (state) => {

@@ -526,7 +526,7 @@ function ExplorePageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <Header />
       
       <div className="container mx-auto px-4 py-4 md:py-8 mt-16 md:mt-20 mb-20 md:mb-0">
@@ -768,7 +768,7 @@ function ExplorePageContent() {
 export default function ExplorePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-white">
         <Header />
         <div className="container mx-auto px-4 py-4 md:py-8 mt-16 md:mt-20 mb-20 md:mb-0">
           <div className="animate-pulse">

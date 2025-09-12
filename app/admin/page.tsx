@@ -201,59 +201,134 @@ export default function AdminDashboard() {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-600 mt-1">
+        <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6 shadow-sm">
+          {/* Title Section */}
+          <div className="mb-6">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+              Dashboard
+            </h1>
+            <p className="text-sm md:text-base text-gray-600 leading-relaxed">
               Welcome back! Here's what's happening with your store today.
             </p>
           </div>
-          <div className="flex items-center space-x-3">
-            <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7d">Last 7 days</SelectItem>
-                <SelectItem value="30d">Last 30 days</SelectItem>
-                <SelectItem value="90d">Last 90 days</SelectItem>
-                <SelectItem value="1y">Last year</SelectItem>
-              </SelectContent>
-            </Select>
 
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat._id} value={cat._id}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Filters Section */}
+          <div className="space-y-4">
+            {/* Filter Label */}
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+                Filters & Controls
+              </h3>
+              <Button
+                onClick={fetchDashboardData}
+                variant="outline"
+                size="sm"
+                disabled={loading}
+                className="h-8 px-3 text-xs font-medium text-gray-900"
+              >
+                <RefreshCw size={14} className={`mr-1.5 ${loading ? 'animate-spin' : 'text-gray-900'}`} />
+                Refresh
+              </Button>
+            </div>
 
-            <Select value={customerType} onValueChange={setCustomerType}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="All Customers" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Customers</SelectItem>
-                <SelectItem value="new">New Customers</SelectItem>
-                <SelectItem value="returning">Returning</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Responsive Filter Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+              {/* Time Range Filter */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  Time Range
+                </label>
+                <Select value={timeRange} onValueChange={setTimeRange}>
+                  <SelectTrigger className="w-full h-9 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7d">Last 7 days</SelectItem>
+                    <SelectItem value="30d">Last 30 days</SelectItem>
+                    <SelectItem value="90d">Last 90 days</SelectItem>
+                    <SelectItem value="1y">Last year</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <Button
-              onClick={fetchDashboardData}
-              variant="outline"
-              size="icon"
-              disabled={loading}
-            >
-              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-            </Button>
+              {/* Category Filter */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  Category
+                </label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger className="w-full h-9 text-sm">
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat._id} value={cat._id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Customer Type Filter */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  Customer Type
+                </label>
+                <Select value={customerType} onValueChange={setCustomerType}>
+                  <SelectTrigger className="w-full h-9 text-sm">
+                    <SelectValue placeholder="All Customers" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Customers</SelectItem>
+                    <SelectItem value="new">New Customers</SelectItem>
+                    <SelectItem value="returning">Returning</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Quick Actions - Only visible on larger screens */}
+              <div className="hidden xl:flex xl:flex-col xl:space-y-1.5">
+                <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  Quick Actions
+                </label>
+                <div className="flex gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="h-9 px-3 text-xs flex-1"
+                  >
+                    Export
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="h-9 px-3 text-xs flex-1"
+                  >
+                    Settings
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile Quick Actions */}
+            <div className="xl:hidden pt-2 border-t border-gray-100">
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  className="h-8 px-3 text-xs flex-1"
+                >
+                  Export Data
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-8 px-3 text-xs flex-1"
+                >
+                  View Settings
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -530,9 +605,9 @@ export default function AdminDashboard() {
                         className="w-3 h-3 rounded-full" 
                         style={{ backgroundColor: entry.color }}
                       />
-                      <span className="text-sm text-gray-600 capitalize">{entry.name}</span>
+                      <span className="text-sm text-secondary-700 capitalize">{entry.name}</span>
                     </div>
-                    <span className="text-sm font-medium">{entry.count}</span>
+                    <span className="text-sm font-medium text-secondary-700">{entry.count}</span>
                   </div>
                 ))}
               </div>
@@ -617,7 +692,7 @@ export default function AdminDashboard() {
                 {(data?.widgets.recentOrders || []).slice(0, 5).map((order) => (
                   <div key={order._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
                         {getStatusIcon(order.orderStatus)}
                       </div>
                       <div>
@@ -734,7 +809,7 @@ export default function AdminDashboard() {
                 {(data?.widgets.activeCoupons || []).slice(0, 5).map((coupon) => (
                   <div key={coupon._id} className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{coupon.code}</span>
+                      <span className="text-sm text-gray-900 font-medium">{coupon.code}</span>
                       <Badge variant="outline">
                         {coupon.type === 'percentage' ? `${coupon.value}%` : formatCurrency(coupon.value)}
                       </Badge>

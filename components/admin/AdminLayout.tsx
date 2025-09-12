@@ -203,6 +203,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     item.roles.includes(session?.user?.role || '')
   );
 
+  // console.log("session?.user", session?.user)
+
 
   const unreadCount = notifications.filter(n => n.unread).length;
 
@@ -534,7 +536,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <div className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
             {/* Mobile Menu Button */}
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={() => {
                 // console.log('Mobile menu button clicked!');
@@ -542,18 +544,18 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               }}
               className="md:hidden flex-shrink-0 z-10 relative"
             >
-              <Menu size={20} />
+              <Menu size={20} className="text-gray-900" />
             </Button>
             
             {/* Desktop/Tablet Sidebar Toggle */}
             {!isMobile && (
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 className="hidden md:flex flex-shrink-0"
               >
-                <Menu size={20} />
+                <Menu size={20} className="text-gray-900" />
               </Button>
             )}
             

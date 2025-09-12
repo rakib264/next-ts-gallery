@@ -40,8 +40,10 @@ import {
   Settings,
   ShoppingBag,
   User,
+  X,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -82,20 +84,20 @@ export default function Header() {
   // Don't render anything until mounted to prevent hydration mismatches
   if (!mounted) {
     return (
-      <header className="fixed top-0 left-0 right-0 z-50 bg-transparent">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-indigo-600/90 via-violet-600/90 to-indigo-600/90 backdrop-blur-sm">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 lg:h-20">
             <div className="lg:hidden w-10 h-10" />
             <Link href="/" className="flex items-center space-x-2">
-              <div className="font-bold text-xl lg:text-2xl bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+              <div className="font-bold text-xl lg:text-2xl text-white drop-shadow-lg">
                 {settings?.siteName || process.env.Next_PUBLIC_SITE_NAME}
               </div>
             </Link>
             <div className="flex items-center space-x-2 lg:space-x-4">
-              <div className="w-8 h-8" />
-              <div className="w-8 h-8" />
-              <div className="w-8 h-8" />
-              <div className="w-8 h-8" />
+              <div className="w-8 h-8 bg-white/10 rounded animate-pulse" />
+              <div className="w-8 h-8 bg-white/10 rounded animate-pulse" />
+              <div className="w-8 h-8 bg-white/10 rounded animate-pulse" />
+              <div className="w-8 h-8 bg-white/10 rounded animate-pulse" />
             </div>
           </div>
         </div>
@@ -111,43 +113,16 @@ export default function Header() {
         transition={{ duration: 0.5 }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? "bg-background/95 backdrop-blur-md border-b shadow-sm"
-            : "bg-gradient-to-b from-black/50 via-black/20 to-transparent backdrop-blur-sm"
+            ? "bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 backdrop-blur-md border-b border-white/20 shadow-lg"
+            : "bg-gradient-to-r from-indigo-600/90 via-violet-600/90 to-indigo-600/90 backdrop-blur-sm"
         }`}
         suppressHydrationWarning
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 lg:h-20">
-            {/* Mobile: Logo on left, hamburger on right */}
-            <div className="flex items-center justify-between w-full">
-              {/* Mobile Hamburger Menu */}
-              {/* Logo */}
-              <Link
-                href="/"
-                className="flex items-center space-x-2 ml-2 lg:ml-0"
-              >
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center space-x-2"
-                >
-                  {settings?.logo1 ? (
-                    <img
-                      src={
-                        settings.logo1 ?? "/lib/assets/images/tsrgallery.png"
-                      }
-                      alt={
-                        settings.siteName || process.env.Next_PUBLIC_SITE_NAME
-                      }
-                      className="h-8 lg:h-10 w-auto"
-                    />
-                  ) : (
-                    <div className="font-bold text-xl lg:text-2xl text-white lg:bg-gradient-to-r lg:from-primary lg:to-blue-600 lg:bg-clip-text lg:text-transparent">
-                      {settings?.siteName || process.env.Next_PUBLIC_SITE_NAME}
-                    </div>
-                  )}
-                </motion.div>
-              </Link>
+            {/* Mobile Layout: Menu (left) | Logo (center) | Search & Cart (right) */}
+            <div className="flex items-center justify-between w-full lg:justify-start">
+              {/* Mobile Hamburger Menu - Left Side */}
               <div className="lg:hidden">
                 <Sheet
                   open={mobileDrawerOpen}
@@ -157,32 +132,49 @@ export default function Header() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="p-2 text-white hover:bg-white/10"
+                      className="p-2 text-white hover:bg-white/20 transition-all duration-200 backdrop-blur-sm"
                     >
                       <Menu size={24} />
                     </Button>
                   </SheetTrigger>
                   <SheetContent
                     side="left"
-                    className="w-80 p-0 overflow-hidden bg-white"
+                    className="w-80 p-0 overflow-hidden bg-white flex flex-col max-h-screen"
                   >
-                    <SheetHeader className="px-6 py-4 border-b bg-muted/30">
-                      <SheetTitle className="text-left text-xl font-semibold flex items-center">
-                        <Menu className="mr-2" size={20} />
+                    {/* <SheetHeader className="px-6 py-4 border-b bg-gradient-to-r from-indigo-50 to-violet-50 flex-shrink-0">
+                      <SheetTitle className="text-left text-xl font-semibold flex items-center text-gray-900">
+                        <Menu className="mr-2 text-indigo-600" size={20} />
                         Menu
                       </SheetTitle>
-                    </SheetHeader>
-                    <div className="flex-1 overflow-y-auto h-full">
+                    </SheetHeader> */}
+
+                    <SheetHeader className="p-6 pb-4 border-b">
+                    <div className="flex items-center justify-between">
+                      <SheetTitle className="text-lg text-gray-900 font-semibold">Menu</SheetTitle>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setMobileDrawerOpen(false)}
+                        className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
+                      >
+                        <X size={16} />
+                      </Button>
+                    </div>
+                  </SheetHeader>
+
+
+                    <div className="flex-1 overflow-y-auto min-h-0">
                       <div className="p-6 space-y-6">
                         {/* Mobile Search */}
-                        <div className="relative">
+                        <div className="relative mx-1">
                           <Search
-                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                            className="absolute z-10 left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
                             size={20}
                           />
+                          
                           <Input
                             placeholder="Search products..."
-                            className="pl-10 h-12"
+                            className="pl-10 h-12 border border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 text-gray-900 placeholder:text-gray-500"
                             onClick={() => {
                               setMobileDrawerOpen(false);
                               dispatch(toggleSearch());
@@ -240,12 +232,12 @@ export default function Header() {
 
                         {/* User Section */}
                         {session ? (
-                          <div className="border-t pt-6 space-y-2">
-                            <div className="px-4 py-3 bg-muted/30 rounded-lg">
-                              <div className="font-medium text-foreground">
+                          <div className="border-t border-gray-200 pt-6 space-y-2">
+                            <div className="px-4 py-3 bg-gradient-to-r from-indigo-50 to-violet-50 rounded-lg border border-indigo-100">
+                              <div className="font-medium text-gray-900">
                                 {session.user?.name}
                               </div>
-                              <div className="text-sm text-muted-foreground">
+                              <div className="text-sm text-gray-600">
                                 {session.user?.email}
                               </div>
                             </div>
@@ -271,22 +263,22 @@ export default function Header() {
                               className="flex items-center w-full px-4 py-4 text-left text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 group"
                             >
                               <div className="p-2 rounded-lg bg-red-100 group-hover:bg-red-200 transition-colors">
-                                <LogOut className="h-5 w-5" />
+                                <LogOut className="h-5 w-5 text-red-600" />
                               </div>
-                              <span className="font-medium ml-3">Sign Out</span>
+                              <span className="font-medium ml-3 text-red-600">Sign Out</span>
                             </button>
                           </div>
                         ) : (
-                          <div className="border-t pt-6">
+                          <div className="border-t border-gray-200 pt-6">
                             <Link
                               href="/auth/signin"
                               onClick={() => setMobileDrawerOpen(false)}
                             >
-                              <div className="flex items-center px-4 py-4 text-primary hover:bg-primary/10 rounded-lg transition-all duration-200 group">
-                                <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                                  <User className="h-5 w-5 text-primary" />
+                              <div className="flex items-center px-4 py-4 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-200 group">
+                                <div className="p-2 rounded-lg bg-indigo-100 group-hover:bg-indigo-200 transition-colors">
+                                  <User className="h-5 w-5 text-indigo-600" />
                                 </div>
-                                <span className="font-medium ml-3">
+                                <span className="font-medium ml-3 text-gray-900">
                                   Sign In
                                 </span>
                               </div>
@@ -298,42 +290,95 @@ export default function Header() {
                   </SheetContent>
                 </Sheet>
               </div>
+
+              {/* Logo - Center (Mobile) */}
+              <Link
+                href="/"
+                className="flex items-center justify-center flex-1 lg:flex-none lg:ml-0"
+              >
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center space-x-2"
+                >
+                  {settings?.logo1 ? (
+                    <img
+                      src={
+                        settings.logo1 ?? "/lib/assets/images/tsrgallery.png"
+                      }
+                      alt={
+                        settings.siteName || process.env.Next_PUBLIC_SITE_NAME
+                      }
+                      className="h-8 lg:h-10 w-auto"
+                    />
+                  ) : (
+                    <div className="font-bold text-xl lg:text-2xl text-white drop-shadow-lg">
+                      {settings?.siteName || process.env.Next_PUBLIC_SITE_NAME}
+                    </div>
+                  )}
+                </motion.div>
+              </Link>
+
+              {/* Mobile Actions - Right Side (Search & Cart) */}
+              <div className="flex items-center space-x-1 lg:hidden">
+                {/* Search */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => dispatch(toggleSearch())}
+                  className="p-2 text-white hover:bg-white/20 transition-all duration-200 backdrop-blur-sm"
+                  aria-label="Search"
+                >
+                  <Search size={20} className="text-white stroke-2 drop-shadow-sm flex-shrink-0" />
+                </Button>
+
+                {/* Cart */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => dispatch(toggleCart())}
+                  className="p-2 relative text-white hover:bg-white/20 transition-all duration-200 backdrop-blur-sm"
+                >
+                  <ShoppingBag size={20} />
+                  {isHydrated && itemCount > 0 && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute -top-1 -right-1 bg-yellow-500 text-yellow-900 text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium shadow-lg"
+                    >
+                      {itemCount}
+                    </motion.span>
+                  )}
+                </Button>
+              </div>
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-8">
-              {/* <Link href="/explore" className="text-sm font-medium text-white/90 hover:text-white transition-colors">
-                Explore
-              </Link> */}
+            <nav className="hidden lg:flex items-center space-x-8 ml-8">
               <Link
                 href="/products"
-                className="text-sm font-medium text-white/90 hover:text-white transition-colors"
+                className="text-sm font-medium text-white hover:text-white/80 transition-all duration-200 drop-shadow-sm hover:drop-shadow-md"
               >
                 Products
               </Link>
               <Link
                 href="/blogs"
-                className="text-sm font-medium text-white/90 hover:text-white transition-colors"
+                className="text-sm font-medium text-white hover:text-white/80 transition-all duration-200 drop-shadow-sm hover:drop-shadow-md"
               >
                 Blog
               </Link>
               <Link
                 href="/deals"
-                className="text-sm font-medium text-white/90 hover:text-white transition-colors"
+                className="text-sm font-medium text-white hover:text-white/80 transition-all duration-200 drop-shadow-sm hover:drop-shadow-md"
               >
                 Deals
               </Link>
               <Link
                 href="/contact"
-                className="text-sm font-medium text-white/90 hover:text-white transition-colors"
+                className="text-sm font-medium text-white hover:text-white/80 transition-all duration-200 drop-shadow-sm hover:drop-shadow-md"
               >
                 Contact
               </Link>
-              {/* {session?.user?.role === 'admin' && (
-                <Link href="/admin" className="text-sm font-medium text-white/90 hover:text-white transition-colors">
-                  Admin
-                </Link>
-              )} */}
             </nav>
 
             {/* Desktop Actions */}
@@ -343,9 +388,10 @@ export default function Header() {
                 variant="ghost"
                 size="sm"
                 onClick={() => dispatch(toggleSearch())}
-                className="p-2 text-white hover:bg-white/10"
+                className="p-2 text-white hover:bg-white/20 transition-all duration-200 backdrop-blur-sm"
+                aria-label="Search"
               >
-                <Search size={20} />
+                <Search size={20} className="text-white stroke-2 drop-shadow-sm flex-shrink-0" />
               </Button>
 
               {/* Wishlist */}
@@ -353,14 +399,14 @@ export default function Header() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="p-2 relative text-white hover:bg-white/10"
+                  className="p-2 relative text-white hover:bg-white/20 transition-all duration-200 backdrop-blur-sm"
                 >
-                  <Heart size={20} />
+                  <Heart size={20} className="text-white stroke-2 drop-shadow-sm flex-shrink-0" />
                   {isHydrated && wishlistCount > 0 && (
                     <motion.span
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                      className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium shadow-lg"
                     >
                       {wishlistCount}
                     </motion.span>
@@ -373,14 +419,14 @@ export default function Header() {
                 variant="ghost"
                 size="sm"
                 onClick={() => dispatch(toggleCart())}
-                className="p-2 relative text-white hover:bg-white/10"
+                className="p-2 relative text-white hover:bg-white/20 transition-all duration-200 backdrop-blur-sm"
               >
-                <ShoppingBag size={20} />
+                <ShoppingBag size={20} className="text-white stroke-2 drop-shadow-sm flex-shrink-0" />
                 {isHydrated && itemCount > 0 && (
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                    className="absolute -top-1 -right-1 bg-yellow-500 text-yellow-900 text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium shadow-lg"
                   >
                     {itemCount}
                   </motion.span>
@@ -391,13 +437,26 @@ export default function Header() {
               {session ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
+                    {/* <Button
                       variant="ghost"
                       size="sm"
-                      className="p-2 text-white hover:bg-white/10"
+                      className="p-2 text-white hover:bg-white/20 transition-all duration-200 backdrop-blur-sm"
                     >
-                      <User size={20} />
-                    </Button>
+                      {
+                        session.user?.profileImage ? (
+                          <Image src={session.user?.profileImage} alt={session.user?.name} width={10} height={10} className="text-white stroke-2 drop-shadow-sm flex-shrink-0" />
+                        ) : (
+                          <User size={20} className="text-white stroke-2 drop-shadow-sm flex-shrink-0" />
+                        )
+                      }
+                    </Button> */}
+                    {
+                        session.user?.profileImage ? (
+                          <Image src={session.user?.profileImage} alt={session.user?.name} width={28} height={28} className="text-white stroke-2 drop-shadow-sm flex-shrink-0 rounded-full cursor-pointer object-cover ring-[2px] ring-white p-0.5" />
+                        ) : (
+                          <User size={20} className="text-white stroke-2 drop-shadow-sm flex-shrink-0" />
+                        )
+                      }
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
                     <div className="px-2 py-1.5 text-sm font-medium">
@@ -433,7 +492,7 @@ export default function Header() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="p-2 text-white hover:bg-white/10"
+                    className="p-2 text-white hover:bg-white/20 transition-all duration-200 backdrop-blur-sm"
                   >
                     <User size={20} />
                   </Button>
@@ -471,17 +530,17 @@ function MobileNavItem({
 }: MobileNavItemProps) {
   return (
     <Link href={href} onClick={onClose}>
-      <div className="flex items-center justify-between px-4 py-4 hover:bg-muted/50 rounded-lg transition-all duration-200 group">
+      <div className="flex items-center justify-between px-4 py-4 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-violet-50 rounded-lg transition-all duration-200 group">
         <div className="flex items-center">
-          <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-            <Icon className="h-5 w-5 text-primary" />
+          <div className="p-2 rounded-lg bg-indigo-100 group-hover:bg-indigo-200 transition-colors">
+            <Icon className="h-5 w-5 text-indigo-600" />
           </div>
-          <span className="font-medium ml-3 text-foreground group-hover:text-primary transition-colors">
+          <span className="font-medium ml-3 text-gray-900 group-hover:text-indigo-700 transition-colors">
             {label}
           </span>
         </div>
         {badge && badge > 0 && (
-          <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full min-w-[20px] text-center font-medium">
+          <span className="bg-indigo-600 text-white text-xs px-2 py-1 rounded-full min-w-[20px] text-center font-medium shadow-sm">
             {badge}
           </span>
         )}

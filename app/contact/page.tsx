@@ -187,7 +187,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <Header />
       <div className="pt-16 md:pt-20 mb-20 md:mb-0">
       {/* Hero Section */}
@@ -240,8 +240,9 @@ export default function ContactPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleCopy(settings.contactEmail, 'Email')}
+                          className="text-gray-900"
                         >
-                          <Copy size={14} className="mr-1" /> Copy
+                          <Copy size={14} className="mr-1 text-gray-900" /> Copy
                         </Button>
                         <Button variant="secondary" size="sm" asChild>
                           <a href={`mailto:${settings.contactEmail}`}>
@@ -269,8 +270,9 @@ export default function ContactPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleCopy(settings.contactPhone, 'Phone')}
+                          className="text-gray-900"
                         >
-                          <Copy size={14} className="mr-1" /> Copy
+                          <Copy size={14} className="mr-1 text-gray-900" /> Copy
                         </Button>
                         <Button variant="secondary" size="sm" asChild>
                           <a href={`tel:${settings.contactPhone}`}>
@@ -298,8 +300,9 @@ export default function ContactPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleCopy(settings.address, 'Address')}
+                          className="text-gray-900"
                         >
-                          <Copy size={14} className="mr-1" /> Copy
+                          <Copy size={14} className="mr-1 text-gray-900" /> Copy
                         </Button>
                         <Button variant="secondary" size="sm" asChild>
                           <a
@@ -338,7 +341,7 @@ export default function ContactPage() {
 
               {/* Contact Person */}
               {settings?.contactPerson && (
-                <div className="bg-white p-6 rounded-lg shadow-sm border">
+                <div className="bg-primary-light p-6 rounded-lg shadow-sm border">
                   <div className="flex items-center space-x-3 mb-3">
                     <User size={20} style={{ color: settings.primaryColor || '#000000' }} />
                     <h3 className="font-semibold text-gray-900">Contact Person</h3>

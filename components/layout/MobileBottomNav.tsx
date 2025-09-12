@@ -8,6 +8,7 @@ import { RootState } from '@/lib/store/store';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Grid, Home, Package, ShoppingBag, User } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -142,6 +143,9 @@ export default function MobileBottomNav() {
                     const isAccountItem = item.id === 'account';
                     const accountHref = isAccountItem ? (session ? '/profile' : '/auth/signin') : item.href;
                     const accountLabel = isAccountItem ? (session ? 'Profile' : 'Sign In') : item.label;
+
+                    
+                    
                     
                     // Unified styling for inactive and active states
 
@@ -162,28 +166,38 @@ export default function MobileBottomNav() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="flex flex-col items-center justify-center p-2 h-auto min-h-[68px] w-16 transition-all duration-300 relative group hover:scale-105"
+                            className="flex flex-col items-center justify-center p-2 h-auto min-h-[68px] w-16 transition-all duration-300 relative group hover:scale-105 hover:bg-transparent"
                           >
                             <div className="relative">
                               <motion.div
                                 whileHover={{ scale: 1.1, y: -2 }}
                                 whileTap={{ scale: 0.95 }}
                                 className={`
-                                  relative p-3 rounded-xl transition-all duration-300
+                                  relative p-0 rounded-xl transition-all duration-300
                                   ${active 
                                     ? 'bg-gradient-to-br from-primary to-secondary shadow-lg border border-white/20' 
                                     : 'bg-white/5 group-hover:bg-white/10 border border-transparent group-hover:border-white/20'
                                   }
                                 `}
                               >
-                                <Icon 
-                                  size={22} 
-                                  className={`
-                                    transition-all duration-300
-                                    ${active ? 'text-white' : 'text-slate-400'}
-                                    group-hover:text-slate-200
-                                  `} 
-                                />
+                                {isAccountItem && session?.user?.profileImage ? (
+                                  <Image 
+                                    src={session.user.profileImage} 
+                                    alt={session.user.name || "Profile"} 
+                                    width={12} 
+                                    height={12} 
+                                    className="rounded-full" 
+                                  />
+                                ) : (
+                                  <Icon 
+                                    size={22} 
+                                    className={`
+                                      transition-all duration-300
+                                      ${active ? 'text-white' : 'text-slate-400'}
+                                      group-hover:text-slate-200
+                                    `} 
+                                  />
+                                )}
                                 
                                 {item.showBadge && badgeCount > 0 && (
                                   <motion.div
@@ -193,8 +207,8 @@ export default function MobileBottomNav() {
                                     className="absolute -top-2 -right-2"
                                   >
                                     <Badge 
-                                      className="h-6 min-w-[24px] text-xs flex items-center justify-center p-0 bg-gradient-to-r from-red-500 to-pink-500 text-white border-2 border-white/20 shadow-lg shadow-red-500/30"
-                                    >
+                      className="absolute -top-1 -right-1 bg-yellow-500 text-yellow-900 text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium shadow-lg"
+                      >
                                       {badgeCount > 99 ? '99+' : badgeCount}
                                     </Badge>
                                   </motion.div>

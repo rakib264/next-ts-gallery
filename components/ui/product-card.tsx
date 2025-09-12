@@ -86,28 +86,28 @@ export default function ProductCard({
     switch (variant) {
       case 'featured':
         return {
-          cardClass: 'bg-white shadow-lg hover:shadow-2xl',
-          badgeClass: 'bg-blue-500'
+          cardClass: 'bg-card shadow-lg hover:shadow-2xl',
+          badgeClass: 'bg-info'
         };
       case 'new-arrival':
         return {
-          cardClass: 'bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-2xl',
-          badgeClass: 'bg-gradient-to-r from-blue-500 to-purple-500'
+          cardClass: 'bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-2xl',
+          badgeClass: 'bg-gradient-to-r from-primary-600 to-secondary-600'
         };
       case 'best-selling':
         return {
-          cardClass: 'bg-white shadow-lg hover:shadow-2xl',
-          badgeClass: 'bg-green-500'
+          cardClass: 'bg-card shadow-lg hover:shadow-2xl',
+          badgeClass: 'bg-success'
         };
       case 'limited-edition':
         return {
-          cardClass: 'bg-white shadow-2xl hover:shadow-3xl transform-gpu',
-          badgeClass: 'bg-gradient-to-r from-purple-600 to-pink-600'
+          cardClass: 'bg-card shadow-2xl hover:shadow-3xl transform-gpu',
+          badgeClass: 'bg-gradient-to-r from-secondary-600 to-primary-600'
         };
       default:
         return {
-          cardClass: 'bg-white shadow-lg hover:shadow-xl',
-          badgeClass: 'bg-primary'
+          cardClass: 'bg-card shadow-lg hover:shadow-xl',
+          badgeClass: 'bg-primary-600'
         };
     }
   };
@@ -161,7 +161,7 @@ export default function ProductCard({
 
           {/* Discount Badge */}
           {product.comparePrice && (
-            <Badge className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-red-500 text-white text-xs px-2 py-1">
+            <Badge className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-destructive text-white text-xs px-2 py-1">
               {getDiscountPercentage()}% OFF
             </Badge>
           )}
@@ -216,8 +216,8 @@ export default function ProductCard({
                   size={12}
                   className={`${
                     i < Math.floor(product.averageRating || 0)
-                      ? 'text-yellow-400 fill-current'
-                      : 'text-gray-300'
+                      ? 'text-warning fill-current'
+                      : 'text-muted'
                   }`}
                 />
               ))}
@@ -229,7 +229,7 @@ export default function ProductCard({
           
           {/* Product Name */}
           <Link href={`/products/${product.slug}`}>
-            <h3 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3 group-hover:text-primary transition-colors line-clamp-2">
+            <h3 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3 group-hover:text-primary-600 transition-colors line-clamp-2">
               {product.name}
             </h3>
           </Link>
@@ -237,7 +237,7 @@ export default function ProductCard({
           {/* Price */}
           <div className="flex items-center justify-between">
             <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
-              <span className="text-sm sm:text-lg font-bold text-primary">
+              <span className="text-sm sm:text-lg font-bold text-primary-600">
                 {formatBDTCurrency(product.price)}
               </span>
               {product.comparePrice && (
@@ -270,7 +270,7 @@ export default function ProductCard({
 
           {/* Additional Info for specific variants */}
           {variant === 'best-selling' && product.totalSales && (
-            <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
+            <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
               <span>{product.totalSales} sold</span>
             </div>
           )}
@@ -278,12 +278,12 @@ export default function ProductCard({
           {variant === 'limited-edition' && product.quantity && (
             <div className="mt-2">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-gray-600">Stock</span>
-                <span className="text-xs text-red-600">{product.quantity} left</span>
+                <span className="text-xs font-medium text-muted-foreground">Stock</span>
+                <span className="text-xs text-destructive">{product.quantity} left</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-1">
+              <div className="w-full bg-muted rounded-full h-1">
                 <div 
-                  className="bg-red-500 h-1 rounded-full transition-all duration-300"
+                  className="bg-destructive h-1 rounded-full transition-all duration-300"
                   style={{ width: `${Math.max(10, Math.min(100, (product.quantity / 50) * 100))}%` }}
                 />
               </div>

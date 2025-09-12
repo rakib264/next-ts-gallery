@@ -233,7 +233,7 @@ export default function SearchComponent({ isOpen, onClose, isMobile = false }: S
           <div className="p-8">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center space-x-3">
-                <Sparkles className="text-blue-600" size={24} />
+                <Sparkles className="text-primary-600" size={24} />
                 <h2 className="text-xl font-semibold text-gray-900">Search By Product or Category</h2>
               </div>
               <Button
@@ -255,7 +255,7 @@ export default function SearchComponent({ isOpen, onClose, isMobile = false }: S
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="pl-16 pr-6 h-16 text-lg border-2 border-gray-200 focus-visible:ring-0 focus-visible:border-blue-500 bg-gray-50 focus:bg-white rounded-2xl font-medium transition-all duration-200"
+                className="pl-16 pr-6 h-16 text-lg border-2 border-gray-200 focus-visible:ring-0 focus-visible:border-[2px] focus-visible:border-primary-500 bg-gray-50 focus:bg-white rounded-2xl font-medium transition-all duration-200"
                 autoFocus
               />
               {query && (
@@ -296,7 +296,7 @@ export default function SearchComponent({ isOpen, onClose, isMobile = false }: S
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full"
+                  className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full"
                 />
                 <span className="ml-3 text-gray-600 font-medium">Searching...</span>
               </div>
@@ -331,18 +331,18 @@ export default function SearchComponent({ isOpen, onClose, isMobile = false }: S
                           initial={{ y: 20, opacity: 0 }}
                           animate={{ y: 0, opacity: 1 }}
                           transition={{ delay: index * 0.1 }}
-                          className="group flex items-center p-4 hover:bg-blue-50 rounded-2xl cursor-pointer transition-all duration-200"
+                          className="group flex items-center p-4 hover:bg-primary-50 rounded-2xl cursor-pointer transition-all duration-200"
                           onClick={() => handleCategoryClick(category)}
                         >
                           <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">
+                            <h4 className="font-semibold text-gray-900 group-hover:text-primary-700 transition-colors">
                               {category.name}
                             </h4>
                             {category.description && (
                               <p className="text-sm text-gray-500 mt-1 line-clamp-1">{category.description}</p>
                             )}
                           </div>
-                          <ArrowRight className="text-gray-400 group-hover:text-blue-600 transition-colors" size={16} />
+                          <ArrowRight className="text-gray-400 group-hover:text-primary-600 transition-colors" size={16} />
                         </motion.div>
                       ))}
                     </div>
@@ -363,7 +363,7 @@ export default function SearchComponent({ isOpen, onClose, isMobile = false }: S
                           initial={{ y: 20, opacity: 0 }}
                           animate={{ y: 0, opacity: 1 }}
                           transition={{ delay: (results.categories.length * 0.1) + (index * 0.1) }}
-                          className="group flex items-center p-4 hover:bg-blue-50 rounded-2xl cursor-pointer transition-all duration-200"
+                          className="group flex items-center p-4 hover:bg-primary-50 rounded-2xl cursor-pointer transition-all duration-200"
                           onClick={() => handleResultClick(product)}
                         >
                           <img
@@ -372,7 +372,7 @@ export default function SearchComponent({ isOpen, onClose, isMobile = false }: S
                             className="w-12 h-12 object-cover rounded-xl mr-4"
                           />
                           <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors line-clamp-1">
+                            <h4 className="font-semibold text-gray-900 group-hover:text-primary-700 transition-colors line-clamp-1">
                               {product.name}
                             </h4>
                             <div className="flex items-center justify-between mt-1">
@@ -380,7 +380,7 @@ export default function SearchComponent({ isOpen, onClose, isMobile = false }: S
                               <p className="font-bold text-green-600">${product.price}</p>
                             </div>
                           </div>
-                          <ArrowRight className="text-gray-400 group-hover:text-blue-600 transition-colors ml-3" size={16} />
+                          <ArrowRight className="text-gray-400 group-hover:text-primary-600 transition-colors ml-3" size={16} />
                         </motion.div>
                       ))}
                     </div>
@@ -389,7 +389,7 @@ export default function SearchComponent({ isOpen, onClose, isMobile = false }: S
                       <div className="mt-6">
                         <Button
                           onClick={() => handleSearch(query)}
-                          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-2xl transition-all duration-200"
+                          className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 rounded-2xl transition-all duration-200"
                         >
                           View all results for "{query}"
                           <ArrowRight className="ml-2" size={16} />

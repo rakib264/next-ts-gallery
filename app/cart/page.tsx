@@ -10,26 +10,28 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useHydration } from '@/hooks/use-hydration';
 import {
-    applyCoupon,
-    clearCart,
-    reloadCartFromStorage,
-    removeCoupon,
-    removeFromCart,
-    updateQuantity
+  applyCoupon,
+  clearCart,
+  reloadCartFromStorage,
+  removeCoupon,
+  removeFromCart,
+  updateQuantity
 } from '@/lib/store/slices/cartSlice';
 import { addToWishlist, loadWishlistFromStorage } from '@/lib/store/slices/wishlistSlice';
 import { RootState } from '@/lib/store/store';
 import { formatNumber } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-    ArrowLeft,
-    Heart,
-    Minus,
-    Plus,
-    ShoppingBag,
-    ShoppingCart,
-    Tag,
-    Trash2
+  ArrowLeft,
+  Heart,
+  Minus,
+  Package,
+  Plus,
+  Shield,
+  ShoppingBag,
+  ShoppingCart,
+  Tag,
+  Trash2
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -105,15 +107,44 @@ export default function CartPage() {
 
   if (!isHydrated) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-white">
         <Header />
         <div className="container mx-auto px-4 py-8 mt-16 md:mt-20 mb-20 md:mb-0">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-32 bg-gray-200 rounded"></div>
-              ))}
+          <div className="animate-pulse space-y-6">
+            <div className="space-y-4 mb-8">
+              <div className="h-8 w-8 bg-primary-light rounded-lg"></div>
+              <div className="flex items-center space-x-3">
+                <div className="h-10 w-10 bg-primary-light rounded-xl"></div>
+                <div className="h-8 bg-primary-light rounded-lg w-1/3"></div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="p-4 bg-primary-light border-0">
+                    <div className="flex space-x-4">
+                      <div className="w-20 h-20 bg-primary-100 rounded-lg"></div>
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 bg-primary-100 rounded w-3/4"></div>
+                        <div className="h-3 bg-primary-100 rounded w-1/2"></div>
+                        <div className="h-3 bg-primary-100 rounded w-1/4"></div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+              <div className="lg:col-span-1">
+                <Card className="p-4 bg-primary-light border-0">
+                  <div className="space-y-4">
+                    <div className="h-6 bg-primary-100 rounded w-1/2"></div>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-primary-100 rounded"></div>
+                      <div className="h-4 bg-primary-100 rounded w-3/4"></div>
+                    </div>
+                    <div className="h-10 bg-primary-100 rounded-lg"></div>
+                  </div>
+                </Card>
+              </div>
             </div>
           </div>
         </div>
@@ -124,41 +155,66 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <div className="container mx-auto px-4 py-4 md:py-8 mt-16 md:mt-20 mb-20 md:mb-0">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6 md:mb-8">
-          <div className="flex items-center space-x-4">
+      <div className="container mx-auto px-4 py-4 md:py-6 mt-16 md:mt-20 mb-20 md:mb-0">
+        {/* Header with Back Button Above */}
+        <div className="mb-6">
+          {/* Back Button */}
+          <div className="mb-3">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => router.back()}
-              className="md:hidden"
+              className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 -ml-2"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeft size={18} className="mr-2" />
+              Back
             </Button>
-            <div className="flex items-center space-x-3">
-              <ShoppingCart size={24} className="text-primary" />
-              <h1 className="text-2xl md:text-3xl font-bold">Shopping Cart</h1>
-              {itemCount > 0 && (
-                <Badge variant="secondary" className="text-sm">
-                  {itemCount} {itemCount === 1 ? 'item' : 'items'}
-                </Badge>
-              )}
-            </div>
           </div>
           
+          {/* Title Section */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-primary rounded-lg">
+                <ShoppingCart size={20} className="text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+                  Shopping Cart
+                </h1>
+                {itemCount > 0 && (
+                  <p className="text-gray-600 text-sm">
+                    {itemCount} {itemCount === 1 ? 'item' : 'items'} in your cart
+                  </p>
+                )}
+              </div>
+            </div>
+            
+            {items.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => dispatch(clearCart())}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 hidden md:flex"
+              >
+                <Trash2 size={16} className="mr-2" />
+                Clear Cart
+              </Button>
+            )}
+          </div>
+          
+          {/* Progress indicator */}
           {items.length > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => dispatch(clearCart())}
-              className="text-destructive hover:text-destructive hidden md:flex"
-            >
-              Clear Cart
-            </Button>
+            <div className="flex items-center space-x-2 text-sm text-gray-500">
+              <Package size={14} className="text-primary" />
+              <span className="text-gray-700">Cart</span>
+              <span className="text-gray-400">→</span>
+              <span className="text-gray-500">Checkout</span>
+              <span className="text-gray-400">→</span>
+              <span className="text-gray-500">Payment</span>
+            </div>
           )}
         </div>
 
@@ -169,263 +225,273 @@ export default function CartPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center py-12 md:py-16"
           >
-            <div className="max-w-md mx-auto">
-              <ShoppingBag size={80} className="mx-auto text-muted-foreground mb-6" />
-              <h2 className="text-xl md:text-2xl font-semibold mb-4">Your cart is empty</h2>
-              <p className="text-muted-foreground mb-8">
-                Looks like you haven't added anything to your cart yet. Start shopping to fill it up!
-              </p>
-              <div className="space-y-3">
-                <Link href="/products">
-                  <Button size="lg" className="w-full md:w-auto">
-                    <ShoppingBag size={20} className="mr-2" />
-                    Start Shopping
-                  </Button>
-                </Link>
-                <div className="block md:hidden">
+            <Card className="max-w-md mx-auto bg-white shadow-sm">
+              <CardContent className="p-8">
+                <div className="mb-6">
+                  <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <ShoppingBag size={32} className="text-gray-600" />
+                  </div>
+                </div>
+                
+                <h2 className="text-xl font-semibold text-gray-900 mb-3">
+                  Your cart is empty
+                </h2>
+                <p className="text-gray-600 mb-6 text-sm leading-relaxed">
+                  Looks like you haven't added anything to your cart yet. Start shopping to fill it up!
+                </p>
+                
+                <div className="space-y-3">
+                  <Link href="/products">
+                    <Button className="w-full">
+                      <ShoppingBag size={18} className="mr-2" />
+                      Start Shopping
+                    </Button>
+                  </Link>
                   <Link href="/deals">
-                    <Button variant="outline" size="lg" className="w-full">
+                    <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-50">
                       View Deals
                     </Button>
                   </Link>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </motion.div>
         ) : (
           /* Cart with Items */
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
             {/* Cart Items */}
-            <div className="lg:col-span-2 space-y-4">
-              <Card className="p-0">
-                <CardContent className="p-0">
-                  <div className="divide-y">
-                    <AnimatePresence>
-                      {items.map((item, index) => (
-                        <motion.div
-                          key={`${item.id}-${item.variant || 'default'}`}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: 20 }}
-                          transition={{ duration: 0.3, delay: index * 0.1 }}
-                          className="p-4 md:p-6"
-                        >
-                          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                            {/* Product Image */}
-                            <div className="w-full sm:w-24 md:w-32 h-48 sm:h-24 md:h-32 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+            <div className="lg:col-span-2 space-y-3">
+              <AnimatePresence>
+                {items.map((item, index) => (
+                  <motion.div
+                    key={`${item.id}-${item.variant || 'default'}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                  >
+                    <Card className="bg-white shadow-sm border border-gray-200">
+                      <CardContent className="p-3 md:p-4">
+                        <div className="flex space-x-3">
+                          {/* Product Image */}
+                          <div className="relative flex-shrink-0">
+                            <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-100 rounded-lg overflow-hidden">
                               <img
                                 src={item.image}
                                 alt={item.name}
                                 className="w-full h-full object-cover"
                               />
                             </div>
+                            {/* Quantity badge */}
+                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-sm">
+                              <span className="text-white text-xs font-semibold">{item.quantity}</span>
+                            </div>
+                          </div>
 
-                            {/* Product Details */}
-                            <div className="flex-1 space-y-3 sm:space-y-2">
-                              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
-                                <div className="space-y-1">
-                                  <h3 className="font-semibold text-base md:text-lg leading-tight">
-                                    {item.name}
-                                  </h3>
-                                  {item.variant && (
-                                    <p className="text-sm text-muted-foreground">
-                                      Variant: {item.variant}
-                                    </p>
-                                  )}
-                                  <div className="flex items-center space-x-4 text-sm md:text-base">
-                                    <span className="font-medium">৳{formatNumber(item.price)}</span>
-                                    <span className="text-muted-foreground">each</span>
-                                  </div>
-                                </div>
-                                
-                                <div className="text-right mt-2 sm:mt-0">
-                                  <div className="font-semibold text-lg">
-                                    ৳{formatNumber(item.price * item.quantity)}
-                                  </div>
-                                </div>
+                          {/* Product Details */}
+                          <div className="flex-1 min-w-0">
+                            {/* Product Name and Price */}
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="flex-1 min-w-0 pr-2">
+                                <h3 className="font-semibold text-gray-900 leading-tight line-clamp-2 text-sm md:text-base">
+                                  {item.name}
+                                </h3>
+                                {item.variant && (
+                                  <Badge variant="outline" className="text-xs mt-1 border-gray-300 text-gray-600">
+                                    {item.variant}
+                                  </Badge>
+                                )}
                               </div>
-
-                              {/* Quantity and Actions */}
-                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-                                {/* Quantity Controls */}
-                                <div className="flex items-center space-x-3">
-                                  <span className="text-sm font-medium">Quantity:</span>
-                                  <div className="flex items-center border rounded-lg">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-9 w-9 p-0"
-                                      onClick={() => handleQuantityChange(item.id, item.variant, item.quantity - 1)}
-                                    >
-                                      <Minus size={16} />
-                                    </Button>
-                                    <span className="w-12 text-center text-sm font-medium">
-                                      {item.quantity}
-                                    </span>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-9 w-9 p-0"
-                                      onClick={() => handleQuantityChange(item.id, item.variant, item.quantity + 1)}
-                                    >
-                                      <Plus size={16} />
-                                    </Button>
-                                  </div>
+                              
+                              <div className="text-right">
+                                <div className="font-bold text-gray-900 text-sm md:text-base">
+                                  ৳{formatNumber(item.price * item.quantity)}
                                 </div>
-
-                                {/* Actions */}
-                                <div className="flex items-center space-x-2">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleMoveToWishlist(item)}
-                                    className="text-sm"
-                                  >
-                                    <Heart size={16} className="mr-1" />
-                                    <span className="hidden sm:inline">Save for Later</span>
-                                    <span className="sm:hidden">Save</span>
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => dispatch(removeFromCart({ id: item.id, variant: item.variant }))}
-                                    className="text-destructive text-sm"
-                                  >
-                                    <Trash2 size={16} className="mr-1" />
-                                    Remove
-                                  </Button>
+                                <div className="text-xs text-gray-500">
+                                  ৳{formatNumber(item.price)} each
                                 </div>
                               </div>
                             </div>
+
+                            {/* Quantity Controls & Actions */}
+                            <div className="flex items-center justify-between">
+                              {/* Quantity Controls */}
+                              <div className="flex items-center space-x-2">
+                                <span className="text-xs text-gray-600 font-medium">Qty:</span>
+                                <div className="flex items-center border border-gray-300 rounded-md">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0 rounded-none hover:bg-gray-100"
+                                    onClick={() => handleQuantityChange(item.id, item.variant, item.quantity - 1)}
+                                  >
+                                    <Minus size={12} className="text-gray-600" />
+                                  </Button>
+                                  <div className="w-8 h-6 flex items-center justify-center border-x border-gray-300 text-xs font-semibold text-gray-900 bg-white">
+                                    {item.quantity}
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0 rounded-none hover:bg-gray-100"
+                                    onClick={() => handleQuantityChange(item.id, item.variant, item.quantity + 1)}
+                                  >
+                                    <Plus size={12} className="text-gray-600" />
+                                  </Button>
+                                </div>
+                              </div>
+
+                              {/* Actions */}
+                              <div className="flex items-center space-x-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleMoveToWishlist(item)}
+                                  className="h-7 px-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                                >
+                                  <Heart size={12} className="mr-1" />
+                                  <span className="hidden sm:inline">Save</span>
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => dispatch(removeFromCart({ id: item.id, variant: item.variant }))}
+                                  className="h-7 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 size={12} className="mr-1" />
+                                  <span className="hidden sm:inline">Remove</span>
+                                </Button>
+                              </div>
+                            </div>
                           </div>
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  </div>
-                </CardContent>
-              </Card>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
 
               {/* Mobile Clear Cart Button */}
               <div className="block md:hidden">
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   onClick={() => dispatch(clearCart())}
-                  className="w-full text-destructive"
+                  className="w-full text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400"
                 >
                   <Trash2 size={16} className="mr-2" />
-                  Clear Cart
+                  Clear All Items
                 </Button>
               </div>
             </div>
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <Card className="sticky top-4">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <ShoppingBag size={20} />
-                    <span>Order Summary</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Items Summary */}
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span>Subtotal ({itemCount} items)</span>
-                      <span>৳{formatNumber(subtotal)}</span>
-                    </div>
-                    
-                    {discount > 0 && (
-                      <div className="flex justify-between text-sm text-green-600">
-                        <span>Discount</span>
-                        <span>-৳{formatNumber(discount)}</span>
+              <div className="sticky top-6">
+                <Card className="bg-white shadow-sm border border-gray-200">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center space-x-2 text-gray-900">
+                      <ShoppingBag size={18} className="text-primary" />
+                      <span>Order Summary</span>
+                    </CardTitle>
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-4">
+                    {/* Items Summary */}
+                    <div className="space-y-3">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Subtotal ({itemCount} items)</span>
+                        <span className="font-semibold text-gray-900">৳{formatNumber(subtotal)}</span>
                       </div>
-                    )}
-                    
-                    <div className="text-xs text-muted-foreground">
-                      Shipping and taxes calculated at checkout
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {/* Total */}
-                  <div className="flex justify-between font-semibold text-lg">
-                    <span>Total</span>
-                    <span>৳{formatNumber(finalTotal)}</span>
-                  </div>
-
-                  {/* Coupon Section */}
-                  <div className="space-y-3">
-                    {appliedCoupon ? (
-                      <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
-                        <div className="flex items-center space-x-2">
-                          <Tag size={16} className="text-green-600" />
-                          <span className="text-sm font-medium text-green-800">{appliedCoupon}</span>
+                      
+                      {discount > 0 && (
+                        <div className="flex justify-between text-sm text-green-600">
+                          <span>Discount</span>
+                          <span className="font-semibold">-৳{formatNumber(discount)}</span>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => dispatch(removeCoupon())}
-                          className="text-green-600 hover:text-green-700"
-                        >
-                          Remove
-                        </Button>
+                      )}
+                      
+                      <div className="text-xs text-gray-500">
+                        Shipping and taxes calculated at checkout
                       </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <div className="flex space-x-2">
-                          <Input
-                            placeholder="Enter coupon code"
-                            value={couponCode}
-                            onChange={(e) => setCouponCode(e.target.value)}
-                            className="flex-1"
-                          />
+                    </div>
+
+                    <Separator className="bg-gray-200" />
+
+                    {/* Total */}
+                    <div className="flex justify-between font-bold text-lg text-gray-900">
+                      <span>Total</span>
+                      <span>৳{formatNumber(finalTotal)}</span>
+                    </div>
+
+                    {/* Coupon Section */}
+                    <div className="space-y-3">
+                      {appliedCoupon ? (
+                        <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex items-center space-x-2">
+                            <Tag size={14} className="text-green-600" />
+                            <span className="text-sm font-medium text-green-800">{appliedCoupon}</span>
+                          </div>
                           <Button
-                            variant="outline"
-                            onClick={handleCouponApply}
-                            disabled={couponLoading || !couponCode.trim()}
+                            variant="ghost"
                             size="sm"
+                            onClick={() => dispatch(removeCoupon())}
+                            className="text-green-600 hover:text-green-700 hover:bg-green-100"
                           >
-                            {couponLoading ? (
-                              <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                            ) : (
-                              'Apply'
-                            )}
+                            Remove
                           </Button>
                         </div>
-                        {error && (
-                          <p className="text-xs text-red-500">{error}</p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Checkout Button */}
-                  <div className="space-y-3">
-                    <Link href="/checkout">
-                      <Button size="lg" className="w-full">
-                        Proceed to Checkout
-                      </Button>
-                    </Link>
-                    <Link href="/products">
-                      <Button variant="outline" size="lg" className="w-full">
-                        Continue Shopping
-                      </Button>
-                    </Link>
-                  </div>
-
-                  {/* Security Badge */}
-                  <div className="flex items-center justify-center space-x-2 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                      <svg width="8" height="6" viewBox="0 0 8 6" fill="none" className="text-white">
-                        <path d="M7 1L3 5L1 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                      ) : (
+                        <div className="space-y-2">
+                          <div className="flex space-x-2">
+                            <Input
+                              placeholder="Enter coupon code"
+                              value={couponCode}
+                              onChange={(e) => setCouponCode(e.target.value)}
+                              className="flex-1 border-gray-300 focus:border-primary focus:ring-primary"
+                            />
+                            <Button
+                              variant="outline"
+                              onClick={handleCouponApply}
+                              disabled={couponLoading || !couponCode.trim()}
+                              size="sm"
+                              className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                            >
+                              {couponLoading ? (
+                                <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                              ) : (
+                                'Apply'
+                              )}
+                            </Button>
+                          </div>
+                          {error && (
+                            <p className="text-xs text-red-600 bg-red-50 p-2 rounded">{error}</p>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <span className="text-sm text-muted-foreground">Secure Checkout</span>
-                  </div>
-                </CardContent>
-              </Card>
+
+                    {/* Checkout Buttons */}
+                    <div className="space-y-3 pt-2">
+                      <Link href="/checkout">
+                        <Button className="w-full">
+                          Proceed to Checkout
+                        </Button>
+                      </Link>
+                      <Link href="/products">
+                        <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-50">
+                          Continue Shopping
+                        </Button>
+                      </Link>
+                    </div>
+
+                    {/* Security Badge */}
+                    <div className="flex items-center justify-center space-x-2 p-3 bg-gray-50 rounded-lg">
+                      <Shield size={16} className="text-green-600" />
+                      <span className="text-sm text-gray-600">Secure Checkout</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         )}

@@ -234,128 +234,154 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-primary-50/30">
       <Header />
       
-      <div className="container mx-auto px-4 py-4 md:py-8 mt-16 md:mt-20 mb-20 md:mb-0">
-        {/* Page Header */}
+      <div className="container mx-auto px-4 py-6 md:py-12 mt-16 md:mt-20 mb-20 md:mb-0">
+        {/* Enhanced Page Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-12 text-center"
         >
-          <h1 className="text-3xl font-bold mb-2">Our Store</h1>
-          <p className="text-muted-foreground">
-            Discover our complete collection of premium products
+          <div className="relative inline-block mb-4">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary-600 via-secondary-600 to-primary-700 bg-clip-text text-transparent leading-tight">
+              Our Premium Collection
+            </h1>
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary-600/20 to-secondary-600/20 blur-xl opacity-30 -z-10 rounded-lg"></div>
+          </div>
+          <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+            Discover handpicked premium products crafted with excellence and designed for modern living
           </p>
+          <div className="mt-6 flex justify-center">
+            <div className="h-1 w-24 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full"></div>
+          </div>
         </motion.div>
 
-        {/* Search and Filters Bar */}
+        {/* Enhanced Search and Filters Bar */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mb-8 space-y-4"
+          className="mb-12 space-y-6"
         >
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Enhanced Search with Clear Icon */}
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Premium Search with Glass Effect */}
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
-              <Input
-                placeholder="Search products..."
-                value={localSearchQuery}
-                onChange={(e) => onSearchChange(e.target.value)}
-                className="pl-10 pr-10 h-12 transition-all duration-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              />
-              {localSearchQuery && (
+              <div className="absolute inset-0 bg-gradient-to-r from-primary-100/50 to-secondary-100/50 rounded-2xl blur-xl opacity-60"></div>
+              <div className="relative bg-white/80 backdrop-blur-sm border border-primary-200/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-primary-500" size={22} />
+                <Input
+                  placeholder="Search our premium collection..."
+                  value={localSearchQuery}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  className="pl-12 pr-12 h-14 bg-transparent border-0 text-slate-700 placeholder:text-slate-500 text-lg focus:ring-2 focus:ring-primary-500/20 rounded-2xl"
+                />
+                {localSearchQuery && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearSearch}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-primary-100 rounded-full transition-all duration-200"
+                  >
+                    <X size={18} className="text-slate-500 hover:text-slate-700" />
+                  </Button>
+                )}
+                {loading && localSearchQuery && (
+                  <div className="absolute right-12 top-1/2 -translate-y-1/2">
+                    <div className="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Premium Sort Selector */}
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-secondary-100/50 to-primary-100/50 rounded-2xl blur-xl opacity-60"></div>
+              <Select
+                value={filters.sortBy}
+                onValueChange={(value) => onSortChange(value)}
+              >
+                <SelectTrigger className="relative w-full lg:w-56 h-14 bg-white/80 backdrop-blur-sm border border-secondary-200/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 text-slate-700">
+                  <SelectValue placeholder="Sort by" className="text-lg" />
+                </SelectTrigger>
+                <SelectContent className="bg-white/95 backdrop-blur-sm border border-primary-200/50 rounded-xl shadow-xl">
+                  {sortOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value} className="text-slate-700 hover:bg-primary-50/50">
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Premium View Mode Toggle - Desktop Only */}
+            <div className="hidden lg:flex relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary-100/50 to-secondary-100/50 rounded-2xl blur-xl opacity-60"></div>
+              <div className="relative bg-white/80 backdrop-blur-sm border border-primary-200/50 rounded-2xl p-1.5 shadow-lg">
                 <Button
-                  variant="ghost"
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
-                  onClick={clearSearch}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-gray-100 rounded-full transition-all duration-200"
+                  onClick={() => setViewMode('grid')}
+                  className={`px-6 py-3 transition-all duration-300 rounded-xl ${viewMode === 'grid' 
+                    ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg' 
+                    : 'hover:bg-primary-50 text-slate-600'}`}
                 >
-                  <X size={16} className="text-gray-400 hover:text-gray-600" />
+                  <Grid size={18} className="mr-2" />
+                  Grid
                 </Button>
-              )}
-              {loading && localSearchQuery && (
-                <div className="absolute right-10 top-1/2 -translate-y-1/2">
-                  <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                </div>
-              )}
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className={`px-6 py-3 transition-all duration-300 rounded-xl ${viewMode === 'list' 
+                    ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg' 
+                    : 'hover:bg-primary-50 text-slate-600'}`}
+                >
+                  <List size={18} className="mr-2" />
+                  List
+                </Button>
+              </div>
             </div>
 
-            {/* Sort */}
-            <Select
-              value={filters.sortBy}
-              onValueChange={(value) => onSortChange(value)}
-            >
-              <SelectTrigger className="w-full lg:w-48 h-12">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                {sortOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* View Mode - Desktop Only */}
-            <div className="hidden lg:flex border rounded-lg p-1 bg-gray-50">
+            {/* Premium Filter Toggle - Desktop */}
+            <div className="hidden lg:block relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-secondary-100/50 to-primary-100/50 rounded-2xl blur-xl opacity-60"></div>
               <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className="px-4 py-2 transition-all duration-200 hover:bg-blue-50"
+                variant="outline"
+                onClick={() => setShowFilters(!showFilters)}
+                className="relative h-14 px-6 bg-white/80 backdrop-blur-sm border border-secondary-200/50 hover:border-secondary-300 hover:bg-secondary-50/50 transition-all duration-300 font-semibold text-slate-700 rounded-2xl shadow-lg hover:shadow-xl"
               >
-                <Grid size={16} className="mr-2" />
-                Grid
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="px-4 py-2 transition-all duration-200 hover:bg-blue-50"
-              >
-                <List size={16} className="mr-2" />
-                List
+                <SlidersHorizontal size={20} className="mr-3 text-secondary-600" />
+                Filters
+                <ChevronDown 
+                  size={18} 
+                  className={`ml-3 transition-transform duration-300 text-secondary-600 ${showFilters ? 'rotate-180' : ''}`} 
+                />
               </Button>
             </div>
-
-            {/* Filter Toggle - Desktop */}
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              className="hidden lg:flex h-12 px-4 bg-white border-2 border-blue-100 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 font-medium"
-            >
-              <SlidersHorizontal size={16} className="mr-2 text-blue-600" />
-              Filters
-              <ChevronDown 
-                size={16} 
-                className={`ml-2 transition-transform text-blue-600 ${showFilters ? 'rotate-180' : ''}`} 
-              />
-            </Button>
           </div>
 
-          {/* Mobile Action Bar */}
-          <div className="flex lg:hidden gap-3">
-            {/* Filter Button - 50% width */}
+          {/* Premium Mobile Action Bar */}
+          <div className="flex lg:hidden gap-4">
+            {/* Premium Filter Button */}
             <div className="flex-1">
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    className="w-full h-12 bg-white border-2 border-blue-100 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 font-medium"
-                  >
-                    <SlidersHorizontal size={18} className="mr-2 text-blue-600" />
-                    Filters
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-80 p-0 bg-white">
-                  <SheetHeader className="p-6 pb-0 text-left">
-                    <SheetTitle className="text-left text-xl font-semibold text-gray-900">Filters</SheetTitle>
-                  </SheetHeader>
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-100/50 to-secondary-100/50 rounded-2xl blur-lg opacity-60"></div>
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      className="relative w-full h-12 bg-white/80 backdrop-blur-sm border border-primary-200/50 hover:border-primary-300 hover:bg-primary-50/50 transition-all duration-300 font-semibold text-slate-700 rounded-2xl shadow-lg"
+                    >
+                      <SlidersHorizontal size={20} className="mr-2 text-primary-600" />
+                      Filters
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="w-80 p-0 bg-gradient-to-br from-white via-primary-50/30 to-secondary-50/20">
+                    <SheetHeader className="p-6 pb-0 text-left">
+                      <SheetTitle className="text-left text-2xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">Filters</SheetTitle>
+                    </SheetHeader>
                   <div className="p-6">
                     {/* Mobile Filter Content - will be defined below */}
                     <MobileFilterContent 
@@ -372,39 +398,43 @@ export default function ProductsPage() {
                       clearFilters={clearFilters}
                     />
                   </div>
-                </SheetContent>
-              </Sheet>
+                  </SheetContent>
+                </Sheet>
+              </div>
             </div>
 
-            {/* View Mode Toggle - 50% width */}
+            {/* Premium View Mode Toggle */}
             <div className="flex-1">
-              <div className="flex h-12 border-2 border-blue-100 rounded-lg p-1 bg-white">
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                  className={`flex-1 h-full transition-all duration-200 ${
-                    viewMode === 'grid' 
-                      ? 'bg-blue-600 text-white shadow-sm' 
-                      : 'hover:bg-blue-50 text-gray-600'
-                  }`}
-                >
-                  <Grid size={16} className="mr-1" />
-                  Grid
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                  className={`flex-1 h-full transition-all duration-200 ${
-                    viewMode === 'list' 
-                      ? 'bg-blue-600 text-white shadow-sm' 
-                      : 'hover:bg-blue-50 text-gray-600'
-                  }`}
-                >
-                  <List size={16} className="mr-1" />
-                  List
-                </Button>
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-secondary-100/50 to-primary-100/50 rounded-2xl blur-lg opacity-60"></div>
+                <div className="relative flex h-12 border border-secondary-200/50 rounded-2xl p-1 bg-white/80 backdrop-blur-sm shadow-lg">
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className={`flex-1 h-full transition-all duration-300 rounded-xl ${
+                      viewMode === 'grid' 
+                        ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-md' 
+                        : 'hover:bg-primary-50/50 text-slate-600'
+                    }`}
+                  >
+                    <Grid size={16} className="mr-1" />
+                    Grid
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className={`flex-1 h-full transition-all duration-300 rounded-xl ${
+                      viewMode === 'list' 
+                        ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-md' 
+                        : 'hover:bg-primary-50/50 text-slate-600'
+                    }`}
+                  >
+                    <List size={16} className="mr-1" />
+                    List
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -516,84 +546,82 @@ export default function ProductsPage() {
                     transition={{ duration: 0.3, delay: index * 0.05 }}
                     whileHover={{ y: -4 }}
                   >
-                    <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300">
+                    <Card className="group overflow-hidden border-0 bg-white shadow-xl hover:shadow-2xl transition-all duration-500 rounded-2xl hover:scale-[1.02] hover:-translate-y-2">
                       {viewMode === 'grid' ? (
-                        // Grid View
+                        // Premium Grid View
                         <>
-                          <div className="relative overflow-hidden">
+                          <div className="relative overflow-hidden rounded-t-2xl">
+                            {/* Gradient Overlay for Premium Feel */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent z-10"></div>
+                            
                             <Link href={`/products/${product.slug}`}>
-                              <img
-                                src={product.thumbnailImage}
-                                alt={product.name}
-                                className="w-full h-40 md:h-64 object-cover transition-transform duration-300 group-hover:scale-110"
-                              />
+                              <div className="relative overflow-hidden">
+                                <img
+                                  src={product.thumbnailImage}
+                                  alt={product.name}
+                                  className="w-full h-48 md:h-72 object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
+                                />
+                                {/* Shimmer effect on hover */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
+                              </div>
                             </Link>
                             
                             {product.comparePrice && (
-                              <Badge className="absolute top-3 right-3 bg-red-500">
+                              <Badge className="absolute top-3 right-3 bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold px-2 py-1 rounded-full shadow-lg text-xs z-20">
                                 {Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)}% OFF
                               </Badge>
                             )}
 
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
-                              <Button 
-                                size="sm" 
-                                variant="secondary" 
-                                className="p-2"
-                                onClick={() => handleWishlistToggle(product)}
-                              >
-                                <Heart 
-                                  size={16} 
-                                  className={wishlistItems.some(item => item.id === product._id) ? 'fill-current text-red-500' : ''} 
-                                />
-                              </Button>
+                            {/* Mobile Add to Cart Button - Always Visible */}
+                            <div className="absolute bottom-3 right-3 z-20">
                               <Button 
                                 size="sm"
-                                onClick={() => handleAddToCart(product)}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleAddToCart(product);
+                                }}
+                                className="text-xs px-3 py-2 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 font-semibold"
                               >
-                                <ShoppingCart size={16} className="mr-2" />
-                                Add to Cart
+                                <ShoppingCart size={14} className="mr-1" />
+                                Add
                               </Button>
                             </div>
                           </div>
 
-                          <CardContent className="p-4">
-                            <div className="flex items-center mb-2">
-                              <div className="flex items-center space-x-1">
+                          <CardContent className="p-3">
+                            <div className="flex items-center mb-1.5">
+                              <div className="flex items-center space-x-0.5">
                                 {[...Array(5)].map((_, i) => (
                                   <Star
                                     key={i}
-                                    size={14}
-                                    className={`${
+                                    size={12}
+                                    className={`transition-all duration-300 ${
                                       i < Math.floor(product.averageRating || 0)
-                                        ? 'text-yellow-400 fill-current'
-                                        : 'text-gray-300'
+                                        ? 'text-yellow-400 fill-current drop-shadow-sm'
+                                        : 'text-slate-300'
                                     }`}
                                   />
                                 ))}
                               </div>
-                              <span className="text-sm text-muted-foreground ml-2">
+                              <span className="text-xs text-slate-500 ml-1 font-medium">
                                 ({product.totalReviews || 0})
                               </span>
                             </div>
                             
                             <Link href={`/products/${product.slug}`}>
-                              <h3 className="font-semibold text-sm md:text-base mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                              <h3 className="font-bold text-sm mb-2 text-slate-800 group-hover:text-primary-600 transition-colors duration-300 line-clamp-2 leading-tight">
                                 {product.name}
                               </h3>
                             </Link>
                             
-                            <p className="text-xs md:text-sm text-muted-foreground mb-3 line-clamp-2 hidden md:block">
-                              {product.shortDescription || product.description}
-                            </p>
-                            
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-2">
-                                <span className="text-base md:text-lg font-bold text-primary">
+                            <div className="flex items-center justify-between pt-1.5 border-t border-slate-100">
+                              <div className="flex flex-col">
+                                <span className="text-sm font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
                                   {formatPrice(product.price)}
                                 </span>
                                 {product.comparePrice && (
-                                  <span className="text-xs md:text-sm text-muted-foreground line-through">
+                                  <span className="text-xs text-slate-400 line-through font-medium">
                                     {formatPrice(product.comparePrice)}
                                   </span>
                                 )}
@@ -601,11 +629,18 @@ export default function ProductsPage() {
                               
                               <Button
                                 size="sm"
-                                variant="outline"
-                                onClick={() => handleAddToCart(product)}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity lg:flex hidden"
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleWishlistToggle(product);
+                                }}
+                                className="p-1.5 h-7 w-7 rounded-full hover:bg-primary-50 transition-all duration-300"
                               >
-                                <ShoppingCart size={14} />
+                                <Heart 
+                                  size={14} 
+                                  className={`transition-colors duration-300 ${wishlistItems.some(item => item.id === product._id) ? 'fill-current text-red-500' : 'text-slate-500 hover:text-red-500'}`} 
+                                />
                               </Button>
                             </div>
                           </CardContent>
@@ -747,8 +782,8 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        {/* Mobile Layout */}
-        <div className="lg:hidden bg-white">
+        {/* Premium Mobile Layout */}
+        <div className="lg:hidden">
           <div className="mb-4 flex items-center justify-between">
             <p className="text-muted-foreground text-sm">
               Showing {products.length} of {pagination.total} products
@@ -804,7 +839,7 @@ export default function ProductsPage() {
             </div>
           )}
 
-          {/* Mobile Products Grid */}
+          {/* Premium Mobile Products Grid */}
           <motion.div
             layout
             className={`grid ${
@@ -828,70 +863,80 @@ export default function ProductsPage() {
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                   whileHover={{ y: -2 }}
                 >
-                  <Card className="group overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
+                  <Card className="group overflow-hidden border-0 bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-500 rounded-2xl hover:scale-[1.01] hover:-translate-y-1">
                     {viewMode === 'grid' ? (
-                      // Mobile Grid View
+                      // Premium Mobile Grid View
                       <>
-                        <div className="relative overflow-hidden">
+                        <div className="relative overflow-hidden rounded-t-2xl">
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent z-10"></div>
+                          
                           <Link href={`/products/${product.slug}`}>
-                            <img
-                              src={product.thumbnailImage}
-                              alt={product.name}
-                              className="w-full h-32 sm:h-40 object-cover transition-transform duration-300 group-hover:scale-105"
-                            />
+                            <div className="relative overflow-hidden">
+                              <img
+                                src={product.thumbnailImage}
+                                alt={product.name}
+                                className="w-full h-32 sm:h-36 object-cover transition-all duration-500 group-hover:scale-105 group-hover:brightness-110"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
+                            </div>
                           </Link>
                           
                           {product.comparePrice && (
-                            <Badge className="absolute top-2 right-2 bg-red-500 text-xs">
+                            <Badge className="absolute top-3 right-3 bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold px-2 py-1 rounded-full shadow-md text-xs z-20">
                               {Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)}% OFF
                             </Badge>
                           )}
 
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          {/* Mobile Add to Cart Button - Always Visible */}
+                          <div className="absolute bottom-3 right-3 z-20">
                             <Button 
                               size="sm"
-                              onClick={() => handleAddToCart(product)}
-                              className="text-xs px-3 py-1"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleAddToCart(product);
+                              }}
+                              className="text-xs px-3 py-2 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 font-semibold"
                             >
                               <ShoppingCart size={14} className="mr-1" />
-                              Add to Cart
+                              Add
                             </Button>
                           </div>
                         </div>
 
                         <CardContent className="p-3">
-                          <div className="flex items-center mb-1">
-                            <div className="flex items-center space-x-1">
+                          <div className="flex items-center mb-1.5">
+                            <div className="flex items-center space-x-0.5">
                               {[...Array(5)].map((_, i) => (
                                 <Star
                                   key={i}
                                   size={12}
-                                  className={`${
+                                  className={`transition-all duration-300 ${
                                     i < Math.floor(product.averageRating || 0)
-                                      ? 'text-yellow-400 fill-current'
-                                      : 'text-gray-300'
+                                      ? 'text-yellow-400 fill-current drop-shadow-sm'
+                                      : 'text-slate-300'
                                   }`}
                                 />
                               ))}
                             </div>
-                            <span className="text-xs text-muted-foreground ml-1">
+                            <span className="text-xs text-slate-500 ml-1 font-medium">
                               ({product.totalReviews || 0})
                             </span>
                           </div>
                           
                           <Link href={`/products/${product.slug}`}>
-                            <h3 className="font-semibold text-sm mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                            <h3 className="font-bold text-sm mb-2 text-slate-800 group-hover:text-primary-600 transition-colors duration-300 line-clamp-2 leading-tight">
                               {product.name}
                             </h3>
                           </Link>
                           
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between pt-1.5 border-t border-slate-100">
                             <div className="flex flex-col">
-                              <span className="text-sm font-bold text-primary">
+                              <span className="text-sm font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
                                 {formatPrice(product.price)}
                               </span>
                               {product.comparePrice && (
-                                <span className="text-xs text-muted-foreground line-through">
+                                <span className="text-xs text-slate-400 line-through font-medium">
                                   {formatPrice(product.comparePrice)}
                                 </span>
                               )}
@@ -900,12 +945,16 @@ export default function ProductsPage() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => handleWishlistToggle(product)}
-                              className="p-1 h-8 w-8"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleWishlistToggle(product);
+                              }}
+                              className="p-1.5 h-7 w-7 rounded-full hover:bg-primary-50 transition-all duration-300"
                             >
                               <Heart 
                                 size={14} 
-                                className={wishlistItems.some(item => item.id === product._id) ? 'fill-current text-red-500' : ''} 
+                                className={`transition-colors duration-300 ${wishlistItems.some(item => item.id === product._id) ? 'fill-current text-red-500' : 'text-slate-500 hover:text-red-500'}`} 
                               />
                             </Button>
                           </div>
@@ -974,7 +1023,11 @@ export default function ProductsPage() {
                                 size="sm" 
                                 variant="ghost" 
                                 className="p-1 h-8 w-8"
-                                onClick={() => handleWishlistToggle(product)}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleWishlistToggle(product);
+                                }}
                               >
                                 <Heart 
                                   size={14} 
@@ -982,7 +1035,11 @@ export default function ProductsPage() {
                                 />
                               </Button>
                               <Button 
-                                onClick={() => handleAddToCart(product)}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleAddToCart(product);
+                                }}
                                 size="sm"
                                 className="text-xs px-2 py-1"
                               >
@@ -1046,22 +1103,22 @@ export default function ProductsPage() {
   );
 }
 
-// Filter Components
+// Premium Filter Components
 const MobileFilterContent = ({ 
   categories, categorySlug, setCategory, priceRange, setPriceRange, formatPrice,
   selectedColors, toggleColor, minRating, setMinRating, clearFilters 
 }: any) => (
-  <div className="space-y-6">
+  <div className="space-y-6 max-h-[calc(100vh-120px)] overflow-y-auto">
     <div className="flex items-center justify-between">
-      <h3 className="font-semibold">Filters</h3>
-      <Button variant="ghost" size="sm" onClick={clearFilters}>
+      <h3 className="font-bold text-xl bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">Filters</h3>
+      <Button variant="outline" size="sm" onClick={clearFilters} className="border-primary-200 hover:border-primary-400 hover:bg-primary-50 text-primary-600 rounded-full">
         Clear All
       </Button>
     </div>
 
-    {/* Category Filter */}
-    <div className="space-y-3">
-      <h4 className="font-medium">Category</h4>
+    {/* Premium Category Filter */}
+    <div className="space-y-4">
+      <h4 className="font-bold text-lg text-slate-800 border-b border-primary-100 pb-2">Category</h4>
       <div className="space-y-2 max-h-48 overflow-y-auto">
         <div className="flex items-center space-x-2">
           <Checkbox
@@ -1069,7 +1126,7 @@ const MobileFilterContent = ({
             checked={categorySlug === ''}
             onCheckedChange={() => setCategory('')}
           />
-          <label htmlFor="mobile-all" className="text-sm cursor-pointer">
+          <label htmlFor="mobile-all" className="text-sm cursor-pointer text-gray-500">
             All
           </label>
         </div>
@@ -1080,7 +1137,7 @@ const MobileFilterContent = ({
               checked={categorySlug === category.slug}
               onCheckedChange={() => setCategory(category.slug)}
             />
-            <label htmlFor={`mobile-${category.slug}`} className="text-sm cursor-pointer">
+            <label htmlFor={`mobile-${category.slug}`} className="text-sm text-gray-500 cursor-pointer">
               {category.name}
             </label>
           </div>
@@ -1088,9 +1145,9 @@ const MobileFilterContent = ({
       </div>
     </div>
 
-    {/* Price Range */}
-    <div className="space-y-3">
-      <h4 className="font-medium">Price Range</h4>
+    {/* Premium Price Range */}
+    <div className="space-y-4">
+      <h4 className="font-bold text-lg text-slate-800 border-b border-primary-100 pb-2">Price Range</h4>
       <Slider
         value={priceRange}
         onValueChange={(value) => setPriceRange([value[0] ?? 0, value[1] ?? 50000])}
@@ -1104,9 +1161,9 @@ const MobileFilterContent = ({
       </div>
     </div>
 
-    {/* Color Filter */}
-    <div className="space-y-3">
-      <h4 className="font-medium">Color</h4>
+    {/* Premium Color Filter */}
+    <div className="space-y-4">
+      <h4 className="font-bold text-lg text-slate-800 border-b border-primary-100 pb-2">Color</h4>
       <div className="grid grid-cols-2 gap-2">
         {['Black','White','Blue','Red','Green','Yellow','Gray','Pink','Purple'].map((color) => (
           <div key={color} className="flex items-center space-x-2">
@@ -1115,7 +1172,7 @@ const MobileFilterContent = ({
               checked={selectedColors.includes(color)}
               onCheckedChange={() => toggleColor(color)}
             />
-            <label htmlFor={`mobile-color-${color}`} className="text-sm cursor-pointer">
+            <label htmlFor={`mobile-color-${color}`} className="text-sm text-gray-500 cursor-pointer">
               {color}
             </label>
           </div>
@@ -1123,9 +1180,9 @@ const MobileFilterContent = ({
       </div>
     </div>
 
-    {/* Rating Filter */}
-    <div className="space-y-3">
-      <h4 className="font-medium">Minimum Rating</h4>
+    {/* Premium Rating Filter */}
+    <div className="space-y-4">
+      <h4 className="font-bold text-lg text-slate-800 border-b border-primary-100 pb-2">Minimum Rating</h4>
       <div className="space-y-2">
         {[4, 3, 2, 1].map(rating => (
           <div key={rating} className="flex items-center space-x-2">
@@ -1157,17 +1214,17 @@ const DesktopFilterContent = ({
   categories, categorySlug, setCategory, priceRange, setPriceRange, formatPrice,
   selectedColors, toggleColor, minRating, setMinRating, clearFilters 
 }: any) => (
-  <div className="space-y-6">
-    <div className="flex items-center justify-between mb-4">
-      <h3 className="font-semibold">Filters</h3>
-      <Button variant="ghost" size="sm" onClick={clearFilters}>
+  <div className="space-y-8">
+    <div className="flex items-center justify-between mb-6">
+      <h3 className="font-bold text-2xl bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">Filters</h3>
+      <Button variant="ghost" size="sm" onClick={clearFilters} className="hover:bg-primary-50 text-primary-600 rounded-full">
         Clear All
       </Button>
     </div>
 
-    {/* Category Filter */}
-    <div className="space-y-3 mb-6">
-      <h4 className="font-medium">Category</h4>
+    {/* Premium Category Filter */}
+    <div className="space-y-4 mb-8">
+      <h4 className="font-bold text-lg text-slate-800 border-b border-primary-100 pb-2">Category</h4>
       <div className="space-y-2">
         <div className="flex items-center space-x-2">
           <Checkbox
@@ -1194,9 +1251,9 @@ const DesktopFilterContent = ({
       </div>
     </div>
 
-    {/* Price Range */}
-    <div className="space-y-3 mb-6">
-      <h4 className="font-medium">Price Range</h4>
+    {/* Premium Price Range */}
+    <div className="space-y-4 mb-8">
+      <h4 className="font-bold text-lg text-slate-800 border-b border-primary-100 pb-2">Price Range</h4>
       <Slider
         value={priceRange}
         onValueChange={(value) => setPriceRange([value[0] ?? 0, value[1] ?? 50000])}
@@ -1210,9 +1267,9 @@ const DesktopFilterContent = ({
       </div>
     </div>
 
-    {/* Color Filter */}
-    <div className="space-y-3 mb-6">
-      <h4 className="font-medium">Color</h4>
+    {/* Premium Color Filter */}
+    <div className="space-y-4 mb-8">
+      <h4 className="font-bold text-lg text-slate-800 border-b border-primary-100 pb-2">Color</h4>
       <div className="grid grid-cols-3 gap-2">
         {['Black','White','Blue','Red','Green','Yellow','Gray','Pink','Purple'].map((color) => (
           <div key={color} className="flex items-center space-x-2">
@@ -1229,9 +1286,9 @@ const DesktopFilterContent = ({
       </div>
     </div>
 
-    {/* Rating Filter */}
-    <div className="space-y-3">
-      <h4 className="font-medium">Minimum Rating</h4>
+    {/* Premium Rating Filter */}
+    <div className="space-y-4">
+      <h4 className="font-bold text-lg text-slate-800 border-b border-primary-100 pb-2">Minimum Rating</h4>
       <div className="space-y-2">
         {[4, 3, 2, 1].map(rating => (
           <div key={rating} className="flex items-center space-x-2">

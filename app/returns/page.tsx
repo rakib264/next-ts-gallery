@@ -16,26 +16,27 @@ import { Textarea } from '@/components/ui/textarea';
 import { Field, FieldProps, Form, Formik } from 'formik';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-    AlertCircle,
-    ArrowLeft,
-    ArrowRight,
-    Award,
-    CheckCircle,
-    Clock,
-    FileText,
-    Globe,
-    Heart,
-    MessageCircle,
-    Package,
-    Plus,
-    RefreshCw,
-    Shield,
-    Sparkles,
-    TrendingUp,
-    Truck,
-    Users,
-    X,
-    Zap
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  Award,
+  CheckCircle,
+  ChevronRight,
+  Clock,
+  DollarSign,
+  FileText,
+  Globe,
+  Heart,
+  MessageCircle,
+  Package,
+  Plus,
+  RefreshCw,
+  Shield,
+  TrendingUp,
+  Truck,
+  Users,
+  X,
+  Zap
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -257,17 +258,23 @@ export default function ReturnsExchangesPage() {
           const product = values.products[i];
           if (!product.productName || !product.quantity || !product.reason) {
             canProceed = false;
-            fieldsToTouch[`products.${i}.productName`] = true;
-            fieldsToTouch[`products.${i}.quantity`] = true;
-            fieldsToTouch[`products.${i}.reason`] = true;
+            if (!fieldsToTouch.products) fieldsToTouch.products = [];
+            fieldsToTouch.products[i] = {
+              productName: !product.productName,
+              quantity: !product.quantity,
+              reason: !product.reason
+            };
           }
         }
       }
+    } else if (currentStep === 3) {
+      // Step 3 (Upload Images) is optional, always allow proceeding
+      canProceed = true;
     }
     
     if (canProceed && currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
-    } else {
+    } else if (!canProceed) {
       // Touch fields to show validation errors
       setTouched(fieldsToTouch);
       // Trigger validation to show errors
@@ -282,99 +289,76 @@ export default function ReturnsExchangesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="w-full min-h-screen bg-white">
       <Header />
       <MobileBottomNav />
 
-      <main className="pt-16 lg:pt-20 pb-20 md:pb-0">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-secondary/5 py-20 lg:py-24">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
-          <div className="absolute top-0 left-1/4 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
+      <main className="w-full pb-20 md:pb-0 ">
+      {/* Hero Section with Enhanced Gradient Background */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-primary via-primary-600 to-secondary p-8 md:p-12 lg:p-16">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-20" style={{backgroundImage: "url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.05\"%3E%3Cpath d=\"M30 30c0-11.046-8.954-20-20-20s-20 8.954-20 20 8.954 20 20 20 20-8.954 20-20zm0-10c0-5.523-4.477-10-10-10s-10 4.477-10 10 4.477 10 10 10 10-4.477 10-10z\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')"}}></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+        
+        <div className="relative w-full text-center">
+          <motion.div 
+            className="flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl mx-auto mb-8 shadow-2xl"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <RefreshCw className="text-white" size={40} />
+          </motion.div>
           
-          <div className="container mx-auto px-4 relative">
-            <motion.div 
-              className="text-center max-w-4xl mx-auto"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              {/* Icon with glow effect */}
+          <motion.h1 
+            className="text-2xl md:text-5xl lg:text-6xl font-bold mb-6 text-white"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            Returns & Exchanges
+          </motion.h1>
+          
+          <motion.p 
+            className="text-sm md:text-xl text-white/95 mb-12 max-w-3xl mx-auto leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            Experience seamless returns and exchanges with our customer-first approach. Your satisfaction is our top priority.
+          </motion.p>
+          
+          {/* Enhanced Feature Cards */}
+          <motion.div 
+            className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-8"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            {[
+              { icon: Clock, title: "30", subtitle: "Days Return Policy", color: "from-blue-400 to-blue-600" },
+              { icon: CheckCircle, title: "Free", subtitle: "Return Shipping", color: "from-green-400 to-green-600" },
+              { icon: RefreshCw, title: "24h", subtitle: "Quick Processing", color: "from-purple-400 to-purple-600" }
+            ].map((item, index) => (
               <motion.div 
-                className="relative inline-block mb-8"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 300 }}
+                key={index}
+                className="col-span-1 group bg-white/15 backdrop-blur-md rounded-2xl p-4 md:p-8 border border-white/30 hover:bg-white/20 transition-all duration-300 shadow-xl hover:shadow-2xl"
+                whileHover={{ y: -5, scale: 1.02 }}
+                transition={{ duration: 0.3 }}
               >
-                <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl scale-150"></div>
-                <div className="relative bg-gradient-to-br from-primary to-primary/80 p-6 rounded-full shadow-2xl">
-                  <RefreshCw className="text-white" size={48} />
+                <div className={`flex items-center justify-center w-16 h-16 bg-gradient-to-br ${item.color} rounded-2xl mx-auto mb-2 md:mb-6 shadow-lg group-hover:shadow-xl transition-shadow`}>
+                  <item.icon className="text-white" size={28} />
                 </div>
+                <h3 className="text-lg md:text-3xl font-bold text-white mb-2">{item.title}</h3>
+                <p className="text-white/90 font-medium text-xs md:text-md">{item.subtitle}</p>
               </motion.div>
-              
-              <motion.div variants={fadeInUp}>
-                <Badge variant="secondary" className="mb-4 px-4 py-2 text-sm font-medium">
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Hassle-Free Returns
-                </Badge>
-                <h1 className="text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                  Returns & Exchanges
-                </h1>
-                <p className="text-xl lg:text-2xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed">
-                  Experience seamless returns and exchanges with our customer-first approach. 
-                  Your satisfaction is our top priority.
-                </p>
-              </motion.div>
-              
-              {/* Enhanced Stats */}
-              <motion.div 
-                className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto"
-                variants={staggerContainer}
-                animate="animate"
-              >
-                <motion.div 
-                  variants={fadeInUp} 
-                  className="group relative bg-background/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300"
-                  whileHover={{ y: -5 }}
-                >
-                  <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-xl mb-4 mx-auto group-hover:bg-primary/20 transition-colors">
-                    <Clock className="text-primary" size={24} />
-                  </div>
-                  <div className="text-3xl font-bold text-primary mb-2">30</div>
-                  <div className="text-sm text-muted-foreground font-medium">Days Return Window</div>
-                </motion.div>
-                
-                <motion.div 
-                  variants={fadeInUp} 
-                  className="group relative bg-background/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300"
-                  whileHover={{ y: -5 }}
-                >
-                  <div className="flex items-center justify-center w-12 h-12 bg-green-500/10 rounded-xl mb-4 mx-auto group-hover:bg-green-500/20 transition-colors">
-                    <Truck className="text-green-500" size={24} />
-                  </div>
-                  <div className="text-3xl font-bold text-green-500 mb-2">Free</div>
-                  <div className="text-sm text-muted-foreground font-medium">Return Shipping</div>
-                </motion.div>
-                
-                <motion.div 
-                  variants={fadeInUp} 
-                  className="group relative bg-background/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300"
-                  whileHover={{ y: -5 }}
-                >
-                  <div className="flex items-center justify-center w-12 h-12 bg-blue-500/10 rounded-xl mb-4 mx-auto group-hover:bg-blue-500/20 transition-colors">
-                    <Zap className="text-blue-500" size={24} />
-                  </div>
-                  <div className="text-3xl font-bold text-blue-500 mb-2">24h</div>
-                  <div className="text-sm text-muted-foreground font-medium">Quick Processing</div>
-                </motion.div>
-              </motion.div>
-            </motion.div>
-          </div>
-        </section>
+            ))}
+          </motion.div>
+        </div>
+      </div>
 
         {/* Enhanced Tab Navigation */}
-        <section className="py-6 border-b sticky top-16 lg:top-20 bg-background/95 backdrop-blur-sm z-40 shadow-sm">
+        <section className="py-6 border-b sticky top-16 lg:top-20 bg-white/95 backdrop-blur-sm z-40 shadow-sm">
           <div className="container mx-auto px-4">
             <motion.nav 
               className="flex space-x-2 bg-muted/50 p-2 rounded-2xl max-w-3xl mx-auto border border-border/50"
@@ -392,8 +376,8 @@ export default function ReturnsExchangesPage() {
                   onClick={() => setActiveTab(id as any)}
                   className={`flex-1 flex flex-col items-center justify-center px-4 py-4 rounded-xl text-sm font-medium transition-all duration-300 relative group ${
                     activeTab === id
-                      ? 'bg-background text-primary shadow-lg border border-primary/20'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+                      ? 'bg-white text-primary shadow-lg border border-primary/20'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-white/50'
                   }`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -427,98 +411,174 @@ export default function ReturnsExchangesPage() {
           <div className="container mx-auto px-4">
             {activeTab === 'policy' && (
               <motion.div 
-                className="max-w-6xl mx-auto"
+                className="w-full mx-auto"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4 }}
               >
+                {/* Enhanced Hero Section */}
                 <motion.div 
-                  className="text-center mb-12"
+                  className="text-center mb-16 relative"
                   variants={fadeInUp}
                   initial="initial"
                   animate="animate"
                 >
-                  <Badge variant="outline" className="mb-4 px-4 py-2">
-                    <Award className="w-4 h-4 mr-2" />
-                    Our Commitment to You
-                  </Badge>
-                  <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-                    Transparent Return & Exchange Policies
-                  </h2>
-                  <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                    We believe in making returns and exchanges as simple and stress-free as possible
-                  </p>
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-secondary/5 rounded-3xl -z-10"></div>
+                  <div className="relative py-12 px-8">
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.2, duration: 0.5 }}
+                      className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full mb-6 shadow-lg"
+                    >
+                      <Award className="w-10 h-10 text-primary" />
+                    </motion.div>
+                  
+                    
+                    <motion.h1 
+                      className="text-2xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent leading-tight"
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.3, duration: 0.6 }}
+                    >
+                      Hassle-Free Returns
+                      <span className="block text-2xl md:text-5xl lg:text-6xl mt-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                        & Easy Exchanges
+                      </span>
+                    </motion.h1>
+                    
+                    <motion.p 
+                      className="text-sm text-muted-foreground max-w-3xl mx-auto leading-relaxed font-medium"
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.4, duration: 0.6 }}
+                    >
+                      Experience shopping with complete peace of mind. Our customer-first approach ensures 
+                      <span className="text-primary font-semibold"> seamless returns</span> and 
+                      <span className="text-secondary font-semibold"> quick exchanges</span> every time.
+                    </motion.p>
+                    
+                    {/* Trust Indicators */}
+                    <motion.div 
+                      className="flex flex-wrap items-center justify-center gap-6 mt-8"
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.5, duration: 0.6 }}
+                    >
+                      {[
+                        { icon: Shield, text: "30-Day Guarantee", color: "text-green-600" },
+                        { icon: Truck, text: "Free Returns", color: "text-blue-600" },
+                        { icon: Clock, text: "Quick Processing", color: "text-purple-600" }
+                      ].map((item, index) => (
+                        <div key={index} className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full shadow-sm border border-gray-200/50">
+                          <item.icon className={`w-5 h-5 ${item.color}`} />
+                          <span className="text-sm font-semibold text-gray-700">{item.text}</span>
+                        </div>
+                      ))}
+                    </motion.div>
+                  </div>
                 </motion.div>
 
-                <div className="grid lg:grid-cols-2 gap-8 mb-12">
-                  {/* Return Policy */}
+                {/* Enhanced Policy Cards Section */}
+                <div className="grid lg:grid-cols-2 gap-10 mb-20">
+                  {/* Return Policy Card */}
                   <motion.div
                     variants={slideIn}
                     initial="initial"
                     animate="animate"
-                    whileHover={{ y: -5 }}
-                    transition={{ duration: 0.3 }}
+                    whileHover={{ y: -8, scale: 1.02 }}
+                    transition={{ duration: 0.4, type: "spring", stiffness: 300 }}
+                    className="w-full"
                   >
-                    <Card className="h-full border-2 hover:border-primary/20 transition-all duration-300 group">
-                      <CardHeader className="pb-4">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="flex items-center text-xl">
-                            <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-xl mr-4 group-hover:bg-primary/20 transition-colors">
-                              <Package className="text-primary" size={24} />
+                    <Card className="h-full border-0 bg-gradient-to-br from-white via-white to-green-50/30 shadow-2xl hover:shadow-3xl transition-all duration-500 group overflow-hidden relative">
+                      {/* Decorative Elements */}
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-green-500/10 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
+                      <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-primary/10 to-transparent rounded-full translate-y-12 -translate-x-12"></div>
+                      
+                      <CardHeader className="pb-8 pt-8 relative z-10">
+                        <div className="flex items-start justify-between mb-6">
+                          <div className="flex items-center">
+                            <motion.div 
+                              className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-3xl mr-5 group-hover:scale-110 transition-all duration-300 shadow-lg border border-green-200/50"
+                              whileHover={{ rotate: 5 }}
+                            >
+                              <Package className="text-green-600" size={32} />
+                            </motion.div>
+                            <div>
+                              <CardTitle className="text-md lg:text-3xl font-bold text-gray-900 mb-2">
+                                Return Policy
+                              </CardTitle>
+                              <p className="text-xs md:text-sm text-gray-600 font-medium">Money-back guarantee</p>
                             </div>
-                            Return Policy
-                          </CardTitle>
-                          <Badge variant="secondary" className="bg-green-100 text-green-700">
-                            <Heart className="w-3 h-3 mr-1" />
+                          </div>
+                          <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 text-sm font-bold shadow-lg hover:shadow-xl transition-all duration-300">
+                            <Heart className="w-4 h-4 mr-2" />
                             Customer First
                           </Badge>
                         </div>
                       </CardHeader>
-                      <CardContent className="space-y-6">
+                      
+                      <CardContent className="space-y-5 pb-8 relative z-10">
                         {[
                           { 
                             icon: CheckCircle, 
-                            color: "text-green-500", 
-                            bgColor: "bg-green-50", 
+                            color: "text-green-600", 
+                            bgGradient: "bg-gradient-to-br from-green-50 to-green-100/50", 
+                            borderColor: "border-green-200/50",
                             title: "30-Day Return Window", 
-                            desc: "Return items within 30 days of delivery for a full refund",
-                            highlight: true
+                            desc: "Full refund guaranteed within 30 days of delivery",
+                            highlight: true,
+                            badge: "Most Popular"
                           },
                           { 
-                            icon: CheckCircle, 
-                            color: "text-green-500", 
-                            bgColor: "bg-green-50", 
-                            title: "Original Condition", 
-                            desc: "Items must be unused with original tags and packaging" 
+                            icon: Shield, 
+                            color: "text-blue-600", 
+                            bgGradient: "bg-gradient-to-br from-blue-50 to-blue-100/50", 
+                            borderColor: "border-blue-200/50",
+                            title: "Quality Assurance", 
+                            desc: "Items must be in original condition with tags and packaging" 
                           },
                           { 
-                            icon: CheckCircle, 
-                            color: "text-green-500", 
-                            bgColor: "bg-green-50", 
+                            icon: Truck, 
+                            color: "text-purple-600", 
+                            bgGradient: "bg-gradient-to-br from-purple-50 to-purple-100/50", 
+                            borderColor: "border-purple-200/50",
                             title: "Free Return Shipping", 
-                            desc: "We cover return shipping costs for most items" 
+                            desc: "We cover all return shipping costs - no hidden fees" 
                           },
                           { 
                             icon: AlertCircle, 
-                            color: "text-amber-500", 
-                            bgColor: "bg-amber-50", 
-                            title: "Non-Returnable Items", 
-                            desc: "Personalized items, intimate wear, and perishables" 
+                            color: "text-amber-600", 
+                            bgGradient: "bg-gradient-to-br from-amber-50 to-amber-100/50", 
+                            borderColor: "border-amber-200/50",
+                            title: "Special Items Policy", 
+                            desc: "Personalized, intimate wear, and perishable items excluded" 
                           }
                         ].map((item, index) => (
                           <motion.div 
                             key={index}
-                            className={`flex items-start space-x-4 p-4 rounded-xl ${item.bgColor} ${item.highlight ? 'ring-2 ring-green-200' : ''}`}
-                            initial={{ opacity: 0, x: -20 }}
+                            className={`flex items-start space-x-4 p-5 rounded-2xl ${item.bgGradient} border ${item.borderColor} ${item.highlight ? 'ring-2 ring-green-300/50 shadow-lg' : 'shadow-sm'} hover:shadow-md transition-all duration-300 relative overflow-hidden group/item`}
+                            initial={{ opacity: 0, x: -30 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.1 }}
+                            transition={{ delay: index * 0.15, duration: 0.5 }}
+                            whileHover={{ x: 5 }}
                           >
-                            <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${item.bgColor} flex-shrink-0`}>
-                              <item.icon className={`${item.color} mt-0.5`} size={18} />
-                            </div>
+                            {item.highlight && (
+                              <div className="absolute top-2 right-2">
+                                <Badge className="bg-green-500 text-white text-xs px-2 py-1">
+                                  {item.badge}
+                                </Badge>
+                              </div>
+                            )}
+                            <motion.div 
+                              className={`flex items-center justify-center w-12 h-12 rounded-xl ${item.bgGradient} border ${item.borderColor} flex-shrink-0 shadow-sm group-hover/item:scale-110 transition-transform duration-300`}
+                              whileHover={{ rotate: 10 }}
+                            >
+                              <item.icon className={`${item.color}`} size={24} />
+                            </motion.div>
                             <div className="flex-1">
-                              <h4 className="font-semibold text-foreground mb-1">{item.title}</h4>
-                              <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                              <h4 className="font-bold text-gray-900 mb-2 text-md lg:text-lg">{item.title}</h4>
+                              <p className="text-gray-600 leading-relaxed font-medium text-xs md:text-sm">{item.desc}</p>
                             </div>
                           </motion.div>
                         ))}
@@ -526,74 +586,104 @@ export default function ReturnsExchangesPage() {
                     </Card>
                   </motion.div>
 
-                  {/* Exchange Policy */}
+                  {/* Exchange Policy Card */}
                   <motion.div
                     variants={slideIn}
                     initial="initial"
                     animate="animate"
-                    whileHover={{ y: -5 }}
-                    transition={{ duration: 0.3, delay: 0.1 }}
+                    whileHover={{ y: -8, scale: 1.02 }}
+                    transition={{ duration: 0.4, type: "spring", stiffness: 300, delay: 0.1 }}
+                    className="w-full"
                   >
-                    <Card className="h-full border-2 hover:border-primary/20 transition-all duration-300 group">
-                      <CardHeader className="pb-4">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="flex items-center text-xl">
-                            <div className="flex items-center justify-center w-12 h-12 bg-blue-500/10 rounded-xl mr-4 group-hover:bg-blue-500/20 transition-colors">
-                              <RefreshCw className="text-blue-500" size={24} />
+                    <Card className="h-full border-0 bg-gradient-to-br from-white via-white to-blue-50/30 shadow-2xl hover:shadow-3xl transition-all duration-500 group overflow-hidden relative">
+                      {/* Decorative Elements */}
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-500/10 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
+                      <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-secondary/10 to-transparent rounded-full translate-y-12 -translate-x-12"></div>
+                      
+                      <CardHeader className="pb-8 pt-8 relative z-10">
+                        <div className="flex items-start justify-between mb-6">
+                          <div className="flex items-center">
+                            <motion.div 
+                              className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-3xl mr-5 group-hover:scale-110 transition-all duration-300 shadow-lg border border-blue-200/50"
+                              whileHover={{ rotate: -5 }}
+                            >
+                              <RefreshCw className="text-blue-600" size={32} />
+                            </motion.div>
+                            <div>
+                              <CardTitle className="text-md lg:text-3xl font-bold text-gray-900 mb-2">
+                                Exchange Policy
+                              </CardTitle>
+                              <p className="text-xs md:text-sm text-gray-600 font-medium">Size & color flexibility</p>
                             </div>
-                            Exchange Policy
-                          </CardTitle>
-                          <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                            <TrendingUp className="w-3 h-3 mr-1" />
+                          </div>
+                          <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 text-sm font-bold shadow-lg hover:shadow-xl transition-all duration-300">
+                            <TrendingUp className="w-4 h-4 mr-2" />
                             Quick & Easy
                           </Badge>
                         </div>
                       </CardHeader>
-                      <CardContent className="space-y-6">
+                      
+                      <CardContent className="space-y-5 pb-8 relative z-10">
                         {[
                           { 
-                            icon: CheckCircle, 
-                            color: "text-green-500", 
-                            bgColor: "bg-green-50", 
+                            icon: RefreshCw, 
+                            color: "text-blue-600", 
+                            bgGradient: "bg-gradient-to-br from-blue-50 to-blue-100/50", 
+                            borderColor: "border-blue-200/50",
                             title: "Size & Color Exchanges", 
-                            desc: "Exchange for different size or color within 30 days",
-                            highlight: true
+                            desc: "Perfect fit guarantee - exchange sizes or colors instantly",
+                            highlight: true,
+                            badge: "Popular"
                           },
                           { 
                             icon: CheckCircle, 
-                            color: "text-green-500", 
-                            bgColor: "bg-green-50", 
-                            title: "Same Item Only", 
-                            desc: "Exchanges must be for the same product" 
+                            color: "text-green-600", 
+                            bgGradient: "bg-gradient-to-br from-green-50 to-green-100/50", 
+                            borderColor: "border-green-200/50",
+                            title: "Same Product Line", 
+                            desc: "Exchange within the same product family for consistency" 
                           },
                           { 
-                            icon: CheckCircle, 
-                            color: "text-green-500", 
-                            bgColor: "bg-green-50", 
-                            title: "Quick Processing", 
-                            desc: "Exchanges processed within 3-5 business days" 
+                            icon: Zap, 
+                            color: "text-", 
+                            bgGradient: "bg-gradient-to-br from-orange-50 to-orange-100/50", 
+                            borderColor: "border-orange-200/50",
+                            title: "Lightning Fast Processing", 
+                            desc: "Express exchanges processed in just 2-3 business days" 
                           },
                           { 
-                            icon: Clock, 
-                            color: "text-blue-500", 
-                            bgColor: "bg-blue-50", 
-                            title: "Price Protection", 
-                            desc: "No additional charges for price differences during sale periods" 
+                            icon: DollarSign, 
+                            color: "text-purple-600", 
+                            bgGradient: "bg-gradient-to-br from-purple-50 to-purple-100/50", 
+                            borderColor: "border-purple-200/50",
+                            title: "Price Lock Protection", 
+                            desc: "Zero extra charges even during promotional price changes" 
                           }
                         ].map((item, index) => (
                           <motion.div 
                             key={index}
-                            className={`flex items-start space-x-4 p-4 rounded-xl ${item.bgColor} ${item.highlight ? 'ring-2 ring-green-200' : ''}`}
-                            initial={{ opacity: 0, x: -20 }}
+                            className={`flex items-start space-x-4 p-5 rounded-2xl ${item.bgGradient} border ${item.borderColor} ${item.highlight ? 'ring-2 ring-blue-300/50 shadow-lg' : 'shadow-sm'} hover:shadow-md transition-all duration-300 relative overflow-hidden group/item`}
+                            initial={{ opacity: 0, x: 30 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: (index + 4) * 0.1 }}
+                            transition={{ delay: (index + 4) * 0.15, duration: 0.5 }}
+                            whileHover={{ x: -5 }}
                           >
-                            <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${item.bgColor} flex-shrink-0`}>
-                              <item.icon className={`${item.color} mt-0.5`} size={18} />
-                            </div>
+                            {item.highlight && (
+                              <div className="absolute top-2 right-2">
+                                <Badge className="bg-blue-500 text-white text-xs px-2 py-1">
+                                  {item.badge}
+                                </Badge>
+                              </div>
+                            )}
+                            <motion.div 
+                              className={`flex items-center justify-center w-12 h-12 rounded-xl ${item.bgGradient} border ${item.borderColor} flex-shrink-0 shadow-sm group-hover/item:scale-110 transition-transform duration-300`}
+                              whileHover={{ rotate: -10 }}
+                            >
+                              <item.icon className={`${item.color}`} size={24} />
+                            </motion.div>
                             <div className="flex-1">
-                              <h4 className="font-semibold text-foreground mb-1">{item.title}</h4>
-                              <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                              <h4 className="font-bold text-gray-900 mb-2 text-md lg:text-lg">{item.title}</h4>
+                              <p className="text-gray-600 leading-relaxed font-medium text-xs md:text-sm">{item.desc}</p>
                             </div>
                           </motion.div>
                         ))}
@@ -607,86 +697,179 @@ export default function ReturnsExchangesPage() {
                   variants={scaleIn}
                   initial="initial"
                   animate="animate"
+                  className="w-full"
                 >
-                  <Card className="border-2 hover:border-primary/20 transition-all duration-300">
-                    <CardHeader className="text-center pb-6">
-                      <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl mx-auto mb-4">
-                        <Clock className="text-primary" size={32} />
-                      </div>
-                      <CardTitle className="text-2xl">Return Process Timeline</CardTitle>
-                      <p className="text-muted-foreground mt-2">
-                        Simple steps to complete your return in just a few days
-                      </p>
+                  <Card className="border-0 bg-gradient-to-br from-white via-gray-50/30 to-white shadow-2xl hover:shadow-3xl transition-all duration-500 overflow-hidden relative">
+                    {/* Decorative Background Elements */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/3 via-transparent to-secondary/3"></div>
+                    <div className="absolute top-0 left-1/4 w-64 h-64 bg-gradient-to-br from-primary/5 to-transparent rounded-full -translate-y-32 blur-3xl"></div>
+                    <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-gradient-to-tl from-secondary/5 to-transparent rounded-full translate-y-32 blur-3xl"></div>
+                    
+                    <CardHeader className="text-center pb-12 pt-16 relative z-10">
+                      <motion.div 
+                        className="flex items-center justify-center w-24 h-24 bg-gradient-to-br from-primary/20 via-primary/15 to-primary/10 rounded-full mx-auto mb-8 shadow-2xl border border-primary/20"
+                        initial={{ scale: 0, rotate: -180 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ delay: 0.3, duration: 0.8, type: "spring" }}
+                      >
+                        <Clock className="text-primary" size={48} />
+                      </motion.div>
+                      
+                      <motion.div
+                        initial={{ y: 30, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.4, duration: 0.6 }}
+                      >
+                        <Badge className="mb-6 px-6 py-3 bg-gradient-to-r from-primary/10 to-secondary/10 text-white border-primary/20 text-sm md:text-lg font-bold shadow-lg">
+                          <Zap className="w-5 h-5 mr-2" />
+                          Lightning Fast Process
+                        </Badge>
+                        
+                        <CardTitle className="text-2xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-gray-900 via-primary to-gray-900 bg-clip-text text-transparent">
+                          Your Return Journey
+                        </CardTitle>
+                        <p className="text-sm md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-medium">
+                          Four simple steps to a hassle-free return experience. 
+                          <span className="text-primary font-semibold"> Track every moment</span> of your return process.
+                        </p>
+                      </motion.div>
                     </CardHeader>
-                    <CardContent>
-                      <div className="grid md:grid-cols-4 gap-8">
+                    
+                    <CardContent className="pb-16 relative z-10">
+                      {/* Timeline Steps */}
+                      <div className="grid md:grid-cols-4 gap-8 mb-16 relative">
+                        {/* Connection Line */}
+                        <div className="hidden md:block absolute top-12 left-1/8 right-1/8 h-1 bg-gradient-to-r from-blue-200 via-orange-200 to-green-200 rounded-full"></div>
+                        
                         {[
                           { 
                             step: 1, 
-                            title: 'Initiate Return', 
-                            desc: 'Submit return request online', 
+                            title: 'Start Your Return', 
+                            desc: 'Quick online form - takes just 2 minutes', 
                             icon: FileText,
-                            color: 'bg-blue-500',
-                            bgColor: 'bg-blue-50'
+                            gradient: 'from-blue-500 to-blue-600',
+                            bgGradient: 'from-blue-50 to-blue-100/50',
+                            shadowColor: 'shadow-blue-200/50'
                           },
                           { 
                             step: 2, 
-                            title: 'Print Label', 
-                            desc: 'Download & print return label', 
+                            title: 'Get Your Label', 
+                            desc: 'Instant download - print at home or office', 
                             icon: Package,
-                            color: 'bg-purple-500',
-                            bgColor: 'bg-purple-50'
+                            gradient: 'from-purple-500 to-purple-600',
+                            bgGradient: 'from-purple-50 to-purple-100/50',
+                            shadowColor: 'shadow-purple-200/50'
                           },
                           { 
                             step: 3, 
-                            title: 'Ship Item', 
-                            desc: 'Drop off at courier location', 
+                            title: 'Ship With Ease', 
+                            desc: 'Drop off at any courier - free shipping', 
                             icon: Truck,
-                            color: 'bg-orange-500',
-                            bgColor: 'bg-orange-50'
+                            gradient: 'from-orange-500 to-orange-600',
+                            bgGradient: 'from-orange-50 to-orange-100/50',
+                            shadowColor: 'shadow-orange-200/50'
                           },
                           { 
                             step: 4, 
-                            title: 'Get Refund', 
-                            desc: 'Refund processed within 3-5 days', 
+                            title: 'Receive Refund', 
+                            desc: 'Money back in your account instantly', 
                             icon: CheckCircle,
-                            color: 'bg-green-500',
-                            bgColor: 'bg-green-50'
+                            gradient: 'from-green-500 to-green-600',
+                            bgGradient: 'from-green-50 to-green-100/50',
+                            shadowColor: 'shadow-green-200/50'
                           }
-                        ].map(({ step, title, desc, icon: Icon, color, bgColor }, index) => (
+                        ].map(({ step, title, desc, icon: Icon, gradient, bgGradient, shadowColor }, index) => (
                           <motion.div 
                             key={step} 
-                            className="text-center group"
-                            initial={{ opacity: 0, y: 20 }}
+                            className="text-center group relative"
+                            initial={{ opacity: 0, y: 50 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
+                            transition={{ delay: index * 0.2 + 0.5, duration: 0.6, type: "spring" }}
+                            whileHover={{ y: -10 }}
                           >
-                            <div className="relative mx-auto w-16 h-16 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                              <Icon className="text-primary" size={24} />
-                              <span className={`absolute -top-2 -right-2 ${color} text-white text-xs w-7 h-7 rounded-full flex items-center justify-center font-bold shadow-lg`}>
+                            <motion.div 
+                              className={`relative mx-auto w-24 h-24 bg-gradient-to-br ${bgGradient} rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-all duration-300 shadow-xl ${shadowColor} border border-white/50`}
+                              whileHover={{ rotate: 5 }}
+                            >
+                              <Icon className={`text-gray-700`} size={36} />
+                              <motion.span 
+                                className={`absolute -top-3 -right-3 bg-gradient-to-r ${gradient} text-white text-lg w-10 h-10 rounded-2xl flex items-center justify-center font-bold shadow-lg border-2 border-white`}
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ delay: index * 0.2 + 0.8, type: "spring", stiffness: 500 }}
+                              >
                                 {step}
-                              </span>
-                            </div>
-                            <h4 className="font-semibold mb-2 text-foreground">{title}</h4>
-                            <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+                              </motion.span>
+                            </motion.div>
+                            
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: index * 0.2 + 1 }}
+                            >
+                              <h4 className="font-bold mb-3 text-gray-900 text-md lg:text-xl group-hover:text-primary transition-colors">{title}</h4>
+                              <p className="text-gray-600 leading-relaxed font-medium text-base max-w-xs mx-auto">{desc}</p>
+                            </motion.div>
+                            
+                            {/* Connecting Arrow */}
                             {index < 3 && (
-                              <div className="hidden md:block absolute top-8 left-full w-full h-0.5 bg-gradient-to-r from-primary/30 to-transparent transform translate-x-4"></div>
+                              <motion.div 
+                                className="hidden md:block absolute top-12 left-full w-8 h-8 transform translate-x-4"
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.2 + 1.2 }}
+                              >
+                                <ChevronRight className="w-8 h-8 text-gray-300 group-hover:text-primary transition-colors" />
+                              </motion.div>
                             )}
                           </motion.div>
                         ))}
                       </div>
                       
-                      {/* Progress Bar */}
-                      <div className="mt-8 p-6 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-2xl">
-                        <div className="flex items-center justify-between mb-4">
-                          <span className="text-sm font-medium text-muted-foreground">Average Processing Time</span>
-                          <span className="text-sm font-bold text-primary">3-5 Days</span>
+                      {/* Enhanced Progress Section */}
+                      <motion.div 
+                        className="bg-gradient-to-r from-primary/8 via-white/50 to-secondary/8 rounded-3xl p-10 border border-primary/10 shadow-inner backdrop-blur-sm relative overflow-hidden"
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 1.5, duration: 0.6 }}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-secondary/5 opacity-50"></div>
+                        
+                        <div className="relative z-10">
+                          <div className="flex flex-col md:flex-row items-center justify-between mb-8">
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl">
+                                <TrendingUp className="w-6 h-6 text-primary" />
+                              </div>
+                              <div>
+                                <span className="text-md lg:text-xl font-bold text-gray-900">Processing Speed</span>
+                                <p className="text-xs md:text-sm text-gray-600">Industry-leading turnaround time</p>
+                              </div>
+                            </div>
+                            <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 text-sm md:text-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300">
+                              <Clock className="w-5 h-5 mr-2" />
+                              2-4 Days
+                            </Badge>
+                          </div>
+                          
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: "85%" }}
+                            transition={{ delay: 1.8, duration: 1.5, ease: "easeOut" }}
+                          >
+                            <Progress value={85} className="h-4 bg-white/70 shadow-inner" />
+                          </motion.div>
+                          
+                          <div className="mt-6 text-center">
+                            <p className="text-sm md:text-lg text-gray-700 font-semibold">
+                              🚀 <span className="text-primary font-bold">85% faster</span> than industry average
+                            </p>
+                            <p className="text-gray-600 mt-2">
+                              Most returns processed within 2-4 business days
+                            </p>
+                          </div>
                         </div>
-                        <Progress value={75} className="h-2" />
-                        <p className="text-xs text-muted-foreground mt-2 text-center">
-                          Most returns are processed within 3-5 business days
-                        </p>
-                      </div>
+                      </motion.div>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -798,7 +981,7 @@ export default function ReturnsExchangesPage() {
                                       className={`relative flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300 ${
                                         currentStep >= step.id 
                                           ? 'bg-primary border-primary text-primary-foreground shadow-lg' 
-                                          : 'border-muted-foreground text-muted-foreground bg-background'
+                                          : 'border-muted-foreground text-muted-foreground bg-white'
                                       }`}
                                       whileHover={{ scale: 1.1 }}
                                       transition={{ type: "spring", stiffness: 300 }}
@@ -819,7 +1002,7 @@ export default function ReturnsExchangesPage() {
                                     
                                     <div className="mt-3 text-center">
                                       <p className={`text-sm font-semibold ${
-                                        currentStep >= step.id ? 'text-foreground' : 'text-muted-foreground'
+                                        currentStep >= step.id ? 'text-primary' : 'text-muted-foreground'
                                       }`}>
                                         {step.title}
                                       </p>
@@ -1096,7 +1279,7 @@ export default function ReturnsExchangesPage() {
                                   )}
                                 </div>
                                 <div>
-                                  <Label htmlFor="details">Additional Details (Optional)</Label>
+                                  <Label className="mb-1" htmlFor="details">Additional Details (Optional)</Label>
                                   <Field name="details">
                                     {({ field }: FieldProps) => (
                                       <Textarea 
@@ -1124,16 +1307,24 @@ export default function ReturnsExchangesPage() {
                             exit={{ opacity: 0, x: -20 }}
                             transition={{ duration: 0.3 }}
                           >
-                            <Card>
-                              <CardHeader>
-                                <CardTitle>Products to {values.type === 'return' ? 'Return' : 'Exchange'}</CardTitle>
+                            <Card className="border-2 hover:border-primary/20 transition-all duration-300 shadow-lg">
+                              <CardHeader className="pb-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-t-lg">
+                                <CardTitle className="flex items-center text-xl lg:text-2xl">
+                                  <div className="flex items-center justify-center w-12 h-12 bg-primary/15 rounded-xl mr-4">
+                                    <Package className="text-primary" size={24} />
+                                  </div>
+                                  Products to {values.type === 'return' ? 'Return' : 'Exchange'}
+                                </CardTitle>
+                                <p className="text-muted-foreground mt-2">
+                                  Select and provide details for each product you want to {values.type}
+                                </p>
                               </CardHeader>
                               <CardContent className="space-y-6">
                                 {values.products.map((_, index) => (
                                   <Card key={index} className="border-dashed">
                                     <CardContent className="pt-6">
                                       <div className="flex items-center justify-between mb-4">
-                                        <h4 className="font-medium">Product {index + 1}</h4>
+                                        <h4 className="font-medium text-gray-900">Product {index + 1}</h4>
                                         {values.products.length > 1 && (
                                           <Button
                                             type="button"
@@ -1161,7 +1352,14 @@ export default function ReturnsExchangesPage() {
                                             )}
                                           </Field>
                                           {errors.products?.[index] && typeof errors.products[index] === 'object' && (errors.products[index] as any)?.productName && touched.products?.[index]?.productName && (
-                                            <p className="text-sm text-red-600 mt-1">{(errors.products[index] as any).productName}</p>
+                                            <motion.p 
+                                              className="text-sm text-red-600 mt-2 flex items-center"
+                                              initial={{ opacity: 0, x: -10 }}
+                                              animate={{ opacity: 1, x: 0 }}
+                                            >
+                                              <AlertCircle className="w-4 h-4 mr-1" />
+                                              {(errors.products[index] as any).productName}
+                                            </motion.p>
                                           )}
                                         </div>
                                         <div>
@@ -1215,7 +1413,14 @@ export default function ReturnsExchangesPage() {
                                             )}
                                           </Field>
                                           {errors.products?.[index] && typeof errors.products[index] === 'object' && (errors.products[index] as any)?.variant && touched.products?.[index]?.variant && (
-                                            <p className="text-sm text-red-600 mt-1">{(errors.products[index] as any).variant}</p>
+                                            <motion.p 
+                                              className="text-sm text-red-600 mt-2 flex items-center"
+                                              initial={{ opacity: 0, x: -10 }}
+                                              animate={{ opacity: 1, x: 0 }}
+                                            >
+                                              <AlertCircle className="w-4 h-4 mr-1" />
+                                              {(errors.products[index] as any).variant}
+                                            </motion.p>
                                           )}
                                         </div>
                                         <div>
@@ -1244,7 +1449,14 @@ export default function ReturnsExchangesPage() {
                                             )}
                                           </Field>
                                           {errors.products?.[index] && typeof errors.products[index] === 'object' && (errors.products[index] as any)?.reason && touched.products?.[index]?.reason && (
-                                            <p className="text-sm text-red-600 mt-1">{(errors.products[index] as any).reason}</p>
+                                            <motion.p 
+                                              className="text-sm text-red-600 mt-2 flex items-center"
+                                              initial={{ opacity: 0, x: -10 }}
+                                              animate={{ opacity: 1, x: 0 }}
+                                            >
+                                              <AlertCircle className="w-4 h-4 mr-1" />
+                                              {(errors.products[index] as any).reason}
+                                            </motion.p>
                                           )}
                                         </div>
                                       </div>
@@ -1276,9 +1488,17 @@ export default function ReturnsExchangesPage() {
                             exit={{ opacity: 0, x: -20 }}
                             transition={{ duration: 0.3 }}
                           >
-                            <Card>
-                              <CardHeader>
-                                <CardTitle>Upload Images (Optional)</CardTitle>
+                            <Card className="border-2 hover:border-primary/20 transition-all duration-300 shadow-lg">
+                              <CardHeader className="pb-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-t-lg">
+                                <CardTitle className="flex items-center text-xl lg:text-2xl">
+                                  <div className="flex items-center justify-center w-12 h-12 bg-primary/15 rounded-xl mr-4">
+                                    <FileText className="text-primary" size={24} />
+                                  </div>
+                                  Upload Images (Optional)
+                                </CardTitle>
+                                <p className="text-muted-foreground mt-2">
+                                  Add photos to help us better understand your request
+                                </p>
                               </CardHeader>
                               <CardContent className="space-y-6">
                                 <div>
@@ -1305,9 +1525,17 @@ export default function ReturnsExchangesPage() {
                             exit={{ opacity: 0, x: -20 }}
                             transition={{ duration: 0.3 }}
                           >
-                            <Card>
-                              <CardHeader>
-                                <CardTitle>Review Your Request</CardTitle>
+                            <Card className="border-2 hover:border-primary/20 transition-all duration-300 shadow-lg">
+                              <CardHeader className="pb-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-t-lg">
+                                <CardTitle className="flex items-center text-xl lg:text-2xl">
+                                  <div className="flex items-center justify-center w-12 h-12 bg-primary/15 rounded-xl mr-4">
+                                    <CheckCircle className="text-primary" size={24} />
+                                  </div>
+                                  Review Your Request
+                                </CardTitle>
+                                <p className="text-muted-foreground mt-2">
+                                  Please review all details before submitting your request
+                                </p>
                               </CardHeader>
                               <CardContent className="space-y-6">
                                 <div className="grid md:grid-cols-2 gap-6">
@@ -1411,134 +1639,86 @@ export default function ReturnsExchangesPage() {
 
             {activeTab === 'track' && (
               <motion.div 
-                className="max-w-4xl mx-auto"
+                className="w-full"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4 }}
               >
-                <motion.div 
-                  className="text-center mb-8"
-                  variants={fadeInUp}
-                  initial="initial"
-                  animate="animate"
-                >
-                  <Badge variant="outline" className="mb-4 px-4 py-2">
-                    <Truck className="w-4 h-4 mr-2" />
-                    Real-time Tracking
-                  </Badge>
-                  <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-                    Track Your Return Status
-                  </h2>
-                  <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                    Stay updated on your return request with our real-time tracking system
-                  </p>
-                </motion.div>
-
                 <ReturnTracker />
               </motion.div>
             )}
           </div>
         </section>
 
-        {/* Enhanced Contact Support */}
-        <section className="py-16 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-          <div className="container mx-auto px-4">
-            <motion.div 
-              className="text-center max-w-4xl mx-auto"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+              {/* Enhanced Help Section with Premium Gradient Background */}
+      <motion.div 
+        className="relative overflow-hidden bg-gradient-to-br from-primary via-primary-600 to-secondary p-8 md:p-12 lg:p-16 mt-16"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+      >
+        {/* Advanced Background Pattern */}
+        <div className="absolute inset-0 opacity-30" style={{backgroundImage: "url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.08\"%3E%3Cpath d=\"M30 30c0-11.046-8.954-20-20-20s-20 8.954-20 20 8.954 20 20 20 20-8.954 20-20zm0-10c0-5.523-4.477-10-10-10s-10 4.477-10 10 4.477 10 10 10 10-4.477 10-10z\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')"}}></div>
+        <div className="absolute top-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2"></div>
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-white/5 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2"></div>
+        
+        <div className="relative w-full text-center">
+          <motion.div 
+            className="flex items-center justify-center w-24 h-24 bg-white/20 backdrop-blur-md rounded-3xl mx-auto mb-8 shadow-2xl"
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <Users className="text-white" size={36} />
+          </motion.div>
+          
+          <motion.h2 
+            className="text-2xl md:text-5xl lg:text-6xl font-bold mb-6 text-white"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            Need Help? We're Here for You
+          </motion.h2>
+          
+          <motion.p 
+            className="text-sm md:text-xl md:text-2xl text-white/95 mb-12 max-w-4xl mx-auto leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            Our dedicated customer service team is ready to assist you with any questions about returns and exchanges.
+          </motion.p>
+        
+          
+          {/* Enhanced Support Links */}
+          <motion.div 
+            className="flex flex-col sm:flex-row gap-6 justify-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+          >
+            <Button 
+              variant="outline" 
+              className="h-14 px-8 bg-white/10 border-2 border-white/40 text-white hover:bg-white/20 font-semibold text-lg rounded-2xl backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:scale-105"
             >
-              <motion.div 
-                className="relative inline-block mb-8"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 300 }}
+              <Users className="mr-3" size={20} />
+              Start Live Chat
+            </Button>
+            <Link href="/contact">
+              <Button 
+                variant="outline" 
+                className="h-14 px-8 bg-white/10 border-2 border-white/40 text-white hover:bg-white/20 font-semibold text-lg rounded-2xl backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:scale-105"
               >
-                <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl scale-150"></div>
-                <div className="relative bg-gradient-to-br from-primary to-primary/80 p-6 rounded-full shadow-2xl">
-                  <MessageCircle className="text-white" size={48} />
-                </div>
-              </motion.div>
-              
-              <Badge variant="secondary" className="mb-4 px-4 py-2">
-                <Heart className="w-4 h-4 mr-2" />
-                24/7 Customer Support
-              </Badge>
-              <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-                Need Help? We're Here for You
-              </h2>
-              <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Our dedicated customer service team is ready to assist you with any questions about returns and exchanges.
-              </p>
-              
-              <div className="grid md:grid-cols-3 gap-6 mb-8">
-                <motion.div 
-                  className="group bg-background/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300"
-                  whileHover={{ y: -5 }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  <div className="flex items-center justify-center w-12 h-12 bg-green-500/10 rounded-xl mb-4 mx-auto group-hover:bg-green-500/20 transition-colors">
-                    <MessageCircle className="text-green-500" size={24} />
-                  </div>
-                  <h3 className="font-semibold mb-2">Live Chat</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Get instant help from our support team</p>
-                  <Button variant="outline" size="sm" className="w-full">
-                    Start Chat
-                  </Button>
-                </motion.div>
-                
-                <motion.div 
-                  className="group bg-background/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300"
-                  whileHover={{ y: -5 }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <div className="flex items-center justify-center w-12 h-12 bg-blue-500/10 rounded-xl mb-4 mx-auto group-hover:bg-blue-500/20 transition-colors">
-                    <Globe className="text-blue-500" size={24} />
-                  </div>
-                  <h3 className="font-semibold mb-2">Email Support</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Send us a detailed message</p>
-                  <Button variant="outline" size="sm" className="w-full">
-                    Send Email
-                  </Button>
-                </motion.div>
-                
-                <motion.div 
-                  className="group bg-background/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300"
-                  whileHover={{ y: -5 }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <div className="flex items-center justify-center w-12 h-12 bg-purple-500/10 rounded-xl mb-4 mx-auto group-hover:bg-purple-500/20 transition-colors">
-                    <MessageCircle className="text-purple-500" size={24} />
-                  </div>
-                  <h3 className="font-semibold mb-2">Phone Support</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Call us for immediate assistance</p>
-                  <Button variant="outline" size="sm" className="w-full">
-                    Call Now
-                  </Button>
-                </motion.div>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button variant="outline" size="lg" className="group">
-                  <MessageCircle className="mr-2 group-hover:animate-pulse" size={20} />
-                  Live Chat
-                </Button>
-                <Button variant="outline" size="lg" className="group">
-                  <Link href="/contact" className="flex items-center">
-                    <Globe className="mr-2 group-hover:animate-pulse" size={20} />
-                    Contact Us
-                  </Link>
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        </section>
+                <FileText className="mr-3" size={20} />
+                Contact Us
+              </Button>
+            </Link>
+          </motion.div>
+        </div>
+      </motion.div>
+
+
       </main>
 
       <Footer />

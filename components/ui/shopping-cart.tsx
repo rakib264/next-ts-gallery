@@ -1,6 +1,5 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useHydration } from '@/hooks/use-hydration';
@@ -60,7 +59,7 @@ export default function ShoppingCart() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-white z-50"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
             onClick={() => dispatch(toggleCart())}
             suppressHydrationWarning
           />
@@ -71,44 +70,54 @@ export default function ShoppingCart() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-0 h-full w-full max-w-md bg-white border-l shadow-2xl z-50 flex flex-col"
+            className="fixed right-0 top-0 h-full w-full max-w-md bg-white border-l border-gray-200 shadow-2xl z-[60] flex flex-col"
             suppressHydrationWarning
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b">
-              <div className="flex items-center space-x-2">
-                <ShoppingBag size={20} />
-                <h2 className="text-lg font-semibold">Shopping Cart</h2>
-                {itemCount > 0 && (
-                  <Badge variant="secondary">{itemCount}</Badge>
-                )}
+            <div className="flex items-center justify-between p-4 md:p-6 border-b border-gray-200 bg-gray-50">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-primary rounded-lg">
+                  <ShoppingBag size={18} className="text-white" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">Shopping Cart</h2>
+                  {itemCount > 0 && (
+                    <p className="text-sm text-gray-600">{itemCount} {itemCount === 1 ? 'item' : 'items'}</p>
+                  )}
+                </div>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => dispatch(toggleCart())}
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
               >
                 <X size={20} />
               </Button>
             </div>
 
             {/* Cart Items */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto p-4 md:p-6">
               {items.length === 0 ? (
                 <div className="text-center py-12">
-                  <ShoppingBag size={48} className="mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Your cart is empty</h3>
-                  <p className="text-muted-foreground mb-4">
+                  <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <ShoppingBag size={32} className="text-gray-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Your cart is empty</h3>
+                  <p className="text-gray-600 mb-6 text-sm">
                     Add some products to get started
                   </p>
                   <Link href="/products">
-                    <Button onClick={() => dispatch(toggleCart())}>
+                    <Button 
+                      onClick={() => dispatch(toggleCart())}
+                      className="w-full"
+                    >
                       Continue Shopping
                     </Button>
                   </Link>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {items.map((item) => (
                     <motion.div
                       key={`${item.id}-${item.variant || 'default'}`}
@@ -116,76 +125,107 @@ export default function ShoppingCart() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
-                      className="flex space-x-4 p-4 border rounded-lg"
+                      className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
                     >
-                      {/* Product Image */}
-                      <div className="w-16 h-16 bg-muted rounded-lg overflow-hidden flex-shrink-0">
-                        {item.image ? (
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <ShoppingBag size={20} className="text-muted-foreground" />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Product Details */}
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm line-clamp-2">{item.name}</h4>
-                        {item.variant && (
-                          <p className="text-xs text-muted-foreground">{item.variant}</p>
-                        )}
-                        <p className="text-sm font-semibold text-primary mt-1">
-                          {formatPrice(item.price)}
-                        </p>
-
-                        {/* Quantity Controls */}
-                        <div className="flex items-center justify-between mt-2">
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-8 h-8 p-0"
-                              onClick={() => handleQuantityChange(item.id, item.variant, item.quantity - 1)}
-                            >
-                              <Minus size={12} />
-                            </Button>
-                            <span className="text-sm font-medium w-8 text-center">
-                              {item.quantity}
-                            </span>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-8 h-8 p-0"
-                              onClick={() => handleQuantityChange(item.id, item.variant, item.quantity + 1)}
-                              disabled={item.quantity >= item.maxQuantity}
-                            >
-                              <Plus size={12} />
-                            </Button>
+                      <div className="p-3 md:p-4">
+                        <div className="flex space-x-3">
+                          {/* Product Image */}
+                          <div className="relative flex-shrink-0">
+                            <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-100 rounded-lg overflow-hidden">
+                              {item.image ? (
+                                <img
+                                  src={item.image}
+                                  alt={item.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <ShoppingBag size={20} className="text-gray-400" />
+                                </div>
+                              )}
+                            </div>
+                            {/* Quantity badge */}
+                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-sm">
+                              <span className="text-white text-xs font-semibold">{item.quantity}</span>
+                            </div>
                           </div>
 
-                          {/* Actions */}
-                          <div className="flex items-center space-x-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="p-1"
-                              onClick={() => handleMoveToWishlist(item)}
-                            >
-                              <Heart size={14} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="p-1 text-destructive"
-                              onClick={() => dispatch(removeFromCart({ id: item.id, variant: item.variant }))}
-                            >
-                              <Trash2 size={14} />
-                            </Button>
+                          {/* Product Details */}
+                          <div className="flex-1 min-w-0">
+                            {/* Product Name and Price */}
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="flex-1 min-w-0 pr-2">
+                                <h4 className="font-semibold text-gray-900 leading-tight line-clamp-2 text-sm md:text-base">
+                                  {item.name}
+                                </h4>
+                                {item.variant && (
+                                  <p className="text-xs text-gray-600 mt-1 bg-gray-100 px-2 py-1 rounded inline-block">
+                                    {item.variant}
+                                  </p>
+                                )}
+                              </div>
+                              
+                              <div className="text-right">
+                                <div className="font-bold text-gray-900 text-sm md:text-base">
+                                  {formatPrice(item.price * item.quantity)}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {formatPrice(item.price)} each
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Quantity Controls & Actions */}
+                            <div className="flex items-center justify-between">
+                              {/* Quantity Controls */}
+                              <div className="flex items-center space-x-2">
+                                <span className="text-xs text-gray-600 font-medium">Qty:</span>
+                                <div className="flex items-center border border-gray-300 rounded-md">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0 rounded-none hover:bg-gray-100"
+                                    onClick={() => handleQuantityChange(item.id, item.variant, item.quantity - 1)}
+                                  >
+                                    <Minus size={12} className="text-gray-600" />
+                                  </Button>
+                                  <div className="w-8 h-6 flex items-center justify-center border-x border-gray-300 text-xs font-semibold text-gray-900 bg-white">
+                                    {item.quantity}
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0 rounded-none hover:bg-gray-100"
+                                    onClick={() => handleQuantityChange(item.id, item.variant, item.quantity + 1)}
+                                    disabled={item.quantity >= item.maxQuantity}
+                                  >
+                                    <Plus size={12} className="text-gray-600" />
+                                  </Button>
+                                </div>
+                              </div>
+
+                              {/* Actions */}
+                              <div className="flex items-center space-x-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                                  onClick={() => handleMoveToWishlist(item)}
+                                >
+                                  <Heart size={12} className="mr-1" />
+                                  <span className="hidden sm:inline">Save</span>
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  onClick={() => dispatch(removeFromCart({ id: item.id, variant: item.variant }))}
+                                >
+                                  <Trash2 size={12} className="mr-1" />
+                                  <span className="hidden sm:inline">Remove</span>
+                                </Button>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -197,40 +237,43 @@ export default function ShoppingCart() {
 
             {/* Cart Summary & Checkout */}
             {items.length > 0 && (
-              <div className="border-t p-6 space-y-4">
+              <div className="border-t border-gray-200 bg-gray-50 p-4 md:p-6 space-y-4">
                 {/* Summary */}
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Subtotal:</span>
-                    <span>{formatPrice(subtotal)}</span>
-                  </div>
-                  {shippingCost > 0 && (
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-gray-900 text-base">Order Summary</h3>
+                  <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span>Shipping:</span>
-                      <span>{formatPrice(shippingCost)}</span>
+                      <span className="text-gray-600">Subtotal ({itemCount} items):</span>
+                      <span className="font-semibold text-gray-900">{formatPrice(subtotal)}</span>
                     </div>
-                  )}
-                  {tax > 0 && (
-                    <div className="flex justify-between">
-                      <span>Tax:</span>
-                      <span>{formatPrice(tax)}</span>
+                    {shippingCost > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Shipping:</span>
+                        <span className="font-semibold text-gray-900">{formatPrice(shippingCost)}</span>
+                      </div>
+                    )}
+                    {tax > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Tax:</span>
+                        <span className="font-semibold text-gray-900">{formatPrice(tax)}</span>
+                      </div>
+                    )}
+                    {discount > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Discount ({couponCode}):</span>
+                        <span className="font-semibold">-{formatPrice(discount)}</span>
+                      </div>
+                    )}
+                    <Separator className="bg-gray-300" />
+                    <div className="flex justify-between font-bold text-lg text-gray-900">
+                      <span>Total:</span>
+                      <span>{formatPrice(finalTotal)}</span>
                     </div>
-                  )}
-                  {discount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>Discount ({couponCode}):</span>
-                      <span>-{formatPrice(discount)}</span>
-                    </div>
-                  )}
-                  <Separator />
-                  <div className="flex justify-between font-semibold text-base">
-                    <span>Total:</span>
-                    <span>{formatPrice(finalTotal)}</span>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <Link href="/checkout" className="block">
                     <Button 
                       className="w-full" 
@@ -244,7 +287,7 @@ export default function ShoppingCart() {
                     <Link href="/products" className="flex-1">
                       <Button 
                         variant="outline" 
-                        className="w-full"
+                        className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
                         onClick={() => dispatch(toggleCart())}
                       >
                         Continue Shopping
@@ -254,7 +297,7 @@ export default function ShoppingCart() {
                       variant="ghost"
                       size="sm"
                       onClick={() => dispatch(clearCart())}
-                      className="text-destructive"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
                       Clear Cart
                     </Button>

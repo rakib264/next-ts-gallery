@@ -217,7 +217,7 @@ export default function CategoryPage() {
 
   if (!category && !loading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-white">
         <Header />
         <div className="pt-16 md:pt-20 mb-20 md:mb-0">
           <div className="container mx-auto px-4 py-12 text-center">
@@ -238,7 +238,7 @@ export default function CategoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <Header />
       
       <div className="pt-16 md:pt-20 mb-20 md:mb-0">
@@ -275,7 +275,7 @@ export default function CategoryPage() {
           >
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold">{category?.name}</h1>
+                <h1 className="text-2xl md:text-3xl text-gray-900 font-bold">{category?.name}</h1>
                 {category?.description && (
                   <p className="text-muted-foreground mt-2">{category.description}</p>
                 )}
@@ -289,36 +289,36 @@ export default function CategoryPage() {
             </div>
           </motion.div>
 
-          {/* Filters and Search - Luxury Design */}
+          {/* Filters and Search - Enhanced Design */}
           <div className="mb-8">
             {/* Main Filter Bar */}
-            <div className="bg-white/80 backdrop-blur-sm border border-black/20 rounded-2xl p-6 shadow-lg mb-6">
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-lg mb-6">
               <div className="flex flex-col lg:flex-row gap-4">
                 {/* Search */}
                 <div className="relative flex-1">
-                  <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground z-10">
+                  <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 z-10">
                     <Search size={18} />
                   </div>
                   <Input
-                    placeholder="Search luxury products..."
+                    placeholder="Search products..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-12 pr-4 py-3 bg-white/50 border-black/30 rounded-xl text-foreground placeholder:text-muted-foreground/70 focus:bg-white/80 focus:border-primary/50 transition-all duration-300"
+                    className="pl-12 pr-4 py-3 bg-white border-gray-300 rounded-xl text-gray-900 placeholder:text-gray-500 focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all duration-300"
                   />
                 </div>
 
                 {/* Sort */}
                 <div className="lg:w-52">
                   <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="bg-white/50 border-black/30 rounded-xl py-3 focus:bg-white/80 focus:border-primary/50 transition-all duration-300">
+                    <SelectTrigger className="bg-white border-gray-300 rounded-xl py-3 text-gray-900 focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all duration-300">
                       <SelectValue placeholder="Sort Collection" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white/95 backdrop-blur-sm border-black/20 rounded-xl shadow-lg">
+                    <SelectContent className="bg-white border-gray-200 rounded-xl shadow-lg">
                       {sortOptions.map((option) => (
                         <SelectItem 
                           key={option.value} 
                           value={option.value}
-                          className="hover:bg-primary/10 focus:bg-primary/10 rounded-lg"
+                          className="hover:bg-primary-50 focus:bg-primary-50 rounded-lg text-gray-900"
                         >
                           {option.label}
                         </SelectItem>
@@ -328,15 +328,15 @@ export default function CategoryPage() {
                 </div>
 
                 {/* View Mode Toggle */}
-                <div className="hidden lg:flex bg-white/50 border border-black/30 rounded-xl p-1 shadow-sm">
+                <div className="hidden lg:flex bg-white border border-gray-300 rounded-xl p-1 shadow-sm">
                   <Button
                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('grid')}
                     className={`px-4 py-2 rounded-lg transition-all duration-300 border ${
                       viewMode === 'grid' 
-                        ? 'bg-primary text-primary-foreground shadow-sm border-primary/20' 
-                        : 'text-muted-foreground hover:text-foreground hover:bg-white/50 border-transparent hover:border-black/50'
+                        ? 'bg-primary-600 text-white shadow-sm border-primary-600' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent hover:border-gray-300'
                     }`}
                   >
                     <Grid size={16} />
@@ -347,8 +347,8 @@ export default function CategoryPage() {
                     onClick={() => setViewMode('list')}
                     className={`px-4 py-2 rounded-lg transition-all duration-300 border ${
                       viewMode === 'list' 
-                        ? 'bg-primary text-primary-foreground shadow-sm border-primary/20' 
-                        : 'text-muted-foreground hover:text-foreground hover:bg-white/50 border-transparent hover:border-black/50'
+                        ? 'bg-primary-600 text-white shadow-sm border-primary-600' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent hover:border-gray-300'
                     }`}
                   >
                     <List size={16} />
@@ -359,16 +359,16 @@ export default function CategoryPage() {
                 <Button
                   variant="outline"
                   onClick={() => setShowFilters(!showFilters)}
-                  className="bg-white/50 border border-black/30 rounded-xl hover:bg-white/80 transition-all duration-300"
+                  className="bg-white border border-gray-300 rounded-xl hover:bg-gray-50 text-gray-900 transition-all duration-300"
                 >
                   <SlidersHorizontal className="mr-2" size={16} />
-                  Refine
+                  Filters
                   <ChevronDown className={`ml-2 transition-transform duration-300 ${showFilters ? 'rotate-180' : ''}`} size={16} />
                 </Button>
               </div>
             </div>
 
-            {/* Advanced Filters - Luxury Design */}
+            {/* Advanced Filters - Enhanced Design */}
             <AnimatePresence>
               {showFilters && (
                 <motion.div
@@ -376,18 +376,18 @@ export default function CategoryPage() {
                   animate={{ opacity: 1, height: 'auto', y: 0 }}
                   exit={{ opacity: 0, height: 0, y: -20 }}
                   transition={{ duration: 0.4, ease: "easeOut" }}
-                  className="bg-white/60 backdrop-blur-sm border border-black/20 rounded-2xl p-6 shadow-lg"
+                  className="bg-white border border-gray-200 rounded-2xl p-6 shadow-lg"
                 >
                   <div className="mb-4">
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Refine Your Selection</h3>
-                    <p className="text-sm text-muted-foreground">Discover products that match your style</p>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Filter Your Selection</h3>
+                    <p className="text-sm text-gray-600">Discover products that match your style</p>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {/* Price Range */}
                     <div className="space-y-3">
-                      <label className="text-sm font-semibold text-foreground block">Price Range</label>
-                      <div className="bg-white/60 rounded-xl p-4 border border-black/30">
+                      <label className="text-sm font-semibold text-gray-900 block">Price Range</label>
+                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                         <Slider
                           value={priceRange}
                           onValueChange={setPriceRange}
@@ -396,28 +396,28 @@ export default function CategoryPage() {
                           step={100}
                           className="mb-3"
                         />
-                        <div className="flex justify-between text-xs font-medium text-muted-foreground">
-                          <span className="bg-white/80 px-2 py-1 rounded-lg">{formatPrice(priceRange[0])}</span>
-                          <span className="bg-white/80 px-2 py-1 rounded-lg">{formatPrice(priceRange[1])}</span>
+                        <div className="flex justify-between text-xs font-medium text-gray-600">
+                          <span className="bg-white px-2 py-1 rounded-lg border border-gray-200">{formatPrice(priceRange[0])}</span>
+                          <span className="bg-white px-2 py-1 rounded-lg border border-gray-200">{formatPrice(priceRange[1])}</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Rating Filter */}
                     <div className="space-y-3">
-                      <label className="text-sm font-semibold text-foreground block">Quality Rating</label>
-                      <div className="bg-white/60 rounded-xl border border-black/30">
+                      <label className="text-sm font-semibold text-gray-900 block">Quality Rating</label>
+                      <div className="bg-gray-50 rounded-xl border border-gray-200">
                         <Select value={minRating.toString()} onValueChange={(value) => setMinRating(Number(value))}>
-                          <SelectTrigger className="bg-transparent border-0 py-3 focus:bg-white/80">
+                          <SelectTrigger className="bg-transparent border-0 py-3 text-gray-900 focus:bg-white">
                             <SelectValue placeholder="Any rating" />
                           </SelectTrigger>
-                          <SelectContent className="bg-white/95 backdrop-blur-sm border-black/20 rounded-xl shadow-lg">
-                            <SelectItem value="0" className="hover:bg-primary/10 rounded-lg">Any rating</SelectItem>
-                            <SelectItem value="1" className="hover:bg-primary/10 rounded-lg">⭐ 1+ Stars</SelectItem>
-                            <SelectItem value="2" className="hover:bg-primary/10 rounded-lg">⭐ 2+ Stars</SelectItem>
-                            <SelectItem value="3" className="hover:bg-primary/10 rounded-lg">⭐ 3+ Stars</SelectItem>
-                            <SelectItem value="4" className="hover:bg-primary/10 rounded-lg">⭐ 4+ Stars</SelectItem>
-                            <SelectItem value="5" className="hover:bg-primary/10 rounded-lg">⭐ 5 Stars Only</SelectItem>
+                          <SelectContent className="bg-white border-gray-200 rounded-xl shadow-lg">
+                            <SelectItem value="0" className="hover:bg-primary-50 rounded-lg text-gray-900">Any rating</SelectItem>
+                            <SelectItem value="1" className="hover:bg-primary-50 rounded-lg text-gray-900">⭐ 1+ Stars</SelectItem>
+                            <SelectItem value="2" className="hover:bg-primary-50 rounded-lg text-gray-900">⭐ 2+ Stars</SelectItem>
+                            <SelectItem value="3" className="hover:bg-primary-50 rounded-lg text-gray-900">⭐ 3+ Stars</SelectItem>
+                            <SelectItem value="4" className="hover:bg-primary-50 rounded-lg text-gray-900">⭐ 4+ Stars</SelectItem>
+                            <SelectItem value="5" className="hover:bg-primary-50 rounded-lg text-gray-900">⭐ 5 Stars Only</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -425,8 +425,8 @@ export default function CategoryPage() {
 
                     {/* Color Filter */}
                     <div className="space-y-3">
-                      <label className="text-sm font-semibold text-foreground block">Available Colors</label>
-                      <div className="bg-white/60 rounded-xl p-4 border border-black/30">
+                      <label className="text-sm font-semibold text-gray-900 block">Available Colors</label>
+                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                         <div className="grid grid-cols-2 gap-3">
                           {availableColors.map((color) => (
                             <div key={color} className="flex items-center space-x-2">
@@ -440,11 +440,11 @@ export default function CategoryPage() {
                                     setSelectedColors(selectedColors.filter(c => c !== color));
                                   }
                                 }}
-                                className="rounded-md border-2 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                                className="rounded-md border-2 data-[state=checked]:bg-primary-600 data-[state=checked]:border-primary-600"
                               />
                               <label 
                                 htmlFor={color} 
-                                className="text-xs font-medium text-foreground cursor-pointer"
+                                className="text-xs font-medium text-gray-900 cursor-pointer"
                               >
                                 {color}
                               </label>
@@ -456,20 +456,15 @@ export default function CategoryPage() {
 
                     {/* Actions */}
                     <div className="space-y-3">
-                      <label className="text-sm font-semibold text-foreground block">Quick Actions</label>
+                      <label className="text-sm font-semibold text-gray-900 block">Quick Actions</label>
                       <div className="space-y-3">
                         <Button 
                           variant="outline" 
                           onClick={clearFilters} 
-                          className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white border border-red-500/20 rounded-xl hover:from-red-600 hover:to-red-700 hover:border-red-600/30 transition-all duration-300 shadow-sm"
+                          className="w-full bg-red-600 text-white border border-red-600 rounded-xl hover:bg-red-700 hover:border-red-700 transition-all duration-300 shadow-sm"
                         >
                            Reset Filters
                         </Button>
-                        {/* <div className="bg-white/80 border border-black/40 rounded-xl p-3 shadow-sm">
-                          <div className="text-xs font-medium text-muted-foreground text-center">
-                             {pagination.total} products match your criteria
-                          </div>
-                        </div> */}
                       </div>
                     </div>
                   </div>
@@ -482,9 +477,9 @@ export default function CategoryPage() {
           <div className="mb-6">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
               <div className="flex items-center space-x-4">
-                <h2 className="text-xl font-semibold text-foreground">Collection</h2>
-                <div className="bg-white/60 backdrop-blur-sm px-3 py-1 rounded-full border border-black/20">
-                  <p className="text-sm font-medium text-muted-foreground">
+                <h2 className="text-xl font-semibold text-gray-900">Collection</h2>
+                <div className="bg-gray-100 px-3 py-1 rounded-full border border-gray-200">
+                  <p className="text-sm font-medium text-gray-600">
                     {products.length} of {pagination.total} pieces
                   </p>
                 </div>
@@ -492,21 +487,21 @@ export default function CategoryPage() {
               
               {(searchQuery || minRating > 0 || selectedColors.length > 0 || priceRange[0] > 0 || priceRange[1] < 50000) && (
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-medium text-muted-foreground">Applied filters:</span>
+                  <span className="text-sm font-medium text-gray-600">Applied filters:</span>
                   {searchQuery && (
-                    <Badge className="bg-white/80 text-foreground border border-black/30 rounded-lg hover:bg-white transition-all duration-200 group cursor-pointer" onClick={() => setSearchQuery('')}>
+                    <Badge className="bg-gray-100 text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-200 transition-all duration-200 group cursor-pointer" onClick={() => setSearchQuery('')}>
                       "{searchQuery}"
                       <X size={12} className="ml-1 group-hover:text-red-500 transition-colors" />
                     </Badge>
                   )}
                   {(priceRange[0] > 0 || priceRange[1] < 50000) && (
-                    <Badge className="bg-white/80 text-foreground border border-black/30 rounded-lg hover:bg-white transition-all duration-200 group cursor-pointer" onClick={() => setPriceRange([0, 50000])}>
+                    <Badge className="bg-gray-100 text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-200 transition-all duration-200 group cursor-pointer" onClick={() => setPriceRange([0, 50000])}>
                       {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
                       <X size={12} className="ml-1 group-hover:text-red-500 transition-colors" />
                     </Badge>
                   )}
                   {minRating > 0 && (
-                    <Badge className="bg-white/80 text-foreground border border-black/30 rounded-lg hover:bg-white transition-all duration-200 group cursor-pointer" onClick={() => setMinRating(0)}>
+                    <Badge className="bg-gray-100 text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-200 transition-all duration-200 group cursor-pointer" onClick={() => setMinRating(0)}>
                       ⭐ {minRating}+ Stars
                       <X size={12} className="ml-1 group-hover:text-red-500 transition-colors" />
                     </Badge>
@@ -514,7 +509,7 @@ export default function CategoryPage() {
                   {selectedColors.map((color) => (
                     <Badge 
                       key={color} 
-                      className="bg-white/80 text-foreground border border-black/30 rounded-lg hover:bg-white transition-all duration-200 group cursor-pointer"
+                      className="bg-gray-100 text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-200 transition-all duration-200 group cursor-pointer"
                       onClick={() => setSelectedColors(selectedColors.filter(c => c !== color))}
                     >
                       {color}
@@ -551,9 +546,9 @@ export default function CategoryPage() {
                     transition={{ duration: 0.3, delay: index * 0.05 }}
                     whileHover={{ y: -4 }}
                   >
-                    <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 bg-white/80 backdrop-blur-sm">
+                    <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 bg-white rounded-2xl">
                       {/* Product Card Content */}
-                      <div className="relative overflow-hidden">
+                      <div className="relative overflow-hidden rounded-t-2xl">
                         <Link href={`/products/${product.slug}`}>
                           <img
                             src={product.thumbnailImage}
@@ -563,101 +558,80 @@ export default function CategoryPage() {
                         </Link>
                         
                         {product.comparePrice && (
-                          <Badge className="absolute top-3 left-3 bg-red-500/90 backdrop-blur-sm text-white font-semibold rounded-lg">
-                            -{Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)}%
+                          <Badge className="absolute top-3 right-3 bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold px-2 py-1 rounded-full shadow-lg text-xs">
+                            {Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)}% OFF
                           </Badge>
                         )}
 
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500">
-                          <div className="absolute bottom-4 right-4 flex items-center justify-between">
-                            <div className="flex flex-col space-y-2">
-                              <Button 
-                                size="sm" 
-                                variant="secondary" 
-                                className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white transition-all duration-300 p-0 border-0"
-                                onClick={() => handleWishlistToggle(product)}
-                              >
-                                <Heart 
-                                  size={16} 
-                                  className={`transition-colors ${wishlistItems.some(item => item.id === product._id) ? 'fill-current text-red-500' : 'text-muted-foreground'}`} 
-                                />
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="secondary" 
-                                className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white transition-all duration-300 p-0 border-0"
-                                onClick={() => handleAddToCart(product)}
-                              >
-                                <ShoppingCart size={16} className="text-muted-foreground" />
-                              </Button>
-                            </div>
-                            {/* <div className="bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
-                              <span className="text-xs font-medium text-foreground">Quick View</span>
-                            </div> */}
-                          </div>
+                        {/* Mobile Add to Cart Button - Always Visible */}
+                        <div className="absolute bottom-3 right-3 z-20">
+                          <Button 
+                            size="sm"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleAddToCart(product);
+                            }}
+                            className="text-xs px-3 py-2 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 font-semibold"
+                          >
+                            <ShoppingCart size={14} className="mr-1" />
+                            Add
+                          </Button>
                         </div>
                       </div>
                       
-                      <CardContent className="p-4 bg-white/60 backdrop-blur-sm">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center space-x-1">
+                      <CardContent className="p-3">
+                        <div className="flex items-center mb-1.5">
+                          <div className="flex items-center space-x-0.5">
                             {[...Array(5)].map((_, i) => (
                               <Star
                                 key={i}
                                 size={12}
-                                className={`${
+                                className={`transition-all duration-300 ${
                                   i < Math.floor(product.averageRating || 0)
-                                    ? 'text-yellow-400 fill-current'
-                                    : 'text-gray-300'
+                                    ? 'text-yellow-400 fill-current drop-shadow-sm'
+                                    : 'text-slate-300'
                                 }`}
                               />
                             ))}
-                            <span className="text-xs text-muted-foreground ml-1">
-                              ({product.totalReviews || 0})
-                            </span>
                           </div>
-                          {!product.inStock && (
-                            <Badge variant="secondary" className="text-xs bg-red-50 text-red-600 border border-red-200">
-                              Sold Out
-                            </Badge>
-                          )}
+                          <span className="text-xs text-slate-500 ml-1 font-medium">
+                            ({product.totalReviews || 0})
+                          </span>
                         </div>
                         
                         <Link href={`/products/${product.slug}`}>
-                          <h3 className="font-semibold text-sm md:text-base mb-2 group-hover:text-primary transition-colors line-clamp-2 min-h-[2.5rem]">
+                          <h3 className="font-bold text-sm mb-2 text-slate-800 group-hover:text-primary-600 transition-colors duration-300 line-clamp-2 leading-tight">
                             {product.name}
                           </h3>
                         </Link>
                         
-                        <p className="text-xs text-muted-foreground mb-3 line-clamp-2 hidden md:block min-h-[2rem]">
-                          {product.shortDescription || product.description}
-                        </p>
-                        
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between pt-1.5 border-t border-slate-100">
                           <div className="flex flex-col">
-                            <div className="flex items-center space-x-2">
-                              <span className="text-base md:text-lg font-bold text-foreground">
-                                {formatPrice(product.price)}
-                              </span>
-                              {product.comparePrice && (
-                                <span className="text-xs text-muted-foreground line-through">
-                                  {formatPrice(product.comparePrice)}
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-xs text-muted-foreground">
-                              {product.inStock ? 'In Stock' : 'Out of Stock'}
+                            <span className="text-sm font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+                              {formatPrice(product.price)}
                             </span>
+                            {product.comparePrice && (
+                              <span className="text-xs text-slate-400 line-through font-medium">
+                                {formatPrice(product.comparePrice)}
+                              </span>
+                            )}
                           </div>
                           
                           <Button
                             size="sm"
-                            variant="outline"
-                            onClick={() => handleAddToCart(product)}
-                            disabled={!product.inStock}
-                            className="hidden md:flex bg-white/80 border-black/30 hover:bg-white transition-all duration-300 text-sx"
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleWishlistToggle(product);
+                            }}
+                            className="p-1.5 h-7 w-7 rounded-full hover:bg-primary-50 transition-all duration-300"
                           >
-                            {product.inStock ? 'Add to Bag' : 'Unavailable'}
+                            <Heart 
+                              size={14} 
+                              className={`transition-colors duration-300 ${wishlistItems.some(item => item.id === product._id) ? 'fill-current text-red-500' : 'text-slate-500 hover:text-red-500'}`} 
+                            />
                           </Button>
                         </div>
                       </CardContent>
@@ -677,21 +651,21 @@ export default function CategoryPage() {
             </AnimatePresence>
           </motion.div>
 
-          {/* Pagination - Luxury Design */}
+          {/* Pagination - Enhanced Design */}
           {pagination.pages > 1 && (
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex items-center justify-center gap-4 mt-12"
             >
-              <div className="bg-white/80 backdrop-blur-sm border border-black/20 rounded-2xl p-4 shadow-lg">
+              <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-lg">
                 <div className="flex items-center gap-3">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setPagination((prev) => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
                     disabled={pagination.page === 1 || loading}
-                    className="bg-white/60 border border-black/40 rounded-xl hover:bg-white hover:border-black/60 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                    className="bg-white border border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 text-gray-900 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                   >
                     Previous
                   </Button>
@@ -710,8 +684,8 @@ export default function CategoryPage() {
                           onClick={() => setPagination((prev) => ({ ...prev, page: pageNum }))}
                           className={`w-8 h-8 rounded-lg transition-all duration-300 border ${
                             pageNum === pagination.page 
-                              ? 'bg-primary text-primary-foreground shadow-sm border-primary/20' 
-                              : 'text-muted-foreground hover:text-foreground hover:bg-white/50 border-transparent hover:border-black/50'
+                              ? 'bg-primary-600 text-white shadow-sm border-primary-600' 
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent hover:border-gray-300'
                           }`}
                         >
                           {pageNum}
@@ -725,14 +699,14 @@ export default function CategoryPage() {
                     size="sm"
                     onClick={() => setPagination((prev) => ({ ...prev, page: Math.min(prev.pages, prev.page + 1) }))}
                     disabled={pagination.page === pagination.pages || loading}
-                    className="bg-white/60 border border-black/40 rounded-xl hover:bg-white hover:border-black/60 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                    className="bg-white border border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 text-gray-900 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                   >
                     Next
                   </Button>
                 </div>
                 
                 <div className="text-center mt-3">
-                  <span className="text-xs text-muted-foreground bg-white/40 px-3 py-1 rounded-full">
+                  <span className="text-xs text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
                     Page {pagination.page} of {pagination.pages}
                   </span>
                 </div>

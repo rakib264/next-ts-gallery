@@ -145,7 +145,7 @@ export default function Footer() {
               <Link href="/terms-conditions" className="block text-sm text-indigo-200/90 hover:text-white hover:translate-x-2 transition-all duration-300 py-1 border-l-2 border-transparent hover:border-indigo-400 pl-2">
                 Terms & Conditions
               </Link>
-              <Link href="/signin" className="block text-sm text-indigo-200/90 hover:text-white hover:translate-x-2 transition-all duration-300 py-1 border-l-2 border-transparent hover:border-indigo-400 pl-2">
+              <Link href="/auth/signin" className="block text-sm text-indigo-200/90 hover:text-white hover:translate-x-2 transition-all duration-300 py-1 border-l-2 border-transparent hover:border-indigo-400 pl-2">
                 Sign In
               </Link>
               <Link href="/blogs" className="block text-sm text-indigo-200/90 hover:text-white hover:translate-x-2 transition-all duration-300 py-1 border-l-2 border-transparent hover:border-indigo-400 pl-2">

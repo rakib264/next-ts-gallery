@@ -44,6 +44,7 @@ export const {
           email: user.email,
           name: `${user.firstName} ${user.lastName}`,
           role: user.role,
+          profileImage: user.profileImage,
         } as any;
       },
     }),
@@ -124,6 +125,7 @@ export const {
           
           user.id = newUser._id.toString();
           user.role = newUser.role;
+          user.profileImage = newUser.profileImage;
         } else {
           // Update existing user's auth provider info
           existingUser.authProvider = account.provider;
@@ -133,6 +135,7 @@ export const {
           
           user.id = existingUser._id.toString();
           user.role = existingUser.role;
+          user.profileImage = existingUser.profileImage;
         }
       }
       
@@ -143,13 +146,25 @@ export const {
         // persist role on token
         (token as any).role = (user as any).role;
         (token as any).id = (user as any).id;
+        (token as any).profileImage = (user as any).profileImage;
       }
+      
+      // If token exists but profileImage is not set, fetch it from database
+      if (token && token.sub && !(token as any).profileImage) {
+        await connectDB();
+        const user = await User.findById(token.sub);
+        if (user) {
+          (token as any).profileImage = user.profileImage;
+        }
+      }
+      
       return token;
     },
     async session({ session, token }) {
       if (token && token.sub) {
         (session.user as any).id = token.id as string;
         (session.user as any).role = (token as any).role as string;
+        (session.user as any).profileImage = (token as any).profileImage as string;
       }
       return session;
     },

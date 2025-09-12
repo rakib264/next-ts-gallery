@@ -2,11 +2,14 @@
 
 import BestSellingProducts from '@/components/home/BestSellingProducts';
 import CategorySection from '@/components/home/CategorySection';
+import DealsSection from '@/components/home/DealsSection';
 import FeaturedProducts from '@/components/home/FeaturedProducts';
 import HeroCarousel from '@/components/home/HeroCarousel';
+import HeroPromo from '@/components/home/HeroPromo';
 import LimitedEdition from '@/components/home/LimitedEdition';
 import NewArrivals from '@/components/home/NewArrivals';
 import Newsletter from '@/components/home/Newsletter';
+import SocialProof from '@/components/home/SocialProof';
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
 import MobileBottomNav from '@/components/layout/MobileBottomNav';
@@ -84,12 +87,12 @@ export default function Home() {
   }, [mounted, isClient]);
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-background">
+    <div ref={containerRef} className="min-h-screen bg-white">
       <ClientOnly>
         <Header />
       </ClientOnly>
       
-      <main className="mb-20 md:mb-0">
+      <main className="mb-0">
         {/* Hero Carousel section with simple fade-in, no GSAP conflict */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -100,32 +103,52 @@ export default function Home() {
           <HeroCarousel />
         </motion.div>
 
-        {/* Category Section */}
-        <div className="scroll-reveal" suppressHydrationWarning>
+                {/* Category Section */}
+                <div className="scroll-reveal" suppressHydrationWarning>
           <CategorySection />
         </div>
+
+        {/* Hero Promo Section */}
+        <div className="scroll-reveal" suppressHydrationWarning>
+          <HeroPromo />
+        </div>
+
+                {/* Deals Section - Events Carousel */}
+                <div className="scroll-reveal" suppressHydrationWarning>
+          <DealsSection />
+        </div>
         
-        {/* Other sections with scroll reveal animations */}
+        {/* Featured Products - Horizontal Carousel */}
         <div className="scroll-reveal" suppressHydrationWarning>
           <FeaturedProducts />
         </div>
         
+        {/* New Arrivals - Grid Layout */}
         <div className="scroll-reveal" suppressHydrationWarning>
           <NewArrivals />
         </div>
         
+        {/* Best Selling Products - Grid Layout */}
         <div className="scroll-reveal" suppressHydrationWarning>
           <BestSellingProducts />
         </div>
         
+        {/* Limited Edition - Horizontal Carousel */}
         <div className="scroll-reveal" suppressHydrationWarning>
           <LimitedEdition />
         </div>
-        
+
+        {/* Brand Story Section */}
         {/* <div className="scroll-reveal" suppressHydrationWarning>
-          <Categories />
+          <BrandStory />
         </div> */}
+
+        {/* Social Proof Section */}
+        <div className="scroll-reveal" suppressHydrationWarning>
+          <SocialProof />
+        </div>
         
+        {/* Newsletter Section */}
         <div className="scroll-reveal" suppressHydrationWarning>
           <Newsletter />
         </div>

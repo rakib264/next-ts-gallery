@@ -106,6 +106,14 @@ export default function ForgotPassword() {
 
   const handleMethodSelection = (method: VerificationMethod) => {
     setVerificationMethod(method);
+    // Clear all fields when starting the process
+    setPhone('');
+    setEmail('');
+    setOtp('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setError('');
+    setSuccess('');
     if (method === 'phone') {
       setStep('phone');
     } else {
@@ -122,6 +130,13 @@ export default function ForgotPassword() {
         ? { phone: (values as PhoneFormValues).phone, type: 'password_reset' }
         : { email: (values as EmailFormValues).email, type: 'password_reset' };
 
+      // Store the phone/email for later use in OTP verification
+      if (verificationMethod === 'phone') {
+        setPhone((values as PhoneFormValues).phone);
+      } else {
+        setEmail((values as EmailFormValues).email);
+      }
+
       const response = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -132,6 +147,7 @@ export default function ForgotPassword() {
 
       if (response.ok) {
         setSuccess('OTP sent successfully');
+        setOtp(''); // Clear OTP field when moving to verification step
         setStep('otp');
       } else {
         setError(data.error || 'Failed to send OTP');
@@ -163,6 +179,9 @@ export default function ForgotPassword() {
 
       if (response.ok) {
         setSuccess('OTP verified successfully');
+        setOtp(''); // Clear OTP field when moving to password reset step
+        setNewPassword(''); // Clear password fields
+        setConfirmPassword(''); // Clear password fields
         setStep('password');
       } else {
         setError(data.error || 'Invalid OTP');
@@ -220,13 +239,13 @@ export default function ForgotPassword() {
               type="button"
               variant="outline"
               onClick={() => handleMethodSelection('phone')}
-              className="h-16 text-left px-6"
+              className="h-12 sm:h-14 text-left px-4 sm:px-6 border-2 border-primary-200 hover:border-primary-300 hover:bg-primary-50 transition-all duration-200 group touch-manipulation"
             >
-              <div className="flex items-center space-x-4">
-                <Phone className="text-primary" size={24} />
+              <div className="flex items-center space-x-3 sm:space-x-4">
+                <Phone className="text-primary-600 group-hover:text-primary-700 transition-colors duration-200" size={20} />
                 <div>
-                  <div className="font-medium">Phone Number</div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="font-semibold text-foreground text-sm sm:text-base">Phone Number</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">
                     Receive code via SMS
                   </div>
                 </div>
@@ -242,13 +261,13 @@ export default function ForgotPassword() {
               type="button"
               variant="outline"
               onClick={() => handleMethodSelection('email')}
-              className="h-16 text-left px-6"
+              className="h-12 sm:h-14 text-left px-4 sm:px-6 border-2 border-secondary-200 hover:border-secondary-300 hover:bg-secondary-50 transition-all duration-200 group touch-manipulation"
             >
-              <div className="flex items-center space-x-4">
-                <Mail className="text-primary" size={24} />
+              <div className="flex items-center space-x-3 sm:space-x-4">
+                <Mail className="text-secondary-600 group-hover:text-secondary-700 transition-colors duration-200" size={20} />
                 <div>
-                  <div className="font-medium">Email Address</div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="font-semibold text-foreground text-sm sm:text-base">Email Address</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">
                     Receive code via email
                   </div>
                 </div>
@@ -274,15 +293,15 @@ export default function ForgotPassword() {
         }
 
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div className="text-center">
-              <h3 className="text-lg font-medium mb-4">Choose Verification Method</h3>
-              <p className="text-sm text-muted-foreground mb-6">
+              <h3 className="text-base sm:text-lg font-medium mb-3 sm:mb-4">Choose Verification Method</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6">
                 Select how you'd like to receive your verification code
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:gap-4">
               {availableMethods}
             </div>
           </div>
@@ -296,57 +315,47 @@ export default function ForgotPassword() {
             onSubmit={handleSendOTP}
           >
             {({ isSubmitting }) => (
-              <Form className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Phone Number</label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+              <Form className="space-y-4 sm:space-y-6">
+                <div className="space-y-2 sm:space-y-3">
+                  <label htmlFor="phone" className="block text-xs sm:text-sm font-semibold text-gray-900 mb-1 sm:mb-2">Phone Number</label>
+                  <div className="relative group">
+                    <Phone className="absolute z-10 left-3 sm:left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary-600 transition-colors duration-200" size={16} />
                     <Field name="phone">
                       {({ field }: any) => (
                         <Input
                           {...field}
+                          id="phone"
                           type="tel"
                           placeholder="Enter your phone number"
-                          className="pl-10 h-12"
+                          className="pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base border-2 border-primary-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all duration-200 touch-manipulation"
                         />
                       )}
                     </Field>
                   </div>
-                  <ErrorMessage name="phone" component="div" className="text-red-500 text-sm mt-1" />
+                  <ErrorMessage name="phone" component="div" className="text-red-500 text-xs sm:text-sm mt-1" />
                   <p className="text-xs text-muted-foreground">
                     We'll send a verification code to this number
                   </p>
                 </div>
 
-                <div className="flex space-x-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setStep('method')}
-                    className="flex-1 h-12"
-                  >
-                    <ArrowLeft className="mr-2" size={18} />
-                    Back
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={loading || isSubmitting}
-                    className="flex-1 h-12 text-lg font-medium"
-                  >
-                    {loading || isSubmitting ? (
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                      />
-                    ) : (
-                      <>
-                        Send OTP
-                        <ArrowRight className="ml-2" size={18} />
-                      </>
-                    )}
-                  </Button>
-                </div>
+                <Button
+                  type="submit"
+                  disabled={loading || isSubmitting}
+                  className="w-full h-10 sm:h-12 text-sm sm:text-base font-semibold bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 shadow-lg hover:shadow-xl transition-all duration-300 touch-manipulation"
+                >
+                  {loading || isSubmitting ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full"
+                    />
+                  ) : (
+                    <>
+                      Send OTP
+                      <ArrowRight className="ml-1 sm:ml-2" size={16} />
+                    </>
+                  )}
+                </Button>
               </Form>
             )}
           </Formik>
@@ -360,57 +369,47 @@ export default function ForgotPassword() {
             onSubmit={handleSendOTP}
           >
             {({ isSubmitting }) => (
-              <Form className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Email Address</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+              <Form className="space-y-4 sm:space-y-6">
+                <div className="space-y-2 sm:space-y-3">
+                  <label htmlFor="email" className="block text-xs sm:text-sm font-semibold text-gray-900 mb-1 sm:mb-2">Email Address</label>
+                  <div className="relative group">
+                    <Mail className="absolute z-10 left-3 sm:left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary-600 transition-colors duration-200" size={16} />
                     <Field name="email">
                       {({ field }: any) => (
                         <Input
                           {...field}
+                          id="email"
                           type="email"
                           placeholder="Enter your email address"
-                          className="pl-10 h-12"
+                          className="pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base border-2 border-primary-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all duration-200 touch-manipulation"
                         />
                       )}
                     </Field>
                   </div>
-                  <ErrorMessage name="email" component="div" className="text-red-500 text-sm mt-1" />
+                  <ErrorMessage name="email" component="div" className="text-red-500 text-xs sm:text-sm mt-1" />
                   <p className="text-xs text-muted-foreground">
                     We'll send a verification code to this email
                   </p>
                 </div>
 
-                <div className="flex space-x-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setStep('method')}
-                    className="flex-1 h-12"
-                  >
-                    <ArrowLeft className="mr-2" size={18} />
-                    Back
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={loading || isSubmitting}
-                    className="flex-1 h-12 text-lg font-medium"
-                  >
-                    {loading || isSubmitting ? (
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                      />
-                    ) : (
-                      <>
-                        Send OTP
-                        <ArrowRight className="ml-2" size={18} />
-                      </>
-                    )}
-                  </Button>
-                </div>
+                <Button
+                  type="submit"
+                  disabled={loading || isSubmitting}
+                  className="w-full h-10 sm:h-12 text-sm sm:text-base font-semibold bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 shadow-lg hover:shadow-xl transition-all duration-300 touch-manipulation"
+                >
+                  {loading || isSubmitting ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full"
+                    />
+                  ) : (
+                    <>
+                      Send OTP
+                      <ArrowRight className="ml-1 sm:ml-2" size={16} />
+                    </>
+                  )}
+                </Button>
               </Form>
             )}
           </Formik>
@@ -419,59 +418,61 @@ export default function ForgotPassword() {
       case 'otp':
         return (
           <Formik
-            initialValues={{ otp }}
+            initialValues={{ otp: '' }}
             validationSchema={otpValidationSchema}
             onSubmit={handleVerifyOTP}
+            enableReinitialize={true}
           >
             {({ isSubmitting }) => (
-              <Form className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Verification Code</label>
-                  <div className="relative">
-                    <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+              <Form className="space-y-4 sm:space-y-6">
+                <div className="space-y-2 sm:space-y-3">
+                  <label htmlFor="otp" className="block text-xs sm:text-sm font-semibold text-gray-900 mb-1 sm:mb-2">Verification Code</label>
+                  <div className="relative group">
+                    <Shield className="absolute z-10 left-3 sm:left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary-600 transition-colors duration-200" size={16} />
                     <Field name="otp">
                       {({ field }: any) => (
                         <Input
                           {...field}
+                          id="otp"
                           type="text"
                           placeholder="Enter 6-digit code"
-                          className="pl-10 h-12 text-center text-lg tracking-widest"
+                          className="pl-10 sm:pl-12 h-10 sm:h-12 text-center text-sm sm:text-lg tracking-widest border-2 border-primary-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all duration-200 touch-manipulation"
                           maxLength={6}
                         />
                       )}
                     </Field>
                   </div>
-                  <ErrorMessage name="otp" component="div" className="text-red-500 text-sm mt-1" />
+                  <ErrorMessage name="otp" component="div" className="text-red-500 text-xs sm:text-sm mt-1" />
                   <p className="text-xs text-muted-foreground">
                     Enter the 6-digit code sent to {verificationMethod === 'phone' ? phone : email}
                   </p>
                 </div>
 
-                <div className="flex space-x-3">
+                <div className="flex space-x-2 sm:space-x-3">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => setStep(verificationMethod === 'phone' ? 'phone' : 'email')}
-                    className="flex-1 h-12"
+                    className="flex-1 h-10 sm:h-12 text-xs sm:text-sm font-medium border-2 border-primary-200 hover:border-primary-300 hover:bg-primary-50 transition-all duration-200 touch-manipulation"
                   >
-                    <ArrowLeft className="mr-2" size={18} />
+                    <ArrowLeft className="mr-1 sm:mr-2" size={16} />
                     Back
                   </Button>
                   <Button
                     type="submit"
                     disabled={loading || isSubmitting}
-                    className="flex-1 h-12 text-lg font-medium"
+                    className="flex-1 h-10 sm:h-12 text-sm sm:text-base font-semibold bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 shadow-lg hover:shadow-xl transition-all duration-300 touch-manipulation"
                   >
                     {loading || isSubmitting ? (
                       <motion.div
                         animate={{ rotate: 360 }}
                         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                        className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full"
                       />
                     ) : (
                       <>
                         Verify
-                        <ArrowRight className="ml-2" size={18} />
+                        <ArrowRight className="ml-1 sm:ml-2" size={16} />
                       </>
                     )}
                   </Button>
@@ -484,7 +485,7 @@ export default function ForgotPassword() {
                       const values = verificationMethod === 'phone' ? { phone } : { email };
                       handleSendOTP(values, { setSubmitting: () => {} });
                     }}
-                    className="text-sm text-primary hover:underline"
+                    className="text-xs sm:text-sm text-primary hover:underline touch-manipulation"
                   >
                     Didn't receive code? Resend
                   </button>
@@ -497,63 +498,66 @@ export default function ForgotPassword() {
       case 'password':
         return (
           <Formik
-            initialValues={{ newPassword, confirmPassword }}
+            initialValues={{ newPassword: '', confirmPassword: '' }}
             validationSchema={passwordValidationSchema}
             onSubmit={handleResetPassword}
+            enableReinitialize={true}
           >
             {({ isSubmitting }) => (
-              <Form className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword">New Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+              <Form className="space-y-4 sm:space-y-6">
+                <div className="space-y-2 sm:space-y-3">
+                  <Label htmlFor="newPassword" className="block text-xs sm:text-sm font-semibold text-gray-900 mb-1 sm:mb-2">New Password</Label>
+                  <div className="relative group">
+                    <Lock className="absolute z-10 left-3 sm:left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary-600 transition-colors duration-200" size={16} />
                     <Field name="newPassword">
                       {({ field }: any) => (
                         <Input
                           {...field}
+                          id="newPassword"
                           type="password"
                           placeholder="Enter new password"
-                          className="pl-10 h-12"
+                          className="pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base border-2 border-primary-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all duration-200 touch-manipulation"
                         />
                       )}
                     </Field>
                   </div>
-                  <ErrorMessage name="newPassword" component="div" className="text-red-500 text-sm mt-1" />
+                  <ErrorMessage name="newPassword" component="div" className="text-red-500 text-xs sm:text-sm mt-1" />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                <div className="space-y-2 sm:space-y-3">
+                  <Label htmlFor="confirmPassword" className="block text-xs sm:text-sm font-semibold text-gray-900 mb-1 sm:mb-2">Confirm Password</Label>
+                  <div className="relative group">
+                    <Lock className="absolute z-10 left-3 sm:left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary-600 transition-colors duration-200" size={16} />
                     <Field name="confirmPassword">
                       {({ field }: any) => (
                         <Input
                           {...field}
+                          id="confirmPassword"
                           type="password"
                           placeholder="Confirm new password"
-                          className="pl-10 h-12"
+                          className="pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base border-2 border-primary-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all duration-200 touch-manipulation"
                         />
                       )}
                     </Field>
                   </div>
-                  <ErrorMessage name="confirmPassword" component="div" className="text-red-500 text-sm mt-1" />
+                  <ErrorMessage name="confirmPassword" component="div" className="text-red-500 text-xs sm:text-sm mt-1" />
                 </div>
 
                 <Button
                   type="submit"
                   disabled={loading || isSubmitting}
-                  className="w-full h-12 text-lg font-medium"
+                  className="w-full h-10 sm:h-12 text-sm sm:text-base font-semibold bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 shadow-lg hover:shadow-xl transition-all duration-300 touch-manipulation"
                 >
                   {loading || isSubmitting ? (
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                      className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full"
                     />
                   ) : (
                     <>
                       Reset Password
-                      <ArrowRight className="ml-2" size={18} />
+                      <ArrowRight className="ml-1 sm:ml-2" size={16} />
                     </>
                   )}
                 </Button>
@@ -586,24 +590,24 @@ export default function ForgotPassword() {
 
   if (settingsLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-primary-50 via-white to-secondary-50">
         {/* Header for desktop */}
-        <div className="hidden md:block">
+        <div className="mb-8 sm:mb-12 md:mb-16 lg:mb-20">
           <Header />
         </div>
         
         {/* Main content */}
-        <div className="flex-1 bg-gradient-to-br from-violet-50 to-indigo-100 flex items-center justify-center p-4 py-6 md:py-8">
-          <div className="w-full max-w-md mx-auto">
-            <div className="max-h-[calc(100vh-120px)] md:max-h-[calc(100vh-160px)] overflow-y-auto auth-scrollbar">
-              <Card className="shadow-2xl border-0 w-full mx-auto">
-              <CardContent className="flex items-center justify-center py-16 px-4 md:px-6">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full"
-                />
-              </CardContent>
+        <div className="flex-1 flex items-center justify-center px-3 sm:px-4 py-2 sm:py-4 md:py-8">
+          <div className="w-full max-w-sm sm:max-w-md mx-auto">
+            <div className="max-h-[calc(100vh-80px)] sm:max-h-[calc(100vh-120px)] md:max-h-[calc(100vh-160px)] overflow-y-auto auth-scrollbar">
+              <Card className="shadow-2xl w-full mx-auto bg-white/90 backdrop-blur-sm border-[1px] border-primary-200 shadow-primary-200" style={{ boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)' }}>
+                <CardContent className="flex items-center justify-center py-12 sm:py-16 px-4 sm:px-6">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="w-6 h-6 sm:w-8 sm:h-8 border-2 border-primary border-t-transparent rounded-full"
+                  />
+                </CardContent>
               </Card>
             </div>
           </div>
@@ -623,78 +627,93 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-primary-50 via-white to-secondary-50">
       {/* Header for desktop */}
-      <div className="mb-16">
+      <div className="mb-8 sm:mb-12 md:mb-16 lg:mb-20">
         <Header />
       </div>
       
       {/* Main content */}
-      <div className="flex-1 bg-gradient-to-br from-violet-50 to-indigo-100 flex items-center justify-center p-4 py-6 md:py-8">
-        <div className="w-full max-w-md mx-auto">
-          <div className="max-h-[calc(100vh-120px)] md:max-h-[calc(100vh-160px)] overflow-y-auto auth-scrollbar">
+      <div className="flex-1 flex items-center justify-center px-3 sm:px-4 py-2 sm:py-4 md:py-8">
+        <div className="w-full max-w-sm sm:max-w-md mx-auto">
+          <div className="max-h-[calc(100vh-80px)] sm:max-h-[calc(100vh-120px)] md:max-h-[calc(100vh-160px)] overflow-y-auto auth-scrollbar">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
               className="w-full"
             >
-              <Card className="shadow-2xl border-0 w-full mx-auto">
-          <CardHeader className="text-center pb-4 md:pb-8 px-4 md:px-6">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: "spring" }}
-              className='flex justify-center mb-4'
-            >
-              {logo1 ? (
-                <div className="mx-auto w-16 h-16 bg-gradient-to-r from-primary to-blue-600 rounded-full flex items-center justify-center">
-                  <Lock className="text-white" size={24} />
-                </div>
-              ) : (
-                <div className="mx-auto w-16 h-16 bg-gradient-to-r from-primary to-blue-600 rounded-full flex items-center justify-center">
-                  <Lock className="text-white" size={24} />
-                </div>
-              )}
-            </motion.div>
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-              {getStepTitle()}
-            </CardTitle>
-            <p className="text-muted-foreground">{getStepDescription()}</p>
-          </CardHeader>
+              <Card className="shadow-2xl w-full mx-auto bg-white/90 backdrop-blur-sm border-[1px] border-primary-200 shadow-primary-200" style={{ boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)' }}>
+                <CardHeader className="text-center pb-4 sm:pb-6 md:pb-8 px-4 sm:px-6 md:px-8 pt-6 sm:pt-8">
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.5, type: "spring" }}
+                    className="mb-4 sm:mb-6"
+                  >
+                    <div className="relative mx-auto w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-primary-600 to-secondary-600 rounded-full flex items-center justify-center shadow-lg">
+                      <Lock className="text-white" size={24} />
+                      <div className="absolute -inset-3 sm:-inset-4 bg-gradient-to-r from-primary-200 to-secondary-200 rounded-full blur-sm opacity-30 -z-10"></div>
+                    </div>
+                  </motion.div>
+                  
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
+                  >
+                    <CardTitle className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-2">
+                      {getStepTitle()}
+                    </CardTitle>
+                    <p className="text-muted-foreground text-sm sm:text-base">
+                      {getStepDescription()}
+                    </p>
+                  </motion.div>
+                </CardHeader>
 
-          <CardContent className="px-4 md:px-6 pb-4 md:pb-6">
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm mb-6"
-              >
-                {error}
-              </motion.div>
-            )}
+                <CardContent className="px-4 sm:px-6 md:px-8 pb-4 sm:pb-6 md:pb-8">
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="bg-red-50 border border-red-200 text-red-600 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm mb-4 sm:mb-6"
+                    >
+                      {error}
+                    </motion.div>
+                  )}
 
-            {success && (
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg text-sm mb-6"
-              >
-                {success}
-              </motion.div>
-            )}
+                  {success && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="bg-green-50 border border-green-200 text-green-600 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm mb-4 sm:mb-6"
+                    >
+                      {success}
+                    </motion.div>
+                  )}
 
-            {renderStepContent()}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.5 }}
+                  >
+                    {renderStepContent()}
+                  </motion.div>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                Remember your password?{' '}
-                <Link href="/auth/signin" className="text-primary hover:underline font-medium">
-                  Sign in
-                </Link>
-              </p>
-            </div>
-              </CardContent>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5, duration: 0.5 }}
+                    className="mt-6 sm:mt-8 text-center"
+                  >
+                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                      Remember your password?{' '}
+                      <Link href="/auth/signin" className="text-primary-600 hover:text-primary-700 hover:underline font-semibold transition-colors duration-200 touch-manipulation">
+                        Sign in
+                      </Link>
+                    </p>
+                  </motion.div>
+                </CardContent>
               </Card>
             </motion.div>
           </div>

@@ -17,16 +17,16 @@ import { addToWishlist, removeFromWishlist } from '@/lib/store/slices/wishlistSl
 import { RootState } from '@/lib/store/store';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  ChevronDown,
-  Grid,
-  Heart,
-  List,
-  Search,
-  ShoppingCart,
-  SlidersHorizontal,
-  Sparkles,
-  Star,
-  X
+    ChevronDown,
+    Grid,
+    Heart,
+    List,
+    Search,
+    ShoppingCart,
+    SlidersHorizontal,
+    Sparkles,
+    Star,
+    X
 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -237,7 +237,7 @@ export default function FeaturedProductsPage() {
     priceRange[0] > 0 || priceRange[1] < 50000;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <Header />
       
       <div className="container mx-auto px-4 py-4 md:py-8 mt-16 md:mt-20 mb-20 md:mb-0">

@@ -1,3 +1,4 @@
+import { wishlistToasts } from '@/lib/utils/toast-notifications';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface WishlistItem {
@@ -59,19 +60,38 @@ const wishlistSlice = createSlice({
         state.items.push(action.payload);
         state.itemCount = state.items.length;
         saveWishlistToStorage(state);
+        
+        // Show added toast
+        wishlistToasts.added(action.payload.name, action.payload.price);
+      } else {
+        // Item already exists in wishlist
+        wishlistToasts.alreadyExists(action.payload.name);
       }
     },
     
     removeFromWishlist: (state, action: PayloadAction<string>) => {
+      const itemToRemove = state.items.find(item => item.id === action.payload);
+      
       state.items = state.items.filter(item => item.id !== action.payload);
       state.itemCount = state.items.length;
       saveWishlistToStorage(state);
+      
+      // Show removed toast
+      if (itemToRemove) {
+        wishlistToasts.removed(itemToRemove.name);
+      }
     },
     
     clearWishlist: (state) => {
+      const hadItems = state.items.length > 0;
       state.items = [];
       state.itemCount = 0;
       saveWishlistToStorage(state);
+      
+      // Show cleared toast only if there were items
+      if (hadItems) {
+        wishlistToasts.cleared();
+      }
     },
     
     loadWishlistFromStorage: (state) => {

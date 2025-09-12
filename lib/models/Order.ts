@@ -50,7 +50,7 @@ export interface IOrder extends Document {
     division: string;
     postalCode?: string;
   };
-  deliveryType: 'regular' | 'express' | 'same-day';
+  deliveryType: 'Inside Dhaka' | 'Outside Dhaka';
   expectedDelivery?: Date;
   deliveredAt?: Date;
   notes?: string;
@@ -145,8 +145,8 @@ const OrderSchema = new Schema<IOrder>({
   },
   deliveryType: { 
     type: String, 
-    enum: ['regular', 'express', 'same-day'], 
-    default: 'regular' 
+    enum: ['Inside Dhaka', 'Outside Dhaka'], 
+    default: 'Inside Dhaka' 
   },
   expectedDelivery: Date,
   deliveredAt: Date,

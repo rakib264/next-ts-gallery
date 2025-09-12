@@ -47,6 +47,17 @@ export default function CheckoutPage() {
     isPaymentGatewayEnabled: false,
     codEnabled: true
   });
+  const [validationTrigger, setValidationTrigger] = useState(0);
+  const [displayErrors, setDisplayErrors] = useState<{[key: string]: string}>({});
+
+  // Function to clear specific field error when user starts typing
+  const clearFieldError = (fieldName: string) => {
+    if (displayErrors[fieldName]) {
+      const newErrors = { ...displayErrors };
+      delete newErrors[fieldName];
+      setDisplayErrors(newErrors);
+    }
+  };
   
   // Error dialog hook
   const { showError, ErrorDialogComponent } = useErrorDialog();
@@ -59,7 +70,7 @@ export default function CheckoutPage() {
     firstName: Yup.string().trim().required('First name is required'),
     lastName: Yup.string().trim().required('Last name is required'),
     email: Yup.string().email('Invalid email').optional(),
-    phone: Yup.string().trim().required('Phone is required'),
+    phone: Yup.string().trim().matches(/^(\+880|880|0)?(1[3-9]\d{8})$/, 'Invalid phone number').required('Phone is required'),
     address: Yup.string().trim().required('Address is required'),
     division: Yup.string().trim().required('Division is required'),
     district: Yup.string().trim().required('District is required'),
@@ -76,7 +87,7 @@ export default function CheckoutPage() {
 
   const formik = useFormik({
     enableReinitialize: true,
-    validateOnMount: true,
+    validateOnMount: false, // Disable auto-validation to handle it manually
     initialValues: {
       firstName: session?.user?.name?.split(' ')[0] || '',
       lastName: session?.user?.name?.split(' ').slice(1).join(' ') || '',
@@ -128,11 +139,29 @@ export default function CheckoutPage() {
   const { settings: courierSettings } = useCourierSettings();
 
   const calculateShipping = () => {
+    // Only calculate shipping if we're past step 1 and have district information
+    if (currentStep === 1 || !formik.values.district?.trim()) {
+      return 0;
+    }
+    
+    console.log("shipping district", formik.values);
     const district = (formik.values.district || formik.values.city || '').toLowerCase().trim();
     const isDhaka = district.includes('dhaka');
+    console.log("isDhaka", isDhaka);
     const inside = courierSettings?.insideDhaka ?? 60;
     const outside = courierSettings?.outsideDhaka ?? 120;
     return isDhaka ? inside : outside;
+  };
+
+  const getDeliveryType = () => {
+    // Only determine delivery type if we have district information
+    if (!formik.values.district?.trim()) {
+      return 'regular';
+    }
+    
+    const district = (formik.values.district || formik.values.city || '').toLowerCase().trim();
+    const isDhaka = district.includes('dhaka');
+    return isDhaka ? 'Inside Dhaka' : 'Outside Dhaka';
   };
 
   const handleCouponApply = async () => {
@@ -166,20 +195,53 @@ export default function CheckoutPage() {
 
   const validateStep = (step: number) => {
     try {
+      let schema;
       if (step === 1) {
-        step1Schema.validateSync(formik.values, { abortEarly: false });
+        schema = step1Schema;
+      } else if (step === 2) {
+        schema = step2Schema;
+      } else if (step === 3) {
+        schema = step3Schema;
+      } else {
         return true;
       }
-      if (step === 2) {
-        step2Schema.validateSync(formik.values, { abortEarly: false });
-        return true;
-      }
-      if (step === 3) {
-        step3Schema.validateSync(formik.values, { abortEarly: false });
-        return true;
-      }
+
+      // Validate using the appropriate schema
+      schema.validateSync(formik.values, { abortEarly: false });
+      
+      // Clear any existing errors for this step
+      formik.setErrors({});
+      setDisplayErrors({});
       return true;
-    } catch {
+    } catch (error) {
+      // Set validation errors in formik
+      if (error instanceof Yup.ValidationError) {
+        const errors: { [key: string]: string } = {};
+        error.inner.forEach((err) => {
+          if (err.path) {
+            errors[err.path] = err.message;
+          }
+        });
+        
+        console.log('Validation errors:', errors);
+        
+        // Set errors in both formik and local state for reliable display
+        formik.setErrors(errors);
+        setDisplayErrors(errors);
+        
+        // Mark all fields as touched to show errors
+        const touched: { [key: string]: boolean } = {};
+        Object.keys(errors).forEach(key => {
+          touched[key] = true;
+        });
+        formik.setTouched(touched);
+        
+        // Trigger re-render to show errors
+        setValidationTrigger(prev => prev + 1);
+        
+        console.log('Formik errors after setting:', errors);
+        console.log('Display errors set:', errors);
+      }
       return false;
     }
   };
@@ -284,7 +346,7 @@ export default function CheckoutPage() {
         couponCode: appliedCoupon || undefined,
         shippingAddress,
         billingAddress: shippingAddress,
-        deliveryType: 'regular',
+        deliveryType: getDeliveryType(),
         notes: formik.values.notes
       };
 
@@ -334,18 +396,24 @@ export default function CheckoutPage() {
     }
   };
 
+  console.log("formik.errors", formik.errors);
+  console.log("formik.touched", formik.touched);
+  console.log("displayErrors", displayErrors);
+  console.log("currentStep", currentStep);
+  console.log("validationTrigger", validationTrigger);
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <div className="container mx-auto px-4 py-4 md:py-8 mt-16 md:mt-20 mb-20 md:mb-0">
+      <div className="container mx-auto px-4 py-4 md:py-6 mt-16 md:mt-20 mb-20 md:mb-0">
         {/* Progress Steps */}
-        <div className="mb-6 md:mb-8">
+        <div className="mb-6">
           {/* Mobile Progress Steps - Vertical/Compact */}
           <div className="block md:hidden">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Step {currentStep} of {steps.length}</h2>
-              <span className="text-sm text-muted-foreground">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-bold text-gray-900">Step {currentStep} of {steps.length}</h2>
+              <span className="text-sm text-gray-600">
                 {steps[currentStep - 1]?.title}
               </span>
             </div>
@@ -361,10 +429,10 @@ export default function CheckoutPage() {
           <div className="hidden md:flex items-center justify-center space-x-8">
             {steps.map((step, index) => (
               <div key={step.number} className="flex items-center">
-                <div className={`flex items-center space-x-2 ${
-                  currentStep >= step.number ? 'text-primary' : 'text-muted-foreground'
+                <div className={`flex items-center space-x-3 ${
+                  currentStep >= step.number ? 'text-primary' : 'text-gray-500'
                 }`}>
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 shadow-sm ${
                     currentStep >= step.number 
                       ? 'border-primary bg-primary text-white' 
                       : 'border-gray-300 bg-white'
@@ -375,7 +443,7 @@ export default function CheckoutPage() {
                       <step.icon size={20} />
                     )}
                   </div>
-                  <span className="font-medium">{step.title}</span>
+                  <span className="font-semibold text-gray-900">{step.title}</span>
                 </div>
                 {index < steps.length - 1 && (
                   <div className={`w-16 h-0.5 mx-4 ${
@@ -400,112 +468,146 @@ export default function CheckoutPage() {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center space-x-2">
-                        <User size={20} />
-                        <span>Billing Information</span>
+                  <Card className="bg-white shadow-sm border border-gray-200">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="flex items-center space-x-3 text-gray-900">
+                        <div className="p-2 bg-primary rounded-lg">
+                          <User size={18} className="text-white" />
+                        </div>
+                        <span className="text-xl font-bold">Billing Information</span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Name Fields - Always in single row */}
+                      <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <Label htmlFor="firstName">First Name *</Label>
+                          <Label htmlFor="firstName" className="text-gray-700 font-medium text-sm">First Name *</Label>
                           <Input
                             id="firstName"
                             {...formik.getFieldProps('firstName')}
+                            onChange={(e) => {
+                              formik.handleChange(e);
+                              clearFieldError('firstName');
+                            }}
                             placeholder="First Name"
                             required
+                            className="border-gray-300 focus:border-primary focus:ring-primary text-sm"
                           />
-                          {formik.touched.firstName && formik.errors.firstName && (
-                            <p className="text-red-500 text-xs mt-1">{formik.errors.firstName}</p>
+                          {displayErrors.firstName && (
+                            <p className="text-red-600 text-xs mt-1 p-2">{displayErrors.firstName}</p>
                           )}
                         </div>
                         <div>
-                          <Label htmlFor="lastName">Last Name *</Label>
+                          <Label htmlFor="lastName" className="text-gray-700 font-medium text-sm">Last Name *</Label>
                           <Input
                             id="lastName"
                             {...formik.getFieldProps('lastName')}
+                            onChange={(e) => {
+                              formik.handleChange(e);
+                              clearFieldError('lastName');
+                            }}
                             placeholder="Last Name"
                             required
+                            className="border-gray-300 focus:border-primary focus:ring-primary text-sm"
                           />
-                          {formik.touched.lastName && formik.errors.lastName && (
-                            <p className="text-red-500 text-xs mt-1">{formik.errors.lastName}</p>
+                          {displayErrors.lastName && (
+                            <p className="text-red-600 text-xs mt-1 p-2">{displayErrors.lastName}</p>
                           )}
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Contact Fields - Always in a single row */}
+                      <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <Label htmlFor="email">Email (Optional)</Label>
+                          <Label htmlFor="email" className="text-gray-700 font-medium text-sm">Email (Optional)</Label>
                           <Input
                             id="email"
                             type="email"
                             {...formik.getFieldProps('email')}
                             placeholder="your@email.com"
+                            className="border-gray-300 focus:border-primary focus:ring-primary text-sm"
                           />
-                          {formik.touched.email && formik.errors.email && (
-                            <p className="text-red-500 text-xs mt-1">{formik.errors.email}</p>
+                          {displayErrors.email && (
+                            <p className="text-red-600 text-xs mt-1 p-2">{displayErrors.email}</p>
                           )}
                         </div>
                         <div>
-                          <Label htmlFor="phone">Phone *</Label>
+                          <Label htmlFor="phone" className="text-gray-700 font-medium text-sm">Phone *</Label>
                           <Input
                             id="phone"
                             {...formik.getFieldProps('phone')}
+                            onChange={(e) => {
+                              formik.handleChange(e);
+                              clearFieldError('phone');
+                            }}
                             placeholder="01721456789"
                             required
+                            className="border-gray-300 focus:border-primary focus:ring-primary text-sm"
                           />
-                          {formik.touched.phone && formik.errors.phone && (
-                            <p className="text-red-500 text-xs mt-1">{formik.errors.phone}</p>
+                          {displayErrors.phone && (
+                            <p className="text-red-600 text-xs mt-1 p-2">{displayErrors.phone}</p>
                           )}
                         </div>
                       </div>
 
+                      {/* Address Field - Full width */}
                       <div>
-                        <Label htmlFor="address">Address *</Label>
+                        <Label htmlFor="address" className="text-gray-700 font-medium text-sm">Address *</Label>
                         <Input
                           id="address"
                           {...formik.getFieldProps('address')}
                           onChange={(e) => {
                             formik.handleChange(e);
+                            clearFieldError('address');
                             formik.setFieldValue('coordinates', { lat: 0, lng: 0, divisionName: '', district: '', thanaOrUpazilaName: '', placeName: '', countryCode: '' });
                           }}
                           placeholder="House 23, Jigatala Bus stand"
                           required
+                          className="border-gray-300 focus:border-primary focus:ring-primary text-sm"
                         />
-                        {formik.touched.address && formik.errors.address && (
-                          <p className="text-red-500 text-xs mt-1">{formik.errors.address}</p>
+                        {displayErrors.address && (
+                          <p className="text-red-600 text-xs mt-1 p-2">{displayErrors.address}</p>
                         )}
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Location Fields - 2 columns on mobile, 3 columns on large screens */}
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                         <div>
-                          <Label htmlFor="division">Division *</Label>
+                          <Label htmlFor="division" className="text-gray-700 font-medium text-sm">Division *</Label>
                           <Input
                             id="division"
                             {...formik.getFieldProps('division')}
+                            onChange={(e) => {
+                              formik.handleChange(e);
+                              clearFieldError('division');
+                            }}
                             placeholder="Dhaka"
                             required
+                            className="border-gray-300 focus:border-primary focus:ring-primary text-sm"
                           />
-                          {formik.touched.division && formik.errors.division && (
-                            <p className="text-red-500 text-xs mt-1">{formik.errors.division}</p>
+                          {displayErrors.division && (
+                            <p className="text-red-600 text-xs mt-1 p-2">{displayErrors.division}</p>
                           )}
                         </div>
                         <div>
-                          <Label htmlFor="district">District *</Label>
+                          <Label htmlFor="district" className="text-gray-700 font-medium text-sm">District *</Label>
                           <Input
                             id="district"
                             {...formik.getFieldProps('district')}
+                            onChange={(e) => {
+                              formik.handleChange(e);
+                              clearFieldError('district');
+                            }}
                             placeholder="Dhaka"
                             required
+                            className="border-gray-300 focus:border-primary focus:ring-primary text-sm"
                           />
-                          {formik.touched.district && formik.errors.district && (
-                            <p className="text-red-500 text-xs mt-1">{formik.errors.district}</p>
+                          {displayErrors.district && (
+                            <p className="text-red-600 text-xs mt-1 p-2">{displayErrors.district}</p>
                           )}
                         </div>
-                        <div>
-                          <Label htmlFor="postalCode">Postal Code</Label>
+                        <div className="col-span-2 lg:col-span-1">
+                          <Label htmlFor="postalCode" className="text-gray-700 font-medium text-sm">Postal Code</Label>
                           <Input
                             id="postalCode"
                             {...formik.getFieldProps('postalCode')}
@@ -515,9 +617,10 @@ export default function CheckoutPage() {
                               formik.setFieldValue('coordinates', { lat: 0, lng: 0, divisionName: '', district: '', thanaOrUpazilaName: '', placeName: '', countryCode: '' });
                             }}
                             placeholder="1209"
+                            className="border-gray-300 focus:border-primary focus:ring-primary text-sm"
                           />
-                          {formik.touched.postalCode && formik.errors.postalCode && (
-                            <p className="text-red-500 text-xs mt-1">{formik.errors.postalCode}</p>
+                          {displayErrors.postalCode && (
+                            <p className="text-red-600 text-xs mt-1 p-2">{displayErrors.postalCode}</p>
                           )}
                         </div>
                       </div>
@@ -535,62 +638,64 @@ export default function CheckoutPage() {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center space-x-2">
-                        <CreditCard size={20} />
-                        <span>Payment Method</span>
+                  <Card className="bg-white shadow-sm border border-gray-200">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="flex items-center space-x-3 text-gray-900">
+                        <div className="p-2 bg-primary rounded-lg">
+                          <CreditCard size={18} className="text-white" />
+                        </div>
+                        <span className="text-xl font-bold">Payment Method</span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       {/* Delivery Type */}
                       <div>
-                        <Label className="text-base font-medium">Delivery Charge</Label>
-                        <div className="mt-3 p-4 border rounded-lg flex items-center justify-between">
+                        <Label className="text-base font-semibold text-gray-900">Delivery Charge</Label>
+                        <div className="mt-3 p-4 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between">
                           <div>
-                            <p className="font-medium">{(formik.values.district || formik.values.city || '').toLowerCase().includes('dhaka') ? 'Inside Dhaka' : 'Outside Dhaka'}</p>
-                            <p className="text-sm text-muted-foreground">Calculated based on district</p>
+                            <p className="font-semibold text-gray-900">{getDeliveryType()}</p>
+                            <p className="text-sm text-gray-600">Calculated based on district</p>
                           </div>
-                          <span className="font-medium">৳{calculateShipping()}</span>
+                          <span className="font-bold text-lg text-gray-900">৳{calculateShipping()}</span>
                         </div>
                       </div>
 
-                      <Separator />
+                      <Separator className="bg-gray-200" />
 
                       {/* Payment Methods */}
                       <div>
-                        <Label className="text-base font-medium">Payment Method</Label>
+                        <Label className="text-base font-semibold text-gray-900">Payment Method</Label>
                         <RadioGroup value={formik.values.method} onValueChange={(value) => formik.setFieldValue('method', value)}>
-                          <div className="space-y-3">
+                          <div className="space-y-3 mt-3">
                             {/* Cash on Delivery */}
                             {paymentSettings.codEnabled && (
-                              <div className="flex items-center space-x-3 p-4 border rounded-lg">
+                              <div className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:border-primary hover:bg-primary/5 transition-colors">
                                 <RadioGroupItem value="cod" id="cod" />
                                 <div className="flex-1">
-                                  <Label htmlFor="cod" className="font-medium">Cash on Delivery</Label>
-                                  <p className="text-sm text-muted-foreground">Pay when you receive your order</p>
+                                  <Label htmlFor="cod" className="font-semibold text-gray-900">Cash on Delivery</Label>
+                                  <p className="text-sm text-gray-600">Pay when you receive your order</p>
                                 </div>
-                                <Truck size={20} className="text-muted-foreground" />
+                                <Truck size={20} className="text-gray-600" />
                               </div>
                             )}
 
                             {/* SSLCommerz */}
                              {paymentSettings.isPaymentGatewayEnabled && (
-                              <div className="flex items-center space-x-3 p-4 border rounded-lg">
+                              <div className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:border-primary hover:bg-primary/5 transition-colors">
                                 <RadioGroupItem value="sslcommerz" id="sslcommerz" />
                                 <div className="flex-1">
-                                  <Label htmlFor="sslcommerz" className="font-medium">Online Payment</Label>
-                                  <p className="text-sm text-muted-foreground">
+                                  <Label htmlFor="sslcommerz" className="font-semibold text-gray-900">Online Payment</Label>
+                                  <p className="text-sm text-gray-600">
                                     Pay securely with credit/debit card, mobile banking, or internet banking
                                   </p>
                                 </div>
-                                <CreditCard size={20} className="text-muted-foreground" />
+                                <CreditCard size={20} className="text-gray-600" />
                               </div>
                             )}
                           </div>
                         </RadioGroup>
-                        {!validateStep(2) && (
-                          <p className="text-red-500 text-xs mt-2">Please select a payment method.</p>
+                        {displayErrors.method && (
+                          <p className="text-red-600 text-xs mt-2 p-2">{displayErrors.method}</p>
                         )}
                       </div>
                     </CardContent>
@@ -607,78 +712,81 @@ export default function CheckoutPage() {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center space-x-2">
-                        <CheckCircle size={20} />
-                        <span>Order Review</span>
+                  <Card className="bg-white shadow-sm border border-gray-200">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="flex items-center space-x-3 text-gray-900">
+                        <div className="p-2 bg-primary rounded-lg">
+                          <CheckCircle size={18} className="text-white" />
+                        </div>
+                        <span className="text-xl font-bold">Order Review</span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       {/* Order Items */}
                       <div>
-                        <h3 className="font-medium mb-4">Order Items</h3>
-                        <div className="space-y-4">
+                        <h3 className="text-base font-semibold text-gray-900 mb-3">Order Items</h3>
+                        <div className="space-y-3">
                           {items.map((item) => (
-                            <div key={`${item.id}-${item.variant || 'default'}`} className="flex items-center space-x-4 p-4 border rounded-lg">
+                            <div key={`${item.id}-${item.variant || 'default'}`} className="flex items-center space-x-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
                               <img
                                 src={item.image}
                                 alt={item.name}
-                                className="w-16 h-16 object-cover rounded"
+                                className="w-12 h-12 object-cover rounded-lg"
                               />
                               <div className="flex-1">
-                                <h4 className="font-medium">{item.name}</h4>
-                                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                                <h4 className="text-sm font-semibold text-gray-900">{item.name}</h4>
+                                <div className="flex items-center space-x-3 text-xs text-gray-600">
                                   {item.variant && <span>Variant: {item.variant}</span>}
                                   <span>Qty: {item.quantity}</span>
                                 </div>
                               </div>
                               <div className="text-right">
-                                <div className="font-medium">৳{formatNumber(item.price * item.quantity)}</div>
-                                <div className="text-sm text-muted-foreground">৳{item.price} each</div>
+                                <div className="text-sm font-bold text-gray-900">৳{formatNumber(item.price * item.quantity)}</div>
+                                <div className="text-xs text-gray-600">৳{item.price} each</div>
                               </div>
                             </div>
                           ))}
                         </div>
                       </div>
 
-                      <Separator />
+                      <Separator className="bg-gray-200" />
 
                       {/* Billing Information Summary */}
                       <div>
-                        <h3 className="font-medium mb-4">Billing Information</h3>
-                        <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                          <p><strong>Name:</strong> {formik.values.firstName} {formik.values.lastName}</p>
-                          <p><strong>Email:</strong> {formik.values.email}</p>
-                          <p><strong>Phone:</strong> {formik.values.phone}</p>
-                          <p><strong>Address:</strong> {formik.values.address}{formik.values.district ? `, ${formik.values.district}` : ''}{formik.values.division ? `, ${formik.values.division}` : ''}{formik.values.postalCode ? `, ${formik.values.postalCode}` : ''}</p>
+                        <h3 className="text-base font-semibold text-gray-900 mb-3">Billing Information</h3>
+                        <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-200">
+                          <p className="text-sm text-gray-900"><strong>Name:</strong> {formik.values.firstName} {formik.values.lastName}</p>
+                          <p className="text-sm text-gray-900"><strong>Email:</strong> {formik.values.email}</p>
+                          <p className="text-sm text-gray-900"><strong>Phone:</strong> {formik.values.phone}</p>
+                          <p className="text-sm text-gray-900"><strong>Address:</strong> {formik.values.address}{formik.values.district ? `, ${formik.values.district}` : ''}{formik.values.division ? `, ${formik.values.division}` : ''}{formik.values.postalCode ? `, ${formik.values.postalCode}` : ''}</p>
                         </div>
                       </div>
 
-                      <Separator />
+                      <Separator className="bg-gray-200" />
 
                       {/* Payment Information Summary */}
                       <div>
-                        <h3 className="font-medium mb-4">Payment & Delivery</h3>
-                        <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                          <p><strong>Payment Method:</strong> {
+                        <h3 className="text-base font-semibold text-gray-900 mb-3">Payment & Delivery</h3>
+                        <div className="bg-gray-50 p-3 rounded-lg space-y-2 border border-gray-200">
+                          <p className="text-sm text-gray-900"><strong>Payment Method:</strong> {
                             formik.values.method === 'cod' ? 'Cash on Delivery' : 'Online Payment'
                           }</p>
-                          <p><strong>Delivery Area:</strong> { (formik.values.district || formik.values.city || '').toLowerCase().includes('dhaka') ? 'Inside Dhaka' : 'Outside Dhaka' }</p>
+                          <p className="text-sm text-gray-900"><strong>Delivery Area:</strong> {getDeliveryType()}</p>
                         </div>
                       </div>
 
                       {/* Order Notes */}
                       <div>
-                        <Label htmlFor="notes">Order Notes (Optional)</Label>
+                        <Label htmlFor="notes" className="text-gray-700 font-medium text-sm">Order Notes (Optional)</Label>
                         <Textarea
                           id="notes"
                           {...formik.getFieldProps('notes')}
                           placeholder="Any special instructions for your order..."
                           rows={3}
+                          className="border-gray-300 focus:border-primary focus:ring-primary text-sm"
                         />
-                        {formik.touched.notes && formik.errors.notes && (
-                          <p className="text-red-500 text-xs mt-1">{formik.errors.notes}</p>
+                        {displayErrors.notes && (
+                          <p className="text-red-600 text-xs mt-1 p-2">{displayErrors.notes}</p>
                         )}
                       </div>
                     </CardContent>
@@ -693,7 +801,7 @@ export default function CheckoutPage() {
                 variant="outline"
                 onClick={prevStep}
                 disabled={currentStep === 1}
-                className="flex items-center justify-center space-x-2 order-2 sm:order-1"
+                className="flex items-center justify-center space-x-2 order-2 sm:order-1 border-gray-300 text-gray-700 hover:bg-gray-50"
                 size="lg"
               >
                 <ArrowLeft size={16} />
@@ -703,7 +811,7 @@ export default function CheckoutPage() {
               {currentStep < 3 ? (
                 <Button
                   onClick={nextStep}
-                  disabled={!validateStep(currentStep)}
+                  // disabled={!validateStep(currentStep)}
                   className="flex items-center justify-center space-x-2 order-1 sm:order-2"
                   size="lg"
                 >
@@ -735,11 +843,13 @@ export default function CheckoutPage() {
 
           {/* Order Summary Sidebar */}
           <div className="order-1 lg:order-2 lg:col-span-1">
-            <Card className="lg:sticky lg:top-4">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <ShoppingBag size={20} />
-                  <span>Order Summary</span>
+            <Card className="lg:sticky lg:top-4 bg-white shadow-sm border border-gray-200">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center space-x-3 text-gray-900">
+                  <div className="p-2 bg-primary rounded-lg">
+                    <ShoppingBag size={18} className="text-white" />
+                  </div>
+                  <span className="text-xl font-bold">Order Summary</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -747,30 +857,30 @@ export default function CheckoutPage() {
                   <>
                     {/* Items Count */}
                     <div className="flex justify-between text-sm">
-                      <span suppressHydrationWarning>
+                      <span className="text-gray-600" suppressHydrationWarning>
                         Items ({items.reduce((sum, item) => sum + item.quantity, 0)})
                       </span>
-                      <span suppressHydrationWarning>৳{formatNumber(total)}</span>
+                      <span className="font-semibold text-gray-900" suppressHydrationWarning>৳{formatNumber(total)}</span>
                     </div>
 
                     {/* Shipping */}
                     <div className="flex justify-between text-sm">
-                      <span>Shipping</span>
-                      <span>৳{shipping}</span>
+                      <span className="text-gray-600">Shipping</span>
+                      <span className="font-semibold text-gray-900">৳{shipping}</span>
                     </div>
 
                     {/* Discount */}
                     {discount > 0 && (
                       <div className="flex justify-between text-sm text-green-600">
                         <span>Discount</span>
-                        <span suppressHydrationWarning>-৳{formatNumber(discount)}</span>
+                        <span className="font-semibold" suppressHydrationWarning>-৳{formatNumber(discount)}</span>
                       </div>
                     )}
 
-                    <Separator />
+                    <Separator className="bg-gray-200" />
 
                     {/* Total */}
-                    <div className="flex justify-between font-medium text-lg">
+                    <div className="flex justify-between font-bold text-lg text-gray-900">
                       <span>Total</span>
                       <span suppressHydrationWarning>৳{formatNumber(finalTotal)}</span>
                     </div>
@@ -787,7 +897,7 @@ export default function CheckoutPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => dispatch(removeCoupon())}
-                            className="text-green-600 hover:text-green-700"
+                            className="text-green-600 hover:text-green-700 hover:bg-green-100"
                           >
                             Remove
                           </Button>
@@ -799,13 +909,14 @@ export default function CheckoutPage() {
                               placeholder="Enter coupon code"
                               value={couponCode}
                               onChange={(e) => setCouponCode(e.target.value)}
-                              className="flex-1"
+                              className="flex-1 border-gray-300 focus:border-primary focus:ring-primary"
                             />
                             <Button
                               variant="outline"
                               onClick={handleCouponApply}
                               disabled={couponLoading || !couponCode.trim()}
-                              size="sm"
+                              size="default"
+                              className="border-gray-300 text-gray-700 hover:bg-gray-50"
                             >
                               {couponLoading ? (
                                 <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
@@ -819,35 +930,35 @@ export default function CheckoutPage() {
                     </div>
 
                     {/* Security Badge */}
-                    <div className="flex items-center justify-center space-x-2 p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-center space-x-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                       <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
                         <CheckCircle size={12} className="text-white" />
                       </div>
-                      <span className="text-sm text-muted-foreground">Secure Checkout</span>
+                      <span className="text-sm text-gray-600">Secure Checkout</span>
                     </div>
                   </>
                 ) : (
                   <>
                     {/* Server-first placeholder to avoid hydration mismatch */}
                     <div className="flex justify-between text-sm">
-                      <span>Items (0)</span>
-                      <span>৳0</span>
+                      <span className="text-gray-600">Items (0)</span>
+                      <span className="font-semibold text-gray-900">৳0</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span>Shipping</span>
-                      <span>৳{shipping}</span>
+                      <span className="text-gray-600">Shipping</span>
+                      <span className="font-semibold text-gray-900">৳{shipping}</span>
                     </div>
-                    <Separator />
-                    <div className="flex justify-between font-medium text-lg">
+                    <Separator className="bg-gray-200" />
+                    <div className="flex justify-between font-bold text-lg text-gray-900">
                       <span>Total</span>
                       <span>৳{formatNumber(shipping)}</span>
                     </div>
                     <div className="space-y-2">
                       <div className="h-9 bg-gray-100 rounded" />
                     </div>
-                    <div className="flex items-center justify-center space-x-2 p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-center space-x-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                       <div className="w-4 h-4 bg-green-500 rounded-full" />
-                      <span className="text-sm text-muted-foreground">Secure Checkout</span>
+                      <span className="text-sm text-gray-600">Secure Checkout</span>
                     </div>
                   </>
                 )}
