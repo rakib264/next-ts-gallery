@@ -14,6 +14,7 @@ import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
 import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import ClientOnly from '@/components/providers/ClientOnly';
+import FloatingButtons from '@/components/ui/FloatingButtons';
 import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
@@ -156,6 +157,11 @@ export default function Home() {
       
       <Footer />
       <MobileBottomNav />
+      
+      {/* Floating Buttons */}
+      <ClientOnly>
+        <FloatingButtons />
+      </ClientOnly>
     </div>
   );
 }
