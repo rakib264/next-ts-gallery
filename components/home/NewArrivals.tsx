@@ -194,47 +194,13 @@ export default function NewArrivals({
           transition={{ duration: 0.6 }}
         >
           {products.map((product, index) => (
-            <motion.div
+            <ProductCard
               key={product._id}
-              initial={{ opacity: 0, y: 50, scale: 0.8 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ 
-                duration: 0.6, 
-                delay: index * 0.1,
-                ease: "easeOut"
-              }}
-              whileHover={{ 
-                y: -8,
-                transition: { duration: 0.3 }
-              }}
-              className="group"
-            >
-              <div className="relative">
-                <ProductCard
-                  product={product}
-                  index={index}
-                  variant="new-arrival"
-                  className="h-full"
-                />
-                
-                {/* NEW Badge */}
-                <motion.div
-                  className="absolute -top-2 -right-2 z-10 bg-gradient-to-r from-emerald-500 to-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg"
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ delay: index * 0.1 + 0.5 }}
-                >
-                  NEW
-                </motion.div>
-
-                {/* Hover Overlay */}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"
-                  initial={false}
-                />
-              </div>
-            </motion.div>
+              product={product}
+              index={index}
+              variant="new-arrival"
+              className="h-full"
+            />
           ))}
         </motion.div>
 

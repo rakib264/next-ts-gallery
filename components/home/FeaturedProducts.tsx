@@ -226,24 +226,12 @@ export default function FeaturedProducts() {
                     transition: { duration: 0.3 }
                   }}
                 >
-                  <div className="relative group">
-                    <ProductCard
-                      product={product}
-                      index={index}
-                      variant="featured"
-                      className="h-full"
-                    />
-                    
-                    {/* Center Card Highlight */}
-                    {index === currentIndex && (
-                      <motion.div
-                        className="absolute inset-0 -m-2 rounded-2xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-2 border-blue-400/30 pointer-events-none"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.3 }}
-                      />
-                    )}
-                  </div>
+                  <ProductCard
+                    product={product}
+                    index={index}
+                    variant="featured"
+                    className="h-full"
+                  />
                 </motion.div>
               ))}
             </motion.div>

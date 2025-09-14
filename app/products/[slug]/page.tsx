@@ -38,7 +38,6 @@ import {
   Ruler,
   Search,
   Share2,
-  Shield,
   ShoppingCart,
   Star,
   ThumbsDown,
@@ -1157,19 +1156,19 @@ export default function ProductPage() {
                 <div className="p-2 bg-green-100 rounded-full">
                   <Truck size={18} className="text-green-600" />
                 </div>
-                <span className="font-semibold text-gray-700">Free shipping over ৳1000</span>
+                <span className="font-semibold text-gray-700">Free shipping over ৳ 2000</span>
               </div>
-              <div className="flex items-center space-x-3 text-sm sm:text-base">
+              {/* <div className="flex items-center space-x-3 text-sm sm:text-base">
                 <div className="p-2 bg-blue-100 rounded-full">
                   <Shield size={18} className="text-blue-600" />
                 </div>
                 <span className="font-semibold text-gray-700">1 year warranty</span>
-              </div>
+              </div> */}
               <div className="flex items-center space-x-3 text-sm sm:text-base">
                 <div className="p-2 bg-purple-100 rounded-full">
                   <RotateCcw size={18} className="text-purple-600" />
                 </div>
-                <span className="font-semibold text-gray-700">30-day returns</span>
+                <span className="font-semibold text-gray-700">15-day returns</span>
               </div>
             </div>
 

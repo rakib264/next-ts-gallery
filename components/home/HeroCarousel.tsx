@@ -3,11 +3,11 @@
 import { Button } from '@/components/ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-    ArrowRight,
-    ChevronLeft,
-    ChevronRight,
-    Sparkles,
-    Star
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  Star
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -32,63 +32,10 @@ interface Banner {
   order: number;
 }
 
-const fallbackBanners = [
-  {
-    _id: '1',
-    title: "Modern Design",
-    subtitle: "New Collection 2024",
-    description: "Discover our carefully curated collection of premium fashion pieces designed for the modern lifestyle",
-    discount: "Limited Edition Stock",
-    image: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=2070&q=80",
-    ctaButtons: [
-      { label: "Order Now", url: "/products" },
-      { label: "View Collection", url: "/categories" }
-    ],
-    // Legacy fallback
-    ctaButtonLabel: "Order Now",
-    ctaButtonUrl: "/products",
-    isActive: true,
-    order: 1
-  },
-  {
-    _id: '2',
-    title: "Elegance Redefined", 
-    subtitle: "Premium Fashion",
-    description: "Experience luxury fashion with our handpicked selection of sophisticated designs",
-    discount: "40% OFF",
-    image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=2070&q=80",
-    ctaButtons: [
-      { label: "Explore Now", url: "/products" },
-      { label: "Premium Line", url: "/premium" }
-    ],
-    // Legacy fallback
-    ctaButtonLabel: "Explore Now",
-    ctaButtonUrl: "/products",
-    isActive: true,
-    order: 2
-  },
-  {
-    _id: '3',
-    title: "Timeless Luxury",
-    subtitle: "Exclusive Designs",
-    description: "Indulge in our most exclusive collection featuring timeless designs for discerning tastes",
-    discount: "VIP Access",
-    image: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=2126&q=80",
-    ctaButtons: [
-      { label: "Shop Luxury", url: "/luxury" },
-      { label: "Book Consultation", url: "/consultation" }
-    ],
-    // Legacy fallback
-    ctaButtonLabel: "Shop Luxury",
-    ctaButtonUrl: "/deals",
-    isActive: true,
-    order: 3
-  }
-];
 
 export default function HeroCarousel() {
   const router = useRouter();
-  const [banners, setBanners] = useState<Banner[]>(fallbackBanners);
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
@@ -118,8 +65,7 @@ export default function HeroCarousel() {
         }
       }
     } catch (error) {
-      console.error('Using fallback banners:', error);
-      // Keep fallback banners
+      console.error('Failed to fetch banners:', error);
     }
   };
 
@@ -172,11 +118,13 @@ export default function HeroCarousel() {
 
   const currentBanner = banners[currentSlide];
 
-  if (!currentBanner) {
+  if (!mounted || banners.length === 0) {
     return (
       <section className="relative w-full h-screen min-h-[600px] max-h-[900px] overflow-hidden bg-gray-900 flex items-center justify-center">
         <div className="text-white text-center">
-          <h1 className="text-4xl font-light">Loading...</h1>
+          <h1 className="text-4xl font-light">
+            {!mounted ? 'Loading...' : 'No banners available'}
+          </h1>
         </div>
       </section>
     );
@@ -212,15 +160,6 @@ export default function HeroCarousel() {
         </AnimatePresence>
       )}
       
-      {/* Fallback background for SSR */}
-      {!mounted && (
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url(${fallbackBanners[0].image})`
-          }}
-        />
-      )}
 
       {/* Sophisticated Gradient Overlay */}
       <div className="absolute inset-0">
@@ -317,24 +256,24 @@ export default function HeroCarousel() {
               </motion.div>
             </AnimatePresence>
           ) : (
-            // Mobile SSR Content
+            // Mobile Loading State
             <div className="text-center space-y-4">
               <div className="flex items-center justify-center space-x-2">
                 <div className="h-px w-8 bg-gradient-to-r from-transparent to-white/60" />
                 <span className="text-white/90 font-light text-xs uppercase tracking-[3px]">
-                  {fallbackBanners[0].subtitle}
+                  Loading...
                 </span>
                 <div className="h-px w-8 bg-gradient-to-l from-transparent to-white/60" />
               </div>
               <h1 className="text-4xl font-light text-white leading-tight tracking-wide">
-                {fallbackBanners[0].title}
+                Loading...
               </h1>
               <div className="flex justify-center">
                 <div className="h-0.5 w-16 bg-gradient-to-r from-white to-white/40" />
               </div>
               <div className="pt-4">
-                <button className="bg-white text-black hover:bg-white/90 px-8 py-3 text-sm font-medium tracking-wide uppercase">
-                  {getEffectiveCTAButtons(fallbackBanners[0])[0].label}
+                <button className="bg-white text-black hover:bg-white/90 px-8 py-3 text-sm font-medium tracking-wide uppercase" disabled>
+                  Loading...
                 </button>
               </div>
             </div>
@@ -442,38 +381,24 @@ export default function HeroCarousel() {
                   </motion.div>
                 </AnimatePresence>
               ) : (
-                // Desktop SSR Content
+                // Desktop Loading State
                 <div className="space-y-8">
                   <div className="flex items-center space-x-3">
                     <Sparkles className="text-yellow-400 w-5 h-5" />
                     <span className="text-white/90 font-light text-sm uppercase tracking-[2px] border-l border-white/30 pl-3">
-                      {fallbackBanners[0].subtitle}
+                      Loading...
                     </span>
                   </div>
                   <h1 className="text-6xl lg:text-7xl xl:text-8xl font-thin text-white leading-tight tracking-tight">
-                    {fallbackBanners[0].title}
+                    Loading...
                   </h1>
-                  {fallbackBanners[0].description && (
-                    <p className="text-lg text-white/80 font-light leading-relaxed max-w-md">
-                      {fallbackBanners[0].description}
-                    </p>
-                  )}
+                  <p className="text-lg text-white/80 font-light leading-relaxed max-w-md">
+                    Please wait while we load the latest banners...
+                  </p>
                   <div className="flex items-center space-x-6">
-                    {(() => {
-                      const ctaButtons = getEffectiveCTAButtons(fallbackBanners[0]);
-                      return (
-                        <>
-                          <button className="bg-white text-black hover:bg-white/90 px-10 py-4 text-base font-medium tracking-wide uppercase">
-                            {ctaButtons[0].label}
-                          </button>
-                          {ctaButtons.length > 1 && (
-                            <button className="text-white border-b border-white/40 hover:border-white pb-1 text-sm uppercase tracking-wide">
-                              {ctaButtons[1].label}
-                            </button>
-                          )}
-                        </>
-                      );
-                    })()}
+                    <button className="bg-white text-black hover:bg-white/90 px-10 py-4 text-base font-medium tracking-wide uppercase" disabled>
+                      Loading...
+                    </button>
                   </div>
                 </div>
               )}

@@ -8,7 +8,7 @@ import { addToWishlist, removeFromWishlist } from '@/lib/store/slices/wishlistSl
 import { RootState } from '@/lib/store/store';
 import { formatBDTCurrency } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { Eye, Heart, ShoppingCart, Star } from 'lucide-react';
+import { Heart, ShoppingCart, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -78,7 +78,7 @@ export default function ProductCard({
   };
 
   const getDiscountPercentage = () => {
-    if (!product.comparePrice) return 0;
+    if (!product.comparePrice || product.comparePrice <= 0) return 0;
     return Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100);
   };
 
@@ -123,90 +123,85 @@ export default function ProductCard({
       whileHover={{ y: -8 }}
       className={`group ${className}`}
     >
-      <Card className={`border-0 transition-all duration-300 overflow-hidden ${cardClass}`}>
-        <div className="relative overflow-hidden">
-          <Link href={`/products/${product.slug}`}>
+      <Link href={`/products/${product.slug}`} className="block">
+        <Card className={`border-0 transition-all duration-300 overflow-hidden ${cardClass} cursor-pointer group-hover:shadow-2xl`}>
+          <div className="relative overflow-hidden">
             <img
               src={product.thumbnailImage}
               alt={product.name}
               className="w-full h-40 sm:h-48 md:h-56 lg:h-64 object-cover transition-transform duration-700 group-hover:scale-110"
             />
-          </Link>
-          
-          {/* Badges */}
-          {showBadges && (
-            <div className="absolute top-2 sm:top-3 left-2 sm:left-3 flex flex-col gap-1 sm:gap-2">
-              {variant === 'new-arrival' && (
-                <Badge className={`${badgeClass} text-white text-xs px-2 py-1 shadow-lg`}>
-                  NEW
-                </Badge>
-              )}
-              {variant === 'limited-edition' && (
-                <Badge className={`${badgeClass} text-white text-xs px-2 py-1 shadow-lg border border-purple-400`}>
-                  EXCLUSIVE
-                </Badge>
-              )}
-              {variant === 'best-selling' && (
-                <Badge className={`${badgeClass} text-white text-xs px-2 py-1 shadow-lg`}>
-                  BESTSELLER
-                </Badge>
-              )}
-              {variant === 'featured' && (
-                <Badge className={`${badgeClass} text-white text-xs px-2 py-1 shadow-lg`}>
-                  FEATURED
-                </Badge>
-              )}
-            </div>
-          )}
-
-          {/* Discount Badge */}
-          {product.comparePrice && (
-            <Badge className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-destructive text-white text-xs px-2 py-1">
-              {getDiscountPercentage()}% OFF
-            </Badge>
-          )}
-
-          {/* Quick Actions */}
-          {showQuickActions && (
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
-              <div className="flex items-center gap-2">
-                <Button 
-                  size="sm" 
-                  variant="secondary" 
-                  className="p-2 rounded-full"
-                  onClick={handleWishlistToggle}
-                >
-                  <Heart 
-                    size={16} 
-                    className={wishlistItems.some(item => item.id === product._id) ? 'fill-current text-red-500' : ''} 
-                  />
-                </Button>
-                <Link href={`/products/${product.slug}`}>
-                  <Button size="sm" variant="secondary" className="p-2 rounded-full">
-                    <Eye size={16} />
-                  </Button>
-                </Link>
-                <Button 
-                  size="sm"
-                  onClick={handleAddToCart}
-                  className="px-3 sm:px-4 hidden sm:flex"
-                >
-                  <ShoppingCart size={16} className="mr-2" />
-                  Add to Cart
-                </Button>
-                <Button 
-                  size="sm"
-                  onClick={handleAddToCart}
-                  className="p-2 sm:hidden"
-                >
-                  <ShoppingCart size={16} />
-                </Button>
+            
+            {/* Badges */}
+            {showBadges && (
+              <div className="absolute top-2 sm:top-3 left-2 sm:left-3 flex flex-col gap-1 sm:gap-2">
+                {variant === 'new-arrival' && (
+                  <Badge className={`${badgeClass} text-white text-xs px-2 py-1 shadow-lg`}>
+                    NEW
+                  </Badge>
+                )}
+                {variant === 'limited-edition' && (
+                  <Badge className={`${badgeClass} text-white text-xs px-2 py-1 shadow-lg border border-purple-400`}>
+                    EXCLUSIVE
+                  </Badge>
+                )}
+                {variant === 'best-selling' && (
+                  <Badge className={`${badgeClass} text-white text-xs px-2 py-1 shadow-lg`}>
+                    BESTSELLER
+                  </Badge>
+                )}
+                {variant === 'featured' && (
+                  <Badge className={`${badgeClass} text-white text-xs px-2 py-1 shadow-lg`}>
+                    FEATURED
+                  </Badge>
+                )}
               </div>
-            </div>
-          )}
-        </div>
+            )}
 
-        <CardContent className="p-3 sm:p-4">
+            {/* Discount Badge */}
+            {product.comparePrice && product.comparePrice > 0 && getDiscountPercentage() > 0 && (
+              <Badge className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-destructive text-white text-xs px-2 py-1">
+                {getDiscountPercentage()}% OFF
+              </Badge>
+            )}
+
+            {/* Quick Actions */}
+            {showQuickActions && (
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+                <div className="flex items-center gap-3">
+                  <Button 
+                    size="sm" 
+                    variant="secondary" 
+                    className="p-3 rounded-full bg-white/90 hover:bg-white shadow-lg"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleWishlistToggle();
+                    }}
+                  >
+                    <Heart 
+                      size={18} 
+                      className={wishlistItems.some(item => item.id === product._id) ? 'fill-current text-red-500' : 'text-gray-700'} 
+                    />
+                  </Button>
+                  <Button 
+                    size="sm"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleAddToCart();
+                    }}
+                    className="px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-full shadow-lg flex items-center gap-2"
+                  >
+                    <ShoppingCart size={18} />
+                    <span className="text-sm font-medium">Add to Cart</span>
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <CardContent className="p-3 sm:p-4">
           {/* Rating */}
           <div className="flex items-center gap-1 sm:gap-2 mb-2">
             <div className="flex items-center">
@@ -217,32 +212,30 @@ export default function ProductCard({
                   className={`${
                     i < Math.floor(product.averageRating || 0)
                       ? 'text-warning fill-current'
-                      : 'text-muted'
+                      : 'text-muted-foreground'
                   }`}
                 />
               ))}
             </div>
-            <span className="text-xs text-muted-foreground">
-              ({product.totalReviews || 0})
+            <span className="text-xs text-gray-900 font-medium">
+              ({product.totalReviews || 0} reviews)
             </span>
           </div>
           
           {/* Product Name */}
-          <Link href={`/products/${product.slug}`}>
-            <h3 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3 group-hover:text-primary-600 transition-colors line-clamp-2">
-              {product.name}
-            </h3>
-          </Link>
+          <h3 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3 group-hover:text-primary-600 transition-colors line-clamp-2">
+            {product.name}
+          </h3>
           
           {/* Price */}
           <div className="flex items-center justify-between">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
-              <span className="text-sm sm:text-lg font-bold text-primary-600">
-                {formatBDTCurrency(product.price)}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 flex-1 min-w-0">
+              <span className="text-sm sm:text-lg font-bold text-primary-600 truncate">
+                {formatBDTCurrency(Number(product.price))}
               </span>
-              {product.comparePrice && (
-                <span className="text-xs sm:text-sm text-muted-foreground line-through">
-                  {formatBDTCurrency(product.comparePrice)}
+              {product?.comparePrice && product.comparePrice > 0 && (
+                <span className="text-xs sm:text-sm text-muted-foreground line-through truncate">
+                  {formatBDTCurrency(Number(product.comparePrice))}
                 </span>
               )}
             </div>
@@ -251,29 +244,23 @@ export default function ProductCard({
             <Button
               size="sm"
               variant="ghost"
-              onClick={handleAddToCart}
-              className="p-1 h-8 w-8 sm:hidden"
-            >
-              <ShoppingCart size={14} />
-            </Button>
-
-            {/* Desktop Quick Add */}
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleAddToCart}
-              className="opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleAddToCart();
+              }}
+              className="p-1 h-8 w-8 sm:hidden hover:bg-primary-50 flex-shrink-0 ml-2"
             >
               <ShoppingCart size={14} />
             </Button>
           </div>
 
           {/* Additional Info for specific variants */}
-          {variant === 'best-selling' && product.totalSales && (
+          {/* {variant === 'best-selling' && product.totalSales && (
             <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
               <span>{product.totalSales} sold</span>
             </div>
-          )}
+          )} */}
 
           {variant === 'limited-edition' && product.quantity && (
             <div className="mt-2">
@@ -289,8 +276,9 @@ export default function ProductCard({
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </Link>
     </motion.div>
   );
 }
