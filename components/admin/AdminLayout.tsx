@@ -10,25 +10,25 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useSettings } from '@/hooks/use-settings';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  BarChart3,
-  Bell,
-  Calendar,
-  ChevronDown,
-  Database,
-  FileText,
-  LayoutDashboard,
-  LogOut,
-  Menu,
-  MessageSquare,
-  Package,
-  Plus,
-  RefreshCw,
-  Search,
-  Settings,
-  ShoppingCart, Tag, Truck,
-  User,
-  Users,
-  X
+    BarChart3,
+    Bell,
+    Calendar,
+    ChevronDown,
+    Database,
+    FileText,
+    LayoutDashboard,
+    LogOut,
+    Menu,
+    MessageSquare,
+    Package,
+    Plus,
+    RefreshCw,
+    Search,
+    Settings,
+    ShoppingBasket, Tag, Truck,
+    User,
+    Users,
+    X
 } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -60,7 +60,7 @@ const sidebarItems = [
   },
   {
     title: 'Orders',
-    icon: ShoppingCart,
+    icon: ShoppingBasket,
     href: '/admin/orders',
     roles: ['admin', 'manager', 'staff']
   },

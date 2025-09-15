@@ -10,28 +10,28 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useHydration } from '@/hooks/use-hydration';
 import {
-  applyCoupon,
-  clearCart,
-  reloadCartFromStorage,
-  removeCoupon,
-  removeFromCart,
-  updateQuantity
+    applyCoupon,
+    clearCart,
+    reloadCartFromStorage,
+    removeCoupon,
+    removeFromCart,
+    updateQuantity
 } from '@/lib/store/slices/cartSlice';
 import { addToWishlist, loadWishlistFromStorage } from '@/lib/store/slices/wishlistSlice';
 import { RootState } from '@/lib/store/store';
 import { formatNumber } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  ArrowLeft,
-  Heart,
-  Minus,
-  Package,
-  Plus,
-  Shield,
-  ShoppingBag,
-  ShoppingCart,
-  Tag,
-  Trash2
+    ArrowLeft,
+    Heart,
+    Minus,
+    Package,
+    Plus,
+    Shield,
+    ShoppingBag,
+    ShoppingBasket,
+    Tag,
+    Trash2
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -178,7 +178,7 @@ export default function CartPage() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-3">
               <div className="p-2 bg-primary rounded-lg">
-                <ShoppingCart size={20} className="text-white" />
+                <ShoppingBasket size={20} className="text-white" />
               </div>
               <div>
                 <h1 className="text-xl md:text-2xl font-bold text-gray-900">

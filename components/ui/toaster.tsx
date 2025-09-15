@@ -1,16 +1,16 @@
 'use client';
 
 import {
-  Toast,
-  ToastClose,
-  ToastDescription,
-  ToastProvider,
-  ToastTitle,
-  ToastViewport,
+    Toast,
+    ToastClose,
+    ToastDescription,
+    ToastProvider,
+    ToastTitle,
+    ToastViewport,
 } from '@/components/ui/toast';
 import { useHydration } from '@/hooks/use-hydration';
 import { useToast } from '@/hooks/use-toast';
-import { AlertCircle, AlertTriangle, CheckCircle, Heart, Info, ShoppingCart } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle, Heart, Info, ShoppingBasket } from 'lucide-react';
 
 export function Toaster() {
   const { toasts } = useToast();
@@ -34,7 +34,7 @@ export function Toaster() {
             case 'info':
               return <Info className="h-5 w-5 text-blue-600 drop-shadow-sm" />;
             case 'cart':
-              return <ShoppingCart className="h-5 w-5 text-primary-600 drop-shadow-sm" />;
+              return <ShoppingBasket className="h-5 w-5 text-primary-600 drop-shadow-sm" />;
             case 'wishlist':
               return <Heart className="h-5 w-5 text-pink-600 drop-shadow-sm fill-current" />;
             default:

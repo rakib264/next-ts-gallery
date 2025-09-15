@@ -14,26 +14,26 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import {
-  Calendar,
-  CheckCircle,
-  Clock,
-  CreditCard,
-  DollarSign,
-  Download,
-  Edit,
-  FileText,
-  Mail,
-  MapPin,
-  Package,
-  Phone,
-  Printer,
-  Send,
-  ShoppingBag,
-  ShoppingCart,
-  TrendingUp,
-  Truck,
-  User,
-  XCircle
+    Calendar,
+    CheckCircle,
+    Clock,
+    CreditCard,
+    DollarSign,
+    Download,
+    Edit,
+    FileText,
+    Mail,
+    MapPin,
+    Package,
+    Phone,
+    Printer,
+    Send,
+    ShoppingBag,
+    ShoppingBasket,
+    TrendingUp,
+    Truck,
+    User,
+    XCircle
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -871,7 +871,7 @@ export default function AdminOrders() {
               <CardContent className="p-3 sm:p-4">
                 <div className="flex items-center space-x-3 sm:flex-col sm:space-x-0 sm:space-y-2 sm:text-center">
                   <div className="p-2 sm:p-3 bg-blue-500 rounded-lg sm:rounded-xl shadow-lg flex-shrink-0">
-                    <ShoppingCart className="text-white" size={16} />
+                    <ShoppingBasket className="text-white" size={16} />
                   </div>
                   <div className="flex-1 sm:flex-none">
                     <p className="text-xs font-bold text-blue-700 uppercase tracking-wide">TOTAL</p>
@@ -1098,7 +1098,7 @@ export default function AdminOrders() {
               <div className="text-center sm:text-left">
                 <CardTitle className="text-lg font-bold text-gray-800 flex items-center justify-center sm:justify-start space-x-2">
                   <div className="p-2 bg-blue-500 rounded-lg">
-                    <ShoppingCart size={18} className="text-white" />
+                    <ShoppingBasket size={18} className="text-white" />
                   </div>
                   <span>📋 Orders Management</span>
                 </CardTitle>
@@ -1230,7 +1230,7 @@ export default function AdminOrders() {
                     <div className="space-y-4">
                       <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
                         <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                          <ShoppingCart className="text-white" size={16} />
+                          <ShoppingBasket className="text-white" size={16} />
                         </div>
                         <div className="flex-1">
                           <p className="font-medium">Order Placed</p>

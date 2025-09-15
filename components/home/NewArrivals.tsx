@@ -197,8 +197,7 @@ export default function NewArrivals({
             <ProductCard
               key={product._id}
               product={product}
-              index={index}
-              variant="new-arrival"
+              variant="standard"
               className="h-full"
             />
           ))}

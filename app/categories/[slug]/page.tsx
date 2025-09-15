@@ -8,6 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import Pagination from '@/components/ui/pagination';
+import ProductCard from '@/components/ui/product-card';
+import ProductSkeleton from '@/components/ui/product-skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { addToCart } from '@/lib/store/slices/cartSlice';
@@ -22,7 +25,7 @@ import {
   List,
   Package,
   Search,
-  ShoppingCart,
+  ShoppingBasket,
   SlidersHorizontal,
   Star,
   X
@@ -64,6 +67,12 @@ interface Product {
   description?: string;
   inStock: boolean;
   colors?: string[];
+  quantity?: number;
+  totalSales?: number;
+  isNewArrival?: boolean;
+  isFeatured?: boolean;
+  isLimitedEdition?: boolean;
+  tags?: string[];
 }
 
 const sortOptions = [
@@ -91,6 +100,11 @@ export default function CategoryPage() {
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 12, total: 0, pages: 0 });
   const [isDesktop, setIsDesktop] = useState(false);
+  const [isFallback, setIsFallback] = useState(false);
+  const [fallbackInfo, setFallbackInfo] = useState<{
+    originalCategory: { name: string; slug: string };
+    showingFromSubcategories: { name: string; slug: string }[];
+  } | null>(null);
 
   const availableColors = ['Red', 'Blue', 'Green', 'Black', 'White', 'Yellow', 'Pink', 'Purple'];
 
@@ -118,14 +132,16 @@ export default function CategoryPage() {
     try {
       setLoading(true);
       
-      // Fetch category details
-      const categoryResponse = await fetch('/api/categories');
-      const categoryData = await categoryResponse.json();
-      const categoriesArray = categoryData.categories || [];
-      const currentCategory = categoriesArray.find((cat: Category) => cat.slug === params.slug);
-      
-      if (currentCategory) {
-        setCategory(currentCategory);
+      // Fetch category details (only on initial load)
+      if (pagination.page === 1) {
+        const categoryResponse = await fetch('/api/categories');
+        const categoryData = await categoryResponse.json();
+        const categoriesArray = categoryData.categories || [];
+        const currentCategory = categoriesArray.find((cat: Category) => cat.slug === params.slug);
+        
+        if (currentCategory) {
+          setCategory(currentCategory);
+        }
       }
 
       // Fetch products
@@ -148,11 +164,26 @@ export default function CategoryPage() {
       const productsData = await productsResponse.json();
       
       setProducts(productsData.products || []);
-      setPagination(prev => ({
-        ...prev,
-        total: productsData.total || 0,
-        pages: Math.ceil((productsData.total || 0) / prev.limit)
-      }));
+      
+      // Update pagination from API response
+      if (productsData.pagination) {
+        setPagination(prev => ({
+          ...prev,
+          total: productsData.pagination.total || 0,
+          pages: productsData.pagination.pages || 0
+        }));
+      } else {
+        // Fallback to direct properties if pagination object doesn't exist
+        setPagination(prev => ({
+          ...prev,
+          total: productsData.total || 0,
+          pages: Math.ceil((productsData.total || 0) / prev.limit)
+        }));
+      }
+      
+      // Handle fallback information
+      setIsFallback(productsData.isFallback || false);
+      setFallbackInfo(productsData.fallbackInfo || null);
       
     } catch (error) {
       console.error('Error fetching category data:', error);
@@ -213,7 +244,14 @@ export default function CategoryPage() {
     setMinRating(0);
     setSelectedColors([]);
     setPagination(prev => ({ ...prev, page: 1 }));
+    setIsFallback(false);
+    setFallbackInfo(null);
   };
+
+  const handlePageChange = (newPage: number) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
+  };
+
 
   if (!category && !loading) {
     return (
@@ -287,6 +325,43 @@ export default function CategoryPage() {
                 </Button>
               </Link>
             </div>
+            
+            {/* Fallback Information Banner */}
+            {isFallback && fallbackInfo && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6"
+              >
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Package className="w-4 h-4 text-blue-600" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-semibold text-blue-900 mb-1">
+                      Showing products from subcategories
+                    </h3>
+                    <p className="text-sm text-blue-700 mb-2">
+                      No products found in <strong>{fallbackInfo.originalCategory.name}</strong>. 
+                      Displaying products from related subcategories:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {fallbackInfo.showingFromSubcategories.map((subcategory) => (
+                        <Link
+                          key={subcategory.slug}
+                          href={`/categories/${subcategory.slug}`}
+                          className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors"
+                        >
+                          {subcategory.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
           </motion.div>
 
           {/* Filters and Search - Enhanced Design */}
@@ -480,7 +555,7 @@ export default function CategoryPage() {
                 <h2 className="text-xl font-semibold text-gray-900">Collection</h2>
                 <div className="bg-gray-100 px-3 py-1 rounded-full border border-gray-200">
                   <p className="text-sm font-medium text-gray-600">
-                    {products.length} of {pagination.total} pieces
+                    👉 Showing {products.length} of {pagination.total} products
                   </p>
                 </div>
               </div>
@@ -521,196 +596,227 @@ export default function CategoryPage() {
             </div>
           </div>
 
-          {/* Products Grid */}
+          {/* Products Grid/List */}
           <motion.div
             layout
-            className={`grid ${
-              viewMode === 'grid' 
-                ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6' 
-                : 'grid-cols-1 gap-6'
-            }`}
+            className="mb-8"
           >
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
               {loading ? (
-                [...Array(8)].map((_, index) => (
-                  <div key={index} className="animate-pulse border rounded-lg h-80 bg-muted/30" />
-                ))
+                <ProductSkeleton 
+                  count={12} 
+                  variant={viewMode === 'list' ? 'list' : 'grid'}
+                  className="mb-6"
+                />
               ) : products.length > 0 ? (
-                products.map((product, index) => (
+                viewMode === 'list' ? (
                   <motion.div
-                    key={product._id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    whileHover={{ y: -4 }}
+                    key="list-view"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-4"
                   >
-                    <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 bg-white rounded-2xl">
-                      {/* Product Card Content */}
-                      <div className="relative overflow-hidden rounded-t-2xl">
-                        <Link href={`/products/${product.slug}`}>
-                          <img
-                            src={product.thumbnailImage}
-                            alt={product.name}
-                            className="w-full h-40 md:h-64 object-cover transition-transform duration-700 group-hover:scale-110"
-                          />
-                        </Link>
-                        
-                        {product.comparePrice && (
-                          <Badge className="absolute top-3 right-3 bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold px-2 py-1 rounded-full shadow-lg text-xs">
-                            {Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)}% OFF
-                          </Badge>
-                        )}
-
-                        {/* Mobile Add to Cart Button - Always Visible */}
-                        <div className="absolute bottom-3 right-3 z-20">
-                          <Button 
-                            size="sm"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleAddToCart(product);
-                            }}
-                            className="text-xs px-3 py-2 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 font-semibold"
-                          >
-                            <ShoppingCart size={14} className="mr-1" />
-                            Add
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      <CardContent className="p-3">
-                        <div className="flex items-center mb-1.5">
-                          <div className="flex items-center space-x-0.5">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                size={12}
-                                className={`transition-all duration-300 ${
-                                  i < Math.floor(product.averageRating || 0)
-                                    ? 'text-yellow-400 fill-current drop-shadow-sm'
-                                    : 'text-slate-300'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-xs text-slate-500 ml-1 font-medium">
-                            ({product.totalReviews || 0})
-                          </span>
-                        </div>
-                        
-                        <Link href={`/products/${product.slug}`}>
-                          <h3 className="font-bold text-sm mb-2 text-slate-800 group-hover:text-primary-600 transition-colors duration-300 line-clamp-2 leading-tight">
-                            {product.name}
-                          </h3>
-                        </Link>
-                        
-                        <div className="flex items-center justify-between pt-1.5 border-t border-slate-100">
-                          <div className="flex flex-col">
-                            <span className="text-sm font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-                              {formatPrice(product.price)}
-                            </span>
-                            {product.comparePrice && (
-                              <span className="text-xs text-slate-400 line-through font-medium">
-                                {formatPrice(product.comparePrice)}
-                              </span>
-                            )}
-                          </div>
-                          
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleWishlistToggle(product);
-                            }}
-                            className="p-1.5 h-7 w-7 rounded-full hover:bg-primary-50 transition-all duration-300"
-                          >
-                            <Heart 
-                              size={14} 
-                              className={`transition-colors duration-300 ${wishlistItems.some(item => item.id === product._id) ? 'fill-current text-red-500' : 'text-slate-500 hover:text-red-500'}`} 
-                            />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    {products.map((product, index) => (
+                      <motion.div
+                        key={product._id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                        className="group"
+                      >
+                        <Card className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white rounded-2xl">
+                          <CardContent className="p-0">
+                            <div className="flex flex-col md:flex-row">
+                              {/* Image Container - Responsive */}
+                              <div className="relative w-full md:w-48 h-48 md:h-32 overflow-hidden bg-gray-50">
+                                <Link href={`/products/${product.slug}`} className="block h-full">
+                                  <img
+                                    src={product.thumbnailImage}
+                                    alt={product.name}
+                                    className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                                  />
+                                </Link>
+                                
+                                {/* Discount Badge */}
+                                {product.comparePrice !== 0 && product.comparePrice !== undefined && product.comparePrice > product.price && (
+                                  <Badge className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 font-bold shadow-sm">
+                                    {Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)}% OFF
+                                  </Badge>
+                                )}
+                              </div>
+                              
+                              {/* Content - Responsive */}
+                              <div className="flex-1 p-4 md:p-6">
+                                <div className="flex flex-col h-full">
+                                  {/* Category */}
+                                  {product.category && (
+                                    <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">
+                                      {product.category.name}
+                                    </p>
+                                  )}
+                                  
+                                  {/* Product Name */}
+                                  <Link href={`/products/${product.slug}`} className="block flex-1">
+                                    <h3 className="font-bold text-lg md:text-xl text-gray-900 mb-3 line-clamp-2 leading-tight hover:text-primary-600 transition-colors">
+                                      {product.name}
+                                    </h3>
+                                  </Link>
+                                  
+                                  {/* Rating */}
+                                  <div className="flex items-center gap-2 mb-4">
+                                    <div className="flex items-center">
+                                      {[...Array(5)].map((_, i) => (
+                                        <Star
+                                          key={i}
+                                          size={16}
+                                          className={`${
+                                            i < Math.floor(product.averageRating || 0)
+                                              ? 'text-yellow-400 fill-yellow-400'
+                                              : 'text-gray-300'
+                                          }`}
+                                        />
+                                      ))}
+                                    </div>
+                                    <span className="text-sm text-gray-500">
+                                      ({product.totalReviews || 0} reviews)
+                                    </span>
+                                  </div>
+                                  
+                                  {/* Price and Actions */}
+                                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                                    <div className="flex flex-col">
+                                      <span className="text-xl font-bold text-primary-600">
+                                        {formatPrice(product.price)}
+                                      </span>
+                                      {product.comparePrice !== 0 && product.comparePrice !== undefined && product.comparePrice > product.price && (
+                                        <span className="text-sm text-gray-500 line-through">
+                                          {formatPrice(product.comparePrice)}
+                                        </span>
+                                      )}
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-2">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          handleWishlistToggle(product);
+                                        }}
+                                        className="p-2 rounded-full hover:bg-primary-50 transition-all duration-300"
+                                      >
+                                        <Heart 
+                                          size={16} 
+                                          className={`transition-colors duration-300 ${wishlistItems.some(item => item.id === product._id) ? 'fill-current text-red-500' : 'text-gray-500 hover:text-red-500'}`} 
+                                        />
+                                      </Button>
+                                      
+                                      <Button
+                                        size="sm"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          handleAddToCart(product);
+                                        }}
+                                        className="bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-white px-6 py-2 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 font-semibold"
+                                      >
+                                        <ShoppingBasket size={16} className="mr-2" />
+                                        Add to Cart
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
                   </motion.div>
-                ))
+                ) : (
+                  <motion.div
+                    key="grid-view"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
+                  >
+                    {products.map((product, index) => (
+                      <motion.div
+                        key={product._id}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                        whileHover={{ y: -4 }}
+                      >
+                        <ProductCard
+                          product={{
+                            _id: product._id,
+                            name: product.name,
+                            slug: product.slug,
+                            price: product.price,
+                            comparePrice: product.comparePrice,
+                            thumbnailImage: product.thumbnailImage,
+                            averageRating: product.averageRating,
+                            totalReviews: product.totalReviews,
+                            category: product.category,
+                            quantity: product.inStock ? 99 : 0
+                          }}
+                          variant="default"
+                          showQuickActions={true}
+                          className="h-full"
+                        />
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )
               ) : (
-                <div className="col-span-full text-center py-12">
+                <motion.div
+                  key="no-products"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="col-span-full text-center py-12"
+                >
                   <Package className="mx-auto mb-4 text-muted-foreground" size={48} />
                   <h3 className="text-xl font-semibold mb-2">No products found</h3>
                   <p className="text-muted-foreground mb-4">
-                    No products are available in this category with your current filters.
+                    {isFallback 
+                      ? `No products are available in ${fallbackInfo?.originalCategory.name} or its subcategories with your current filters.`
+                      : "No products are available in this category with your current filters."
+                    }
                   </p>
-                  <Button onClick={clearFilters}>Clear All Filters</Button>
-                </div>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <Button onClick={clearFilters}>Clear All Filters</Button>
+                    {isFallback && (
+                      <Link href="/categories">
+                        <Button variant="outline">Browse All Categories</Button>
+                      </Link>
+                    )}
+                  </div>
+                </motion.div>
               )}
             </AnimatePresence>
           </motion.div>
 
-          {/* Pagination - Enhanced Design */}
+          {/* Pagination */}
           {pagination.pages > 1 && (
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-center gap-4 mt-12"
+              className="mt-12"
             >
-              <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-lg">
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPagination((prev) => ({ ...prev, page: Math.max(1, prev.page - 1) }))}
-                    disabled={pagination.page === 1 || loading}
-                    className="bg-white border border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 text-gray-900 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                  >
-                    Previous
-                  </Button>
-                  
-                  <div className="flex items-center space-x-2">
-                    {/* Page Numbers */}
-                    {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
-                      const pageNum = Math.max(1, Math.min(pagination.pages - 4, pagination.page - 2)) + i;
-                      if (pageNum > pagination.pages) return null;
-                      
-                      return (
-                        <Button
-                          key={pageNum}
-                          variant={pageNum === pagination.page ? "default" : "ghost"}
-                          size="sm"
-                          onClick={() => setPagination((prev) => ({ ...prev, page: pageNum }))}
-                          className={`w-8 h-8 rounded-lg transition-all duration-300 border ${
-                            pageNum === pagination.page 
-                              ? 'bg-primary-600 text-white shadow-sm border-primary-600' 
-                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent hover:border-gray-300'
-                          }`}
-                        >
-                          {pageNum}
-                        </Button>
-                      );
-                    })}
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPagination((prev) => ({ ...prev, page: Math.min(prev.pages, prev.page + 1) }))}
-                    disabled={pagination.page === pagination.pages || loading}
-                    className="bg-white border border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 text-gray-900 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                  >
-                    Next
-                  </Button>
-                </div>
-                
-                <div className="text-center mt-3">
-                  <span className="text-xs text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
-                    Page {pagination.page} of {pagination.pages}
-                  </span>
-                </div>
-              </div>
+              <Pagination
+                currentPage={pagination.page}
+                totalPages={pagination.pages}
+                onPageChange={handlePageChange}
+                isLoading={loading}
+                className="mb-6"
+              />
             </motion.div>
           )}
         </div>

@@ -2,45 +2,45 @@
 
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import SearchComponent from "@/components/ui/search";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
 } from "@/components/ui/sheet";
 import { useHydration } from "@/hooks/use-hydration";
 import { useSettings } from "@/hooks/use-settings";
 import {
-  reloadCartFromStorage,
-  toggleCart,
+    reloadCartFromStorage,
+    toggleCart,
 } from "@/lib/store/slices/cartSlice";
 import { toggleSearch } from "@/lib/store/slices/uiSlice";
 import { loadWishlistFromStorage } from "@/lib/store/slices/wishlistSlice";
 import { RootState } from "@/lib/store/store";
 import { motion } from "framer-motion";
 import {
-  BookOpen,
-  Heart,
-  LogOut,
-  Menu,
-  Package,
-  Percent,
-  Phone,
-  RotateCcw,
-  Search,
-  Settings,
-  ShoppingBag,
-  User,
-  X,
+    BookOpen,
+    Heart,
+    LogOut,
+    Menu,
+    Package,
+    Percent,
+    Phone,
+    RotateCcw,
+    Search,
+    Settings,
+    ShoppingBasket,
+    User,
+    X,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
@@ -205,7 +205,7 @@ export default function Header() {
                           />
                           <MobileNavItem
                             href="/cart"
-                            icon={ShoppingBag}
+                            icon={ShoppingBasket}
                             label="Cart"
                             badge={itemCount}
                             onClose={() => setMobileDrawerOpen(false)}
@@ -339,7 +339,7 @@ export default function Header() {
                   onClick={() => dispatch(toggleCart())}
                   className="p-2 relative text-white hover:bg-white/20 transition-all duration-200 backdrop-blur-sm"
                 >
-                  <ShoppingBag size={20} />
+                  <ShoppingBasket size={20} />
                   {isHydrated && itemCount > 0 && (
                     <motion.span
                       initial={{ scale: 0 }}
@@ -421,7 +421,7 @@ export default function Header() {
                 onClick={() => dispatch(toggleCart())}
                 className="p-2 relative text-white hover:bg-white/20 transition-all duration-200 backdrop-blur-sm"
               >
-                <ShoppingBag size={20} className="text-white stroke-2 drop-shadow-sm flex-shrink-0" />
+                <ShoppingBasket size={20} className="text-white stroke-2 drop-shadow-sm flex-shrink-0" />
                 {isHydrated && itemCount > 0 && (
                   <motion.span
                     initial={{ scale: 0 }}

@@ -13,7 +13,7 @@ import { clearWishlist, loadWishlistFromStorage, removeFromWishlist } from '@/li
 import { RootState } from '@/lib/store/store';
 import { formatNumber } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, Heart, ShoppingBag, ShoppingCart, Trash2, Zap } from 'lucide-react';
+import { ArrowLeft, Heart, ShoppingBag, ShoppingBasket, Trash2, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -278,7 +278,7 @@ export default function WishlistPage() {
                                   disabled={!item.inStock}
                                   className="h-7 px-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                                 >
-                                  <ShoppingCart size={12} className="mr-1" />
+                                  <ShoppingBasket size={12} className="mr-1" />
                                   <span className="hidden sm:inline">Add to Cart</span>
                                 </Button>
                                 <Button
@@ -366,7 +366,7 @@ export default function WishlistPage() {
                             inStockItems.forEach(item => handleAddToCart(item));
                           }}
                         >
-                          <ShoppingCart size={16} className="mr-2" />
+                          <ShoppingBasket size={16} className="mr-2" />
                           Add All to Cart ({inStockItems.length})
                         </Button>
                       )}

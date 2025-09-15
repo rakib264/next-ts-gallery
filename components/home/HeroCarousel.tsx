@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import CarouselSkeleton, { CarouselBackgroundSkeleton } from '@/components/ui/carousel-skeleton';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   ArrowRight,
@@ -39,6 +40,7 @@ export default function HeroCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setMounted(true);
@@ -57,15 +59,28 @@ export default function HeroCarousel() {
 
   const fetchBanners = async () => {
     try {
+      setIsLoading(true);
       const response = await fetch('/api/banners?limit=10');
       if (response.ok) {
         const data = await response.json();
         if (data.banners && data.banners.length > 0) {
           setBanners(data.banners);
+          // Minimal loading time for smooth experience
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 800);
+        } else {
+          // Quick loading even if no data
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 600);
         }
       }
     } catch (error) {
       console.error('Failed to fetch banners:', error);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 600);
     }
   };
 
@@ -118,20 +133,52 @@ export default function HeroCarousel() {
 
   const currentBanner = banners[currentSlide];
 
-  if (!mounted || banners.length === 0) {
+  // Show loading skeleton while data is being fetched
+  if (!mounted || isLoading) {
     return (
-      <section className="relative w-full h-screen min-h-[600px] max-h-[900px] overflow-hidden bg-gray-900 flex items-center justify-center">
+      <section className="relative w-full h-screen min-h-[500px] sm:min-h-[600px] max-h-[900px] overflow-hidden bg-gray-900" style={{ marginTop: '-64px', paddingTop: '64px' }}>
+        {/* Background Skeleton */}
+        <CarouselBackgroundSkeleton />
+        
+        {/* Content Container with Skeleton */}
+        <div className="relative z-30 h-full flex flex-col justify-end md:justify-center">
+          {/* Mobile Skeleton */}
+          <div className="md:hidden px-4 pb-24 pt-8">
+            <CarouselSkeleton variant="mobile" />
+          </div>
+
+          {/* Desktop Skeleton */}
+          <div className="hidden md:block">
+            <div className="container mx-auto px-8 lg:px-12">
+              <div className="max-w-2xl">
+                <CarouselSkeleton variant="desktop" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Show empty state only if no banners are available after loading
+  if (banners.length === 0) {
+    return (
+      <section className="relative w-full h-screen min-h-[500px] sm:min-h-[600px] max-h-[900px] overflow-hidden bg-gray-900 flex items-center justify-center" style={{ marginTop: '-64px', paddingTop: '64px' }}>
         <div className="text-white text-center">
-          <h1 className="text-4xl font-light">
-            {!mounted ? 'Loading...' : 'No banners available'}
-          </h1>
+          <h1 className="text-4xl font-light">No banners available</h1>
         </div>
       </section>
     );
   }
 
   return (
-    <section className="relative w-full h-screen min-h-[500px] sm:min-h-[600px] max-h-[900px] overflow-hidden bg-gray-900" style={{ marginTop: '-64px', paddingTop: '64px' }}>
+    <motion.section 
+      className="relative w-full h-screen min-h-[500px] sm:min-h-[600px] max-h-[900px] overflow-hidden bg-gray-900" 
+      style={{ marginTop: '-64px', paddingTop: '64px' }}
+      initial={{ opacity: 0, scale: 1.02 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 1.2, ease: "easeOut" }}
+    >
       {/* Background Images with Ken Burns effect */}
       {mounted && (
         <AnimatePresence mode="wait">
@@ -458,6 +505,6 @@ export default function HeroCarousel() {
           </motion.div>
         </div>
       )}
-    </section>
+    </motion.section>
   );
 }

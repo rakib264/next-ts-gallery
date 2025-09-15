@@ -2,6 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Luxury shimmer animation for skeleton loading */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes luxury-shimmer {
+  0% {
+    transform: translateX(-100%) skewX(-15deg);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%) skewX(-15deg);
+    opacity: 0;
+  }
+}
+
 /* Custom utility classes */
 .scrollbar-hide {
   -ms-overflow-style: none;  /* IE and Edge */

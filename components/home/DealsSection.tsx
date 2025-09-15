@@ -314,7 +314,6 @@ export default function DealsSection() {
                               totalReviews: product.totalReviews || 0,
                             }}
                             variant="featured"
-                            index={productIndex}
                             className="h-full"
                           />
                         </motion.div>

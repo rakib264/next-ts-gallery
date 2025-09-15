@@ -7,27 +7,27 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationWrapper } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { PAGE_SIZE_OPTIONS } from '@/constants';
 import { toast } from '@/hooks/use-toast';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  CreditCard,
-  Eye,
-  FileText,
-  MapPin,
-  Package,
-  RefreshCw,
-  Search,
-  Trash2,
-  Truck,
-  User,
-  X
+    AlertCircle,
+    CheckCircle,
+    Clock,
+    CreditCard,
+    Eye,
+    FileText,
+    MapPin,
+    Package,
+    RefreshCw,
+    Search,
+    Trash2,
+    Truck,
+    User,
+    X
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -677,7 +677,7 @@ export default function AdminReturnsPage() {
 
         {/* Pagination controls */}
         {totalPages > 1 && (
-          <Pagination>
+          <PaginationWrapper>
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious 
@@ -738,7 +738,7 @@ export default function AdminReturnsPage() {
                 />
               </PaginationItem>
             </PaginationContent>
-          </Pagination>
+          </PaginationWrapper>
         )}
       </div>
 

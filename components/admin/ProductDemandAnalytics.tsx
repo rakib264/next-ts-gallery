@@ -5,32 +5,32 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  AlertTriangle,
-  ArrowUp,
-  BarChart3,
-  Box,
-  Package,
-  ShoppingCart,
-  Star,
-  TrendingUp,
-  Zap
+    AlertTriangle,
+    ArrowUp,
+    BarChart3,
+    Box,
+    Package,
+    ShoppingBasket,
+    Star,
+    TrendingUp,
+    Zap
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Legend,
-  Line,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis
+    Area,
+    AreaChart,
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Cell,
+    Legend,
+    Line,
+    Pie,
+    PieChart,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis
 } from 'recharts';
 
 interface ProductDemand {
@@ -221,7 +221,7 @@ const ProductDemandAnalytics: React.FC = () => {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-500 rounded-lg">
-                <ShoppingCart className="h-5 w-5 text-white" />
+                <ShoppingBasket className="h-5 w-5 text-white" />
               </div>
               <div>
                 <p className="font-medium text-green-800">Total Orders</p>

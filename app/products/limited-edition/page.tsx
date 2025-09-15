@@ -16,7 +16,7 @@ import { addToCart } from '@/lib/store/slices/cartSlice';
 import { addToWishlist, removeFromWishlist } from '@/lib/store/slices/wishlistSlice';
 import { RootState } from '@/lib/store/store';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, Crown, Flame, Grid, Heart, List, Search, ShoppingCart, SlidersHorizontal, Star, Timer, X } from 'lucide-react';
+import { ChevronDown, Crown, Flame, Grid, Heart, List, Search, ShoppingBasket, SlidersHorizontal, Star, Timer, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -591,7 +591,7 @@ export default function LimitedEditionPage() {
                                 size="sm"
                                 onClick={() => handleAddToCart(product)}
                               >
-                                <ShoppingCart size={16} className="mr-2" />
+                                <ShoppingBasket size={16} className="mr-2" />
                                 Add to Cart
                               </Button>
                             </div>
@@ -645,7 +645,7 @@ export default function LimitedEditionPage() {
                                 onClick={() => handleAddToCart(product)}
                                 className="opacity-0 group-hover:opacity-100 transition-opacity lg:flex hidden border-white/20 text-white hover:bg-white/10"
                               >
-                                <ShoppingCart size={14} />
+                                <ShoppingBasket size={14} />
                               </Button>
                             </div>
                           </CardContent>
@@ -733,7 +733,7 @@ export default function LimitedEditionPage() {
                                   onClick={() => handleAddToCart(product)}
                                   className="px-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                                 >
-                                  <ShoppingCart size={16} className="mr-2" />
+                                  <ShoppingBasket size={16} className="mr-2" />
                                   Add to Cart
                                 </Button>
                               </div>
@@ -895,7 +895,7 @@ export default function LimitedEditionPage() {
                               onClick={() => handleAddToCart(product)}
                               className="text-xs px-3 py-1 bg-gradient-to-r from-purple-600 to-pink-600"
                             >
-                              <ShoppingCart size={14} className="mr-1" />
+                              <ShoppingBasket size={14} className="mr-1" />
                               Add to Cart
                             </Button>
                           </div>
@@ -1028,7 +1028,7 @@ export default function LimitedEditionPage() {
                                 size="sm"
                                 className="text-xs px-2 py-1 bg-gradient-to-r from-purple-600 to-pink-600"
                               >
-                                <ShoppingCart size={12} className="mr-1" />
+                                <ShoppingBasket size={12} className="mr-1" />
                                 Add to Cart
                               </Button>
                             </div>

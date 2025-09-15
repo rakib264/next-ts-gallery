@@ -13,7 +13,7 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-export default function ShoppingCart() {
+export default function ShoppingBasket() {
   const dispatch = useDispatch();
   const { items, total, itemCount, isOpen, shippingCost, tax, discount, couponCode } = useSelector((state: RootState) => state.cart);
   const isHydrated = useHydration();

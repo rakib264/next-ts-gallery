@@ -16,7 +16,7 @@ import { addToCart } from '@/lib/store/slices/cartSlice';
 import { addToWishlist, removeFromWishlist } from '@/lib/store/slices/wishlistSlice';
 import { RootState } from '@/lib/store/store';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Filter, Grid, Heart, List, Search, ShoppingCart, Star, X } from 'lucide-react';
+import { Filter, Grid, Heart, List, Search, ShoppingBasket, Star, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useState } from 'react';
@@ -370,7 +370,7 @@ function ExplorePageContent() {
                     size="sm"
                     onClick={() => handleAddToCart(product)}
                   >
-                    <ShoppingCart size={16} className="mr-2" />
+                    <ShoppingBasket size={16} className="mr-2" />
                     Add to Cart
                   </Button>
                 </div>
@@ -424,7 +424,7 @@ function ExplorePageContent() {
                     onClick={() => handleAddToCart(product)}
                     className="opacity-0 group-hover:opacity-100 transition-opacity lg:flex hidden"
                   >
-                    <ShoppingCart size={14} />
+                    <ShoppingBasket size={14} />
                   </Button>
                 </div>
               </CardContent>
@@ -512,7 +512,7 @@ function ExplorePageContent() {
                       onClick={() => handleAddToCart(product)}
                       className="px-6"
                     >
-                      <ShoppingCart size={16} className="mr-2" />
+                      <ShoppingBasket size={16} className="mr-2" />
                       Add to Cart
                     </Button>
                   </div>

@@ -1,6 +1,7 @@
 import Category from '@/lib/models/Category';
 import Product from '@/lib/models/Product';
 import connectDB from '@/lib/mongodb';
+import { getAllSubcategories } from '@/lib/utils/categoryUtils';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -46,7 +47,25 @@ export async function GET(request: NextRequest) {
     if (category) {
       const categoryDoc = await Category.findOne({ slug: category });
       if (categoryDoc) {
-        query.category = categoryDoc._id;
+        // First, try to find products in the current category
+        const currentCategoryQuery = { ...query, category: categoryDoc._id };
+        const currentCategoryProducts = await Product.find(currentCategoryQuery).countDocuments();
+        
+        if (currentCategoryProducts > 0) {
+          // If current category has products, use it
+          query.category = categoryDoc._id;
+        } else {
+          // If current category has no products, get all subcategories recursively
+          const subcategoryIds = await getAllSubcategories(categoryDoc._id.toString());
+          
+          if (subcategoryIds.length > 0) {
+            // Search in all subcategories
+            query.category = { $in: subcategoryIds };
+          } else {
+            // No subcategories either, return empty result
+            query.category = null; // This will match no products
+          }
+        }
       }
     }
 
@@ -96,6 +115,37 @@ export async function GET(request: NextRequest) {
 
     const total = await Product.countDocuments(query);
 
+    // Determine if we're showing fallback products
+    let isFallback = false;
+    let fallbackInfo = null;
+    
+    if (category) {
+      const categoryDoc = await Category.findOne({ slug: category });
+      if (categoryDoc) {
+        const currentCategoryQuery = { ...query, category: categoryDoc._id };
+        const currentCategoryProducts = await Product.find(currentCategoryQuery).countDocuments();
+        
+        if (currentCategoryProducts === 0 && total > 0) {
+          isFallback = true;
+          const subcategoryIds = await getAllSubcategories(categoryDoc._id.toString());
+          const subcategories = await Category.find({ 
+            _id: { $in: subcategoryIds } 
+          }).select('name slug').lean();
+          
+          fallbackInfo = {
+            originalCategory: {
+              name: categoryDoc.name,
+              slug: categoryDoc.slug
+            },
+            showingFromSubcategories: subcategories.map(sub => ({
+              name: sub.name,
+              slug: sub.slug
+            }))
+          };
+        }
+      }
+    }
+
     return NextResponse.json({
       products,
       pagination: {
@@ -103,7 +153,9 @@ export async function GET(request: NextRequest) {
         limit,
         total,
         pages: Math.ceil(total / limit)
-      }
+      },
+      isFallback,
+      fallbackInfo
     });
   } catch (error) {
     console.error('Products API error:', error);

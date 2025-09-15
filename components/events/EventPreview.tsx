@@ -7,7 +7,7 @@ import { addToCart } from '@/lib/store/slices/cartSlice';
 import { addToWishlist, removeFromWishlist } from '@/lib/store/slices/wishlistSlice';
 import { RootState } from '@/lib/store/store';
 import { motion } from 'framer-motion';
-import { Clock, Heart, Package, ShoppingCart, Star, Tag } from 'lucide-react';
+import { Clock, Heart, Package, ShoppingBasket, Star, Tag } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -326,7 +326,7 @@ export default function EventPreview({
                         onClick={() => dispatch(addToCart({ id: product._id, name: product.name, price: product.price, quantity: 1, image: product.thumbnailImage, maxQuantity: 99 }))}
                         className="px-4"
                       >
-                        <ShoppingCart size={14} className="mr-2" />
+                        <ShoppingBasket size={14} className="mr-2" />
                         Add to Cart
                       </Button>
                     </div>

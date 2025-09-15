@@ -22,7 +22,7 @@ import {
     Heart,
     List,
     Search,
-    ShoppingCart,
+    ShoppingBasket,
     SlidersHorizontal,
     Sparkles,
     Star,
@@ -553,7 +553,7 @@ export default function FeaturedProductsPage() {
                                 size="sm"
                                 onClick={() => handleAddToCart(product)}
                               >
-                                <ShoppingCart size={16} className="mr-2" />
+                                <ShoppingBasket size={16} className="mr-2" />
                                 Add to Cart
                               </Button>
                             </div>
@@ -607,7 +607,7 @@ export default function FeaturedProductsPage() {
                                 onClick={() => handleAddToCart(product)}
                                 className="opacity-0 group-hover:opacity-100 transition-opacity lg:flex hidden"
                               >
-                                <ShoppingCart size={14} />
+                                <ShoppingBasket size={14} />
                               </Button>
                             </div>
                           </CardContent>
@@ -695,7 +695,7 @@ export default function FeaturedProductsPage() {
                                   onClick={() => handleAddToCart(product)}
                                   className="px-6"
                                 >
-                                  <ShoppingCart size={16} className="mr-2" />
+                                  <ShoppingBasket size={16} className="mr-2" />
                                   Add to Cart
                                 </Button>
                               </div>
@@ -855,7 +855,7 @@ export default function FeaturedProductsPage() {
                               onClick={() => handleAddToCart(product)}
                               className="text-xs px-3 py-1"
                             >
-                              <ShoppingCart size={14} className="mr-1" />
+                              <ShoppingBasket size={14} className="mr-1" />
                               Add to Cart
                             </Button>
                           </div>
@@ -988,7 +988,7 @@ export default function FeaturedProductsPage() {
                                 size="sm"
                                 className="text-xs px-2 py-1"
                               >
-                                <ShoppingCart size={12} className="mr-1" />
+                                <ShoppingBasket size={12} className="mr-1" />
                                 Add to Cart
                               </Button>
                             </div>

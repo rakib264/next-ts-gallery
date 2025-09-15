@@ -200,8 +200,7 @@ export default function BestSellingProducts({
             <ProductCard
               key={product._id}
               product={product}
-              index={index}
-              variant="best-selling"
+              variant="standard"
               className="h-full"
             />
           ))}

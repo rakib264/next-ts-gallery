@@ -16,10 +16,15 @@ export function formatNumber(value: number): string {
 
 export function formatBDTCurrency(value: number, options: Intl.NumberFormatOptions = {}): string {
   try {
+    // Handle invalid values
+    if (value === null || value === undefined || isNaN(value)) {
+      return '৳0';
+    }
+    
     return new Intl.NumberFormat('en-BD', {
       style: 'currency',
       currency: 'BDT',
-      minimumFractionDigits: 0,
+      // minimumFractionDigits: 0,
       ...options,
     }).format(value);
   } catch {

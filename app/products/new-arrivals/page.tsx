@@ -16,7 +16,7 @@ import { addToCart } from '@/lib/store/slices/cartSlice';
 import { addToWishlist, removeFromWishlist } from '@/lib/store/slices/wishlistSlice';
 import { RootState } from '@/lib/store/store';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, Grid, Heart, List, Search, ShoppingCart, SlidersHorizontal, Sparkles, Star, X } from 'lucide-react';
+import { ChevronDown, Grid, Heart, List, Search, ShoppingBasket, SlidersHorizontal, Sparkles, Star, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -547,7 +547,7 @@ export default function NewArrivalsPage() {
                                 size="sm"
                                 onClick={() => handleAddToCart(product)}
                               >
-                                <ShoppingCart size={16} className="mr-2" />
+                                <ShoppingBasket size={16} className="mr-2" />
                                 Add to Cart
                               </Button>
                             </div>
@@ -601,7 +601,7 @@ export default function NewArrivalsPage() {
                                 onClick={() => handleAddToCart(product)}
                                 className="opacity-0 group-hover:opacity-100 transition-opacity lg:flex hidden"
                               >
-                                <ShoppingCart size={14} />
+                                <ShoppingBasket size={14} />
                               </Button>
                             </div>
                           </CardContent>
@@ -689,7 +689,7 @@ export default function NewArrivalsPage() {
                                   onClick={() => handleAddToCart(product)}
                                   className="px-6"
                                 >
-                                  <ShoppingCart size={16} className="mr-2" />
+                                  <ShoppingBasket size={16} className="mr-2" />
                                   Add to Cart
                                 </Button>
                               </div>
@@ -849,7 +849,7 @@ export default function NewArrivalsPage() {
                               onClick={() => handleAddToCart(product)}
                               className="text-xs px-3 py-1"
                             >
-                              <ShoppingCart size={14} className="mr-1" />
+                              <ShoppingBasket size={14} className="mr-1" />
                               Add to Cart
                             </Button>
                           </div>
@@ -982,7 +982,7 @@ export default function NewArrivalsPage() {
                                 size="sm"
                                 className="text-xs px-2 py-1"
                               >
-                                <ShoppingCart size={12} className="mr-1" />
+                                <ShoppingBasket size={12} className="mr-1" />
                                 Add to Cart
                               </Button>
                             </div>

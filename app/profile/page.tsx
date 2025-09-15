@@ -13,7 +13,7 @@ import { toast } from '@/hooks/use-toast';
 import { addToCart } from '@/lib/store/slices/cartSlice';
 import { removeFromWishlist } from '@/lib/store/slices/wishlistSlice';
 import { RootState } from '@/lib/store/store';
-import { Camera, Heart, LogOut, RotateCcw, ShoppingCart, Trash2, Upload, User } from 'lucide-react';
+import { Camera, Heart, LogOut, RotateCcw, ShoppingBasket, Trash2, Upload, User } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -210,7 +210,7 @@ export default function ProfilePage() {
               value="orders"
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-violet-600 data-[state=active]:text-white rounded-lg transition-all duration-300 flex items-center justify-center gap-2"
             >
-              <ShoppingCart className="w-4 h-4" />
+              <ShoppingBasket className="w-4 h-4" />
               <span className="hidden sm:inline">Orders</span>
             </TabsTrigger>
             <TabsTrigger 
@@ -364,7 +364,7 @@ export default function ProfilePage() {
             <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl rounded-2xl overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white p-8">
                 <CardTitle className="text-2xl font-semibold flex items-center text-white">
-                  <ShoppingCart className="w-6 h-6 mr-3 white" />
+                  <ShoppingBasket className="w-6 h-6 mr-3 white" />
                   Order History
                 </CardTitle>
                 <p className="text-primary-100 mt-2">Track and manage your orders</p>
@@ -377,7 +377,7 @@ export default function ProfilePage() {
                   </div>
                 ) : orders.length === 0 ? (
                   <div className="py-12 text-center">
-                    <ShoppingCart className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                    <ShoppingBasket className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-slate-600 mb-2">No orders yet</h3>
                     <p className="text-slate-500 mb-6">Start shopping to see your orders here</p>
                     <Link href="/products">
@@ -553,7 +553,7 @@ export default function ProfilePage() {
                                     disabled={!item.inStock}
                                     className="h-8 px-3 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-50"
                                   >
-                                    <ShoppingCart size={12} className="mr-1" />
+                                    <ShoppingBasket size={12} className="mr-1" />
                                     Add to Cart
                                   </Button>
                                   <Button

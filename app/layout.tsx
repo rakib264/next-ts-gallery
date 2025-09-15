@@ -3,7 +3,7 @@ import { FaviconProvider } from '@/components/providers/FaviconProvider';
 import NextAuthProvider from '@/components/providers/NextAuthProvider';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import AutoStartup from '@/components/startup/AutoStartup';
-import ShoppingCart from '@/components/ui/shopping-cart';
+import ShoppingBasket from '@/components/ui/shopping-cart';
 import { Toaster } from '@/components/ui/toaster';
 import StoreProvider from '@/lib/providers/StoreProvider';
 import type { Metadata } from 'next';
@@ -82,7 +82,7 @@ export default function RootLayout({
             <StoreProvider>
               {children}
               <ClientOnly>
-                <ShoppingCart />
+                <ShoppingBasket />
               </ClientOnly>
               <ClientOnly>
                 <Toaster />

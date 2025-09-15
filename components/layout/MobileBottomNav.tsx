@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { toggleCart, toggleSearch } from '@/lib/store/slices/uiSlice';
 import { RootState } from '@/lib/store/store';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Grid, Home, Package, ShoppingBag, User } from 'lucide-react';
+import { Grid, Home, Package, ShoppingBasket, User } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -39,7 +39,7 @@ const navItems = [
   {
     id: 'cart',
     label: 'Cart',
-    icon: ShoppingBag,
+    icon: ShoppingBasket,
     href: '/cart',
     showBadge: true,
     badgeKey: 'cart'

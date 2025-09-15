@@ -2,10 +2,10 @@
 
 import { Button } from '@/components/ui/button';
 import ProductCard, { Product } from '@/components/ui/product-card';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
-import { ArrowRight, ChevronLeft, ChevronRight, Crown, Flame, Timer } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowRight, Crown, Flame, Timer } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface LimitedEditionProps {
   title?: string;
@@ -22,14 +22,6 @@ export default function LimitedEdition({
 }: LimitedEditionProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const [dragStart, setDragStart] = useState(0);
-  const [dragOffset, setDragOffset] = useState(0);
-
-  const x = useMotionValue(0);
-  const springX = useSpring(x, { stiffness: 300, damping: 30 });
 
   useEffect(() => {
     fetchProducts();
@@ -51,59 +43,6 @@ export default function LimitedEdition({
     }
   };
 
-  const getItemWidth = () => {
-    if (typeof window === 'undefined') return 300;
-    if (window.innerWidth < 768) return window.innerWidth * 0.8;
-    if (window.innerWidth < 1024) return window.innerWidth * 0.45;
-    return window.innerWidth * 0.32;
-  };
-
-  const maxIndex = Math.max(0, products.length - Math.floor(3.2));
-
-  const nextSlide = () => {
-    if (currentIndex < maxIndex) {
-      setCurrentIndex(prev => prev + 1);
-    }
-  };
-
-  const prevSlide = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(prev => prev - 1);
-    }
-  };
-
-  const handleDragStart = (event: any) => {
-    setIsDragging(true);
-    setDragStart(event.clientX || event.touches?.[0]?.clientX || 0);
-  };
-
-  const handleDragMove = (event: any) => {
-    if (!isDragging) return;
-    const currentX = event.clientX || event.touches?.[0]?.clientX || 0;
-    const diff = currentX - dragStart;
-    setDragOffset(diff);
-  };
-
-  const handleDragEnd = () => {
-    if (!isDragging) return;
-    setIsDragging(false);
-    
-    const threshold = getItemWidth() * 0.3;
-    
-    if (dragOffset > threshold && currentIndex > 0) {
-      prevSlide();
-    } else if (dragOffset < -threshold && currentIndex < maxIndex) {
-      nextSlide();
-    }
-    
-    setDragOffset(0);
-  };
-
-  useEffect(() => {
-    const itemWidth = getItemWidth();
-    const translateX = -(currentIndex * itemWidth) + dragOffset;
-    x.set(translateX);
-  }, [currentIndex, dragOffset, x]);
 
   if (loading) {
     return (
@@ -125,15 +64,17 @@ export default function LimitedEdition({
 
   return (
     <section className={`py-16 lg:py-24 bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white relative overflow-hidden ${className}`}>
-      {/* Premium Background Pattern */}
+      {/* Enhanced Premium Background Pattern */}
       <div className="absolute inset-0">
-        <div className="absolute top-20 left-20 w-40 h-40 bg-gradient-to-r from-yellow-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-20 w-60 h-60 bg-gradient-to-r from-pink-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-r from-yellow-400/10 to-pink-400/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-20 left-20 w-48 h-48 bg-gradient-to-r from-yellow-400/30 to-pink-400/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-20 w-72 h-72 bg-gradient-to-r from-pink-400/30 to-purple-400/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-yellow-400/15 to-pink-400/15 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-10 right-10 w-32 h-32 bg-gradient-to-r from-purple-400/20 to-indigo-400/20 rounded-full blur-2xl animate-pulse"></div>
+        <div className="absolute bottom-10 left-10 w-40 h-40 bg-gradient-to-r from-pink-400/20 to-yellow-400/20 rounded-full blur-2xl animate-pulse"></div>
         
-        {/* Animated particles */}
+        {/* Enhanced Animated particles */}
         <div className="absolute inset-0">
-          {[...Array(20)].map((_, i) => {
+          {[...Array(25)].map((_, i) => {
             // Use fixed positions to avoid hydration mismatch
             const positions = [
               { left: '5%', top: '10%' }, { left: '15%', top: '30%' }, { left: '25%', top: '50%' },
@@ -142,23 +83,30 @@ export default function LimitedEdition({
               { left: '95%', top: '35%' }, { left: '10%', top: '60%' }, { left: '20%', top: '80%' },
               { left: '30%', top: '25%' }, { left: '40%', top: '75%' }, { left: '50%', top: '45%' },
               { left: '60%', top: '65%' }, { left: '70%', top: '5%' }, { left: '80%', top: '85%' },
-              { left: '90%', top: '55%' }, { left: '12%', top: '90%' }
+              { left: '90%', top: '55%' }, { left: '12%', top: '90%' }, { left: '8%', top: '40%' },
+              { left: '22%', top: '15%' }, { left: '38%', top: '85%' }, { left: '52%', top: '10%' },
+              { left: '68%', top: '90%' }
             ];
             const position = positions[i] || { left: '50%', top: '50%' };
             
             return (
               <motion.div
                 key={i}
-                className="absolute w-1 h-1 bg-white/30 rounded-full"
+                className={`absolute rounded-full ${
+                  i % 3 === 0 ? 'w-1 h-1 bg-white/40' : 
+                  i % 3 === 1 ? 'w-1.5 h-1.5 bg-yellow-300/30' : 
+                  'w-2 h-2 bg-pink-300/20'
+                }`}
                 style={position}
                 animate={{
-                  y: [0, -20, 0],
+                  y: [0, -30, 0],
                   opacity: [0, 1, 0],
+                  scale: [0.5, 1.2, 0.5],
                 }}
                 transition={{
-                  duration: 3 + (i % 3) * 2,
+                  duration: 4 + (i % 4) * 2,
                   repeat: Infinity,
-                  delay: (i % 4) * 0.5,
+                  delay: (i % 5) * 0.8,
                 }}
               />
             );
@@ -167,7 +115,7 @@ export default function LimitedEdition({
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        {/* Header */}
+        {/* Enhanced Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -175,7 +123,7 @@ export default function LimitedEdition({
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="text-center mb-12 lg:mb-16"
         >
-          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-8">
             <motion.div
               animate={{ 
                 scale: [1, 1.2, 1],
@@ -186,190 +134,140 @@ export default function LimitedEdition({
                 repeat: Infinity, 
                 ease: "easeInOut" 
               }}
-              className="p-3 sm:p-4 bg-gradient-to-r from-yellow-400 to-pink-400 rounded-2xl sm:rounded-3xl shadow-2xl"
+              className="p-4 sm:p-5 bg-gradient-to-r from-yellow-400 to-pink-400 rounded-3xl shadow-2xl"
             >
-              <Crown className="text-white" size={24} />
+              <Crown className="text-white" size={28} />
             </motion.div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-yellow-400 via-pink-300 to-purple-300 bg-clip-text text-transparent text-center">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold bg-gradient-to-r from-yellow-400 via-pink-300 to-purple-300 bg-clip-text text-transparent text-center">
               {title}
             </h2>
             <motion.div
               animate={{ 
-                scale: [1, 1.1, 1]
+                scale: [1, 1.1, 1],
+                rotate: [0, -5, 5, 0]
               }}
               transition={{ 
                 duration: 1.5, 
                 repeat: Infinity, 
-                ease: "easeInOut" 
+                ease: "easeInOut",
+                delay: 0.5
               }}
-              className="p-3 sm:p-4 bg-gradient-to-r from-orange-400 to-red-400 rounded-2xl sm:rounded-3xl shadow-2xl"
+              className="p-4 sm:p-5 bg-gradient-to-r from-orange-400 to-red-400 rounded-3xl shadow-2xl"
             >
-              <Flame className="text-white" size={24} />
+              <Flame className="text-white" size={28} />
             </motion.div>
           </div>
-          <p className="text-purple-100 text-base sm:text-lg lg:text-xl max-w-3xl mx-auto leading-relaxed mb-6 sm:mb-8 px-4">
+          <p className="text-purple-100 text-lg sm:text-xl lg:text-2xl max-w-4xl mx-auto leading-relaxed mb-8 px-4">
             {subtitle}
           </p>
           
-          {/* Countdown Timer */}
+          {/* Enhanced Countdown Timer */}
           <motion.div 
             initial={{ scale: 0 }}
             whileInView={{ scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 bg-gradient-to-r from-pink-500/20 to-purple-500/20 backdrop-blur-sm border border-pink-400/30 px-4 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-2xl"
+            className="inline-flex flex-col sm:flex-row items-center gap-3 sm:gap-4 lg:gap-6 bg-gradient-to-r from-pink-500/30 to-purple-500/30 backdrop-blur-md border border-pink-400/40 px-6 sm:px-8 lg:px-10 py-4 sm:py-5 rounded-2xl sm:rounded-3xl shadow-2xl"
           >
-            <div className="flex items-center gap-2">
-              <Timer size={16} className="text-pink-300" />
-              <span className="text-sm sm:text-base lg:text-lg font-semibold text-pink-100">Limited Time Only</span>
+            <div className="flex items-center gap-3">
+              <Timer size={20} className="text-pink-300" />
+              <span className="text-base sm:text-lg lg:text-xl font-bold text-pink-100">Limited Time Only</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-pink-400 rounded-full animate-pulse"></div>
-              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-purple-400 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-yellow-400 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 sm:w-3 sm:h-3 bg-pink-400 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 sm:w-3 sm:h-3 bg-purple-400 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+              <div className="w-2 h-2 sm:w-3 sm:h-3 bg-yellow-400 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
             </div>
           </motion.div>
 
-          {/* Stats */}
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 lg:gap-8 mt-6 sm:mt-8">
-            <div className="text-center">
-              <div className="text-xl sm:text-2xl font-bold text-yellow-400">{products.length}</div>
-              <div className="text-xs sm:text-sm text-purple-200">Exclusive Items</div>
-            </div>
-            <div className="w-px h-6 sm:h-8 bg-purple-400/50"></div>
-            <div className="text-center">
-              <div className="text-xl sm:text-2xl font-bold text-pink-400">24h</div>
-              <div className="text-xs sm:text-sm text-purple-200">Left to Order</div>
-            </div>
-            <div className="w-px h-6 sm:h-8 bg-purple-400/50"></div>
-            <div className="text-center">
-              <div className="text-xl sm:text-2xl font-bold text-purple-400">5★</div>
-              <div className="text-xs sm:text-sm text-purple-200">Premium Quality</div>
-            </div>
+          {/* Enhanced Stats */}
+          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 lg:gap-12 mt-8 sm:mt-10">
+            <motion.div 
+              className="text-center"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent">{products.length}</div>
+              <div className="text-sm sm:text-base text-purple-200 font-medium">Exclusive Items</div>
+            </motion.div>
+            <div className="w-px h-8 sm:h-12 bg-gradient-to-b from-purple-400/50 to-pink-400/50"></div>
+            <motion.div 
+              className="text-center"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-pink-400 to-pink-500 bg-clip-text text-transparent">24h</div>
+              <div className="text-sm sm:text-base text-purple-200 font-medium">Left to Order</div>
+            </motion.div>
+            <div className="w-px h-8 sm:h-12 bg-gradient-to-b from-purple-400/50 to-pink-400/50"></div>
+            <motion.div 
+              className="text-center"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-purple-400 to-purple-500 bg-clip-text text-transparent">5★</div>
+              <div className="text-sm sm:text-base text-purple-200 font-medium">Premium Quality</div>
+            </motion.div>
           </div>
         </motion.div>
 
-        {/* Carousel Container */}
-        <div className="relative">
-          {/* Navigation Buttons */}
-          <motion.button
-            onClick={prevSlide}
-            disabled={currentIndex === 0}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20 w-14 h-14 bg-white/10 backdrop-blur-sm rounded-full shadow-2xl border border-white/20 flex items-center justify-center hover:bg-white/20 hover:shadow-3xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <ChevronLeft size={24} className="text-white" />
-          </motion.button>
-
-          <motion.button
-            onClick={nextSlide}
-            disabled={currentIndex >= maxIndex}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20 w-14 h-14 bg-white/10 backdrop-blur-sm rounded-full shadow-2xl border border-white/20 flex items-center justify-center hover:bg-white/20 hover:shadow-3xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <ChevronRight size={24} className="text-white" />
-          </motion.button>
-
-          {/* Carousel */}
-          <div className="overflow-hidden rounded-3xl">
-            <motion.div
-              ref={carouselRef}
-              className="flex gap-6 py-4"
-              style={{ x: springX }}
-              drag="x"
-              dragConstraints={{ left: -(products.length * getItemWidth()), right: 0 }}
-              onDragStart={handleDragStart}
-              onDrag={handleDragMove}
-              onDragEnd={handleDragEnd}
-              dragElastic={0.1}
-              dragMomentum={false}
-            >
-              {products.map((product, index) => (
-                <motion.div
-                  key={product._id}
-                  className="flex-shrink-0"
-                  style={{ width: getItemWidth() }}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ 
-                    duration: 0.6, 
-                    delay: index * 0.1,
-                    ease: "easeOut"
-                  }}
-                  whileHover={{ 
-                    y: -12,
-                    transition: { duration: 0.3 }
-                  }}
-                >
-                  <div className="relative group">
-                    <ProductCard
-                      product={product}
-                      index={index}
-                      variant="limited-edition"
-                      className="h-full"
-                    />
-                    
-                    {/* Center Card Highlight */}
-                    {index === currentIndex && (
-                      <motion.div
-                        className="absolute inset-0 -m-3 rounded-3xl bg-gradient-to-r from-yellow-400/20 to-pink-400/20 border-2 border-yellow-400/50 pointer-events-none shadow-2xl"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.3 }}
-                      />
-                    )}
-
-                    {/* Limited Edition Badge */}
-                    <motion.div
-                      className="absolute -top-2 -right-2 z-10 bg-gradient-to-r from-yellow-400 to-pink-400 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: index * 0.1 + 0.5 }}
-                    >
-                      LIMITED
-                    </motion.div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-
-          {/* Dots Indicator */}
-          <div className="flex items-center justify-center gap-2 mt-8">
-            {Array.from({ length: maxIndex + 1 }).map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  index === currentIndex 
-                    ? 'bg-yellow-400 w-8 shadow-lg' 
-                    : 'bg-white/30 hover:bg-white/50'
-                }`}
+        {/* Products Grid - Consistent with other sections */}
+        <motion.div 
+          className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-12"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+        >
+          {products.map((product, index) => (
+            <div key={product._id} className="relative group h-full">
+              <ProductCard
+                product={product}
+                variant="limited-edition"
+                className="h-full"
               />
-            ))}
-          </div>
-        </div>
+              
+              {/* Limited Edition Badge */}
+              <motion.div
+                className="absolute -top-2 -right-2 z-10 bg-gradient-to-r from-yellow-400 to-pink-400 text-white px-3 py-1 rounded-full text-xs font-bold shadow-2xl"
+                initial={{ scale: 0, rotate: -10 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ delay: index * 0.05 + 0.3 }}
+              >
+                LIMITED
+              </motion.div>
+            </div>
+          ))}
+        </motion.div>
 
-        {/* View All Button */}
+        {/* Enhanced View All Button */}
         {products.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-center mt-12"
+            className="text-center mt-16"
           >
             <Link href="/products/limited-edition">
-              <Button 
-                size="lg" 
-                className="bg-gradient-to-r from-yellow-400 to-pink-400 hover:from-yellow-500 hover:to-pink-500 text-white px-8 py-4 rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 font-bold text-lg"
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <Crown size={20} className="mr-3" />
-                Explore All Limited Editions
-                <ArrowRight size={20} className="ml-3" />
-              </Button>
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-400 hover:from-yellow-500 hover:via-pink-500 hover:to-purple-500 text-white px-10 py-5 rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-300 font-bold text-lg group"
+                >
+                  <Crown size={24} className="mr-3 group-hover:rotate-12 transition-transform duration-300" />
+                  Explore All Limited Editions
+                  <motion.div
+                    className="ml-3"
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
+                    <ArrowRight size={20} />
+                  </motion.div>
+                </Button>
+              </motion.div>
             </Link>
           </motion.div>
         )}
