@@ -118,7 +118,6 @@ function generateInvoiceHTML(order: any): string {
             <p><strong>Subtotal:</strong> ৳${order.subtotal.toFixed(2)}</p>
             ${order.discountAmount > 0 ? `<p><strong>Discount:</strong> -৳${order.discountAmount.toFixed(2)}</p>` : ''}
             <p><strong>Shipping:</strong> ৳${order.shippingCost.toFixed(2)}</p>
-            <p><strong>Tax:</strong> ৳${order.tax.toFixed(2)}</p>
             <h3><strong>Total: ৳${order.total.toFixed(2)}</strong></h3>
         </div>
 

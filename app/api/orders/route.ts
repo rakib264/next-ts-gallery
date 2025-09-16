@@ -69,8 +69,8 @@ export async function POST(request: NextRequest) {
       calculatedSubtotal += product.price * item.quantity;
     }
     
-    // Calculate tax (5%)
-    const calculatedTax = Math.round(calculatedSubtotal * 0.05);
+    // Calculate tax (0%)
+    const calculatedTax = Math.round(calculatedSubtotal * 0.00);
 
     // If client passed couponCode and discount, re-validate discount server-side for integrity
     let validatedDiscount = 0;
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
       items: validatedItems,
       subtotal: calculatedSubtotal,
       tax: calculatedTax,
-      taxRate: 5,
+      taxRate: 0,
       shippingCost: data.shippingCost || 60,
       discountAmount: validatedDiscount,
       couponCode: appliedCouponCode,
