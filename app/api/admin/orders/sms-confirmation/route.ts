@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       
       recipients.forEach((recipient, index) => {
         const data = smsData[index];
-        const message = `Hi ${data.customerName}, Order ${data.orderNumber} confirmed! Amount: ৳${data.amount.toLocaleString()}\nRegards, NextGen`;
+        const message = `Hi ${data.customerName}, Order ${data.orderNumber} confirmed! Amount: ৳${data.amount.toLocaleString()}\nRegards, TSR Gallery`;
         
         // console.log(`Preparing SMS for ${recipient.phone} (${data.customerName}): ${message}`);
         

@@ -14,26 +14,26 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import {
-    Calendar,
-    CheckCircle,
-    Clock,
-    CreditCard,
-    DollarSign,
-    Download,
-    Edit,
-    FileText,
-    Mail,
-    MapPin,
-    Package,
-    Phone,
-    Printer,
-    Send,
-    ShoppingBag,
-    ShoppingBasket,
-    TrendingUp,
-    Truck,
-    User,
-    XCircle
+  Calendar,
+  CheckCircle,
+  Clock,
+  CreditCard,
+  DollarSign,
+  Download,
+  Edit,
+  FileText,
+  Mail,
+  MapPin,
+  Package,
+  Phone,
+  Printer,
+  Send,
+  ShoppingBag,
+  ShoppingBasket,
+  TrendingUp,
+  Truck,
+  User,
+  XCircle
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -1100,7 +1100,7 @@ export default function AdminOrders() {
                   <div className="p-2 bg-blue-500 rounded-lg">
                     <ShoppingBasket size={18} className="text-white" />
                   </div>
-                  <span>📋 Orders Management</span>
+                  <span> Orders Management</span>
                 </CardTitle>
                 <p className="text-sm text-gray-600 mt-1">Manage all customer orders efficiently</p>
               </div>
@@ -1462,7 +1462,7 @@ export default function AdminOrders() {
                       <div className="p-2 bg-indigo-500 rounded-lg">
                         <Send size={16} className="text-white" />
                       </div>
-                      <span>⚡ Quick Actions</span>
+                      <span> Quick Actions</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -1828,7 +1828,7 @@ export default function AdminOrders() {
                         <div key={order._id} className="bg-white p-3 rounded border">
                           <div className="text-xs text-gray-500 mb-1">Message for {customerName}:</div>
                           <div className="text-sm font-mono text-gray-800">
-                            "Hi {customerName}, Order {order.orderNumber} confirmed! Amount: {formatCurrency(order.total)}\nRegards, NextGen"
+                            "Hi {customerName}, Order {order.orderNumber} confirmed! Amount: {formatCurrency(order.total)}\nRegards, TSR Gallery"
                           </div>
                         </div>
                       );

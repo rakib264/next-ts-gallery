@@ -337,7 +337,50 @@ class QueueService {
       
       // Generate invoice PDF in memory
       logger.info(`Generating PDF for order: ${job.orderNumber}`);
-      const invoiceBuffer: Buffer = await pdfService.generateInvoice(job.orderData);
+      
+      // Transform order data to match InvoiceData interface
+      const invoiceData = {
+        orderId: job.orderId,
+        orderNumber: job.orderNumber,
+        customer: {
+          firstName: job.orderData.customer?.firstName || '',
+          lastName: job.orderData.customer?.lastName || '',
+          email: job.orderData.customer?.email || job.orderData.shippingAddress?.email || '',
+          phone: job.orderData.customer?.phone || job.orderData.shippingAddress?.phone || ''
+        },
+        shippingAddress: {
+          name: job.orderData.shippingAddress?.name || '',
+          phone: job.orderData.shippingAddress?.phone || '',
+          email: job.orderData.shippingAddress?.email || '',
+          street: job.orderData.shippingAddress?.street || '',
+          city: job.orderData.shippingAddress?.city || '',
+          district: job.orderData.shippingAddress?.district || '',
+          division: job.orderData.shippingAddress?.division || '',
+          postalCode: job.orderData.shippingAddress?.postalCode || '',
+          coordinates: job.orderData.shippingAddress?.coordinates || {}
+        },
+        items: job.orderData.items?.map((item: any) => ({
+          name: item.name || item.product?.name || 'Unknown Item',
+          price: item.price || 0,
+          quantity: item.quantity || 1,
+          variant: item.variant || '',
+          image: item.product?.thumbnailImage || ''
+        })) || [],
+        subtotal: job.orderData.subtotal || 0,
+        shippingCost: job.orderData.shippingCost || 0,
+        tax: job.orderData.tax || 0,
+        taxRate: job.orderData.taxRate || 0,
+        discountAmount: job.orderData.discountAmount || 0,
+        total: job.orderData.total || 0,
+        paymentMethod: job.orderData.paymentMethod || 'Unknown',
+        deliveryType: job.orderData.deliveryType || 'Unknown',
+        createdAt: job.orderData.createdAt?.toString() || new Date().toISOString(),
+        invoiceGeneratedAt: new Date().toISOString(),
+        expectedDelivery: job.orderData.expectedDelivery?.toString() || '',
+        notes: job.orderData.notes || ''
+      };
+      
+      const invoiceBuffer: Buffer = await pdfService.generateInvoice(invoiceData);
       
       // Upload PDF to Cloudinary
       logger.info(`Uploading invoice to Cloudinary for order: ${job.orderNumber}`);
@@ -456,6 +499,23 @@ class QueueService {
       
     } catch (error) {
       logger.error(`Error processing invoice generation for order ${job.orderNumber}:`, error);
+      
+      // Log detailed error information for debugging
+      if (error instanceof Error) {
+        logger.error(`Error name: ${error.name}`);
+        logger.error(`Error message: ${error.message}`);
+        logger.error(`Error stack: ${error.stack}`);
+      }
+      
+      // Log the job data that caused the error (without sensitive info)
+      logger.error(`Job data summary:`, {
+        orderId: job.orderId,
+        orderNumber: job.orderNumber,
+        customerEmail: job.customerEmail,
+        hasOrderData: !!job.orderData,
+        orderDataKeys: job.orderData ? Object.keys(job.orderData) : []
+      });
+      
       throw error;
     }
   }

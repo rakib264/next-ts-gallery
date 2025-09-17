@@ -1,4 +1,5 @@
 import { auth } from '@/lib/auth';
+import GeneralSettings from '@/lib/models/GeneralSettings';
 import Order from '@/lib/models/Order';
 import connectDB from '@/lib/mongodb';
 import { NextRequest, NextResponse } from 'next/server';
@@ -24,8 +25,14 @@ export async function GET(
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
+    // Get company settings for invoice
+    let settings = await GeneralSettings.findOne();
+    if (!settings) {
+      settings = await GeneralSettings.create({});
+    }
+
     // Generate HTML content for PDF
-    const htmlContent = generateInvoiceHTML(order);
+    const htmlContent = generateInvoiceHTML(order, settings);
 
     // For now, return HTML content
     // In production, you would use a PDF generation library like puppeteer
@@ -42,13 +49,20 @@ export async function GET(
   }
 }
 
-function generateInvoiceHTML(order: any): string {
+function generateInvoiceHTML(order: any, settings: any): string {
   const customerName = order.customer 
     ? `${order.customer.firstName} ${order.customer.lastName}`
     : order.shippingAddress?.name || 'Guest User';
 
   const customerEmail = order.customer?.email || order.shippingAddress?.email || '';
   const customerPhone = order.customer?.phone || order.shippingAddress?.phone || '';
+
+  // Extract company information from settings
+  const companyName = settings?.siteName || 'TSR Gallery';
+  const companyAddress = settings?.address || 'Dhaka, Bangladesh';
+  const companyEmail = settings?.contactEmail || 'info.tsrgallery@gmail.com';
+  const companyPhone = settings?.contactPhone || '+8801339561702';
+  const companyLogo = settings?.logo1 || '';
 
   return `
     <!DOCTYPE html>
@@ -57,22 +71,87 @@ function generateInvoiceHTML(order: any): string {
         <meta charset="utf-8">
         <title>Invoice - ${order.orderNumber}</title>
         <style>
-            body { font-family: Arial, sans-serif; margin: 40px; }
-            .header { text-align: center; margin-bottom: 40px; }
-            .invoice-details { margin-bottom: 30px; }
-            .customer-details { margin-bottom: 30px; }
-            .items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-            .items-table th, .items-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            .items-table th { background-color: #f2f2f2; }
-            .totals { text-align: right; margin-bottom: 30px; }
-            .footer { text-align: center; margin-top: 40px; color: #666; }
+            body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
+            .header { 
+                text-align: center; 
+                margin-bottom: 40px; 
+                padding: 20px;
+                background: linear-gradient(135deg, #3949AB, #8b5cf6);
+                color: white;
+                border-radius: 8px;
+            }
+            .logo { 
+                max-height: 60px; 
+                max-width: 200px; 
+                margin-bottom: 10px; 
+            }
+            .company-info { 
+                font-size: 14px; 
+                margin-top: 10px; 
+            }
+            .invoice-details { 
+                margin-bottom: 30px; 
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 8px;
+            }
+            .customer-details { 
+                margin-bottom: 30px; 
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 8px;
+            }
+            .items-table { 
+                width: 100%; 
+                border-collapse: collapse; 
+                margin-bottom: 30px; 
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .items-table th, .items-table td { 
+                border: 1px solid #ddd; 
+                padding: 12px; 
+                text-align: left; 
+            }
+            .items-table th { 
+                background: linear-gradient(135deg, #3949AB, #8b5cf6);
+                color: white;
+                font-weight: bold;
+            }
+            .items-table tr:nth-child(even) { 
+                background-color: #f9f9f9; 
+            }
+            .totals { 
+                text-align: right; 
+                margin-bottom: 30px; 
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 8px;
+            }
+            .total-row {
+                background: linear-gradient(135deg, #3949AB, #8b5cf6);
+                color: white;
+                padding: 10px;
+                border-radius: 4px;
+                margin-top: 10px;
+            }
+            .footer { 
+                text-align: center; 
+                margin-top: 40px; 
+                color: #666; 
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 8px;
+            }
         </style>
     </head>
     <body>
         <div class="header">
+            ${companyLogo ? `<img src="${companyLogo}" alt="${companyName}" class="logo" />` : ''}
             <h1>INVOICE</h1>
-            <h2>Your Company Name</h2>
-            <p>Company Address, City, Country</p>
+            <div class="company-info">
+                <p>${companyAddress}</p>
+                <p>Email: ${companyEmail} | Phone: ${companyPhone}</p>
+            </div>
         </div>
 
         <div class="invoice-details">
@@ -118,12 +197,14 @@ function generateInvoiceHTML(order: any): string {
             <p><strong>Subtotal:</strong> ৳${order.subtotal.toFixed(2)}</p>
             ${order.discountAmount > 0 ? `<p><strong>Discount:</strong> -৳${order.discountAmount.toFixed(2)}</p>` : ''}
             <p><strong>Shipping:</strong> ৳${order.shippingCost.toFixed(2)}</p>
-            <h3><strong>Total: ৳${order.total.toFixed(2)}</strong></h3>
+            <div class="total-row">
+                <h3><strong>Total: ৳${order.total.toFixed(2)}</strong></h3>
+            </div>
         </div>
 
         <div class="footer">
-            <p>Thank you for your business!</p>
-            <p>For any queries, please contact us at support@yourcompany.com</p>
+            <p>Thank you for choosing ${companyName}!</p>
+            <p>For any queries, please contact us at ${companyEmail}</p>
         </div>
     </body>
     </html>

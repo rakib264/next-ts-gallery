@@ -2,6 +2,8 @@ import * as fs from 'fs';
 import { jsPDF } from 'jspdf';
 import * as path from 'path';
 import createLogger from './logger';
+import GeneralSettings from './models/GeneralSettings';
+import connectDB from './mongodb';
 
 // Configure Winston logger
 const logger = createLogger('pdf-simple-service');
@@ -53,11 +55,43 @@ export interface InvoiceData {
   notes?: string;
 }
 
+export interface CompanySettings {
+  siteName?: string;
+  address?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  logo1?: string;
+}
+
 class SimplePDFService {
-  generateInvoice(data: InvoiceData): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-      try {
-        logger.info(`Generating invoice PDF for order: ${data.orderNumber}`);
+  async generateInvoice(data: InvoiceData): Promise<Buffer> {
+    try {
+      logger.info(`Generating invoice PDF for order: ${data.orderNumber}`);
+        
+        // Get company settings
+        let companySettings: CompanySettings = {
+          siteName: 'TSR Gallery',
+          address: 'Dhaka, Bangladesh',
+          contactEmail: 'info.tsrgallery@gmail.com',
+          contactPhone: '+8801339561702',
+          logo1: ''
+        };
+
+        try {
+          await connectDB();
+          const settings = await GeneralSettings.findOne();
+          if (settings) {
+            companySettings = {
+              siteName: settings.siteName || companySettings.siteName,
+              address: settings.address || companySettings.address,
+              contactEmail: settings.contactEmail || companySettings.contactEmail,
+              contactPhone: settings.contactPhone || companySettings.contactPhone,
+              logo1: settings.logo1 || companySettings.logo1
+            };
+          }
+        } catch (dbError) {
+          logger.warn('Could not fetch company settings, using defaults:', dbError);
+        }
         
         // Create new PDF document
         const doc = new jsPDF();
@@ -91,22 +125,34 @@ class SimplePDFService {
         doc.setFillColor(primaryColor);
         doc.rect(0, 0, 210, 55, 'F'); // Slightly reduced height
         
-        // Add actual company logo with perfect proportional sizing
+        // Add company logo with perfect proportional sizing
         try {
-          const logoPath = path.join(process.cwd(), 'lib', 'assets', 'images', 'tsrgallery.png');
-          if (fs.existsSync(logoPath)) {
-            const logoData = fs.readFileSync(logoPath, 'base64');
-            const logoFormat = 'PNG';
-            // Perfect logo size - not too big, not too small
-            doc.addImage(`data:image/png;base64,${logoData}`, logoFormat, 20, 12, 45, 22, '', 'FAST');
-          } else {
-            // Fallback to stylized logo if file not found
+          // First try to use logo from settings (cloud URL)
+          if (companySettings.logo1) {
+            // For cloud URLs, we'll use a fallback approach
             doc.setFillColor(whiteColor);
             doc.roundedRect(20, 15, 45, 20, 3, 3, 'F');
             doc.setTextColor(primaryColor);
             doc.setFontSize(16);
             doc.setFont('helvetica', 'bold');
-            doc.text('TSR GALLERY', 22, 27);
+            doc.text(companySettings.siteName || 'TSR GALLERY', 22, 27);
+          } else {
+            // Try local logo file as fallback
+            const logoPath = path.join(process.cwd(), 'lib', 'assets', 'images', 'tsrgallery.png');
+            if (fs.existsSync(logoPath)) {
+              const logoData = fs.readFileSync(logoPath, 'base64');
+              const logoFormat = 'PNG';
+              // Perfect logo size - not too big, not too small
+              doc.addImage(`data:image/png;base64,${logoData}`, logoFormat, 20, 12, 45, 22, '', 'FAST');
+            } else {
+              // Fallback to stylized text logo
+              doc.setFillColor(whiteColor);
+              doc.roundedRect(20, 15, 45, 20, 3, 3, 'F');
+              doc.setTextColor(primaryColor);
+              doc.setFontSize(16);
+              doc.setFont('helvetica', 'bold');
+              doc.text(companySettings.siteName || 'TSR GALLERY', 22, 27);
+            }
           }
         } catch (error) {
           logger.warn('Could not load logo, using fallback:', error);
@@ -116,7 +162,7 @@ class SimplePDFService {
           doc.setTextColor(primaryColor);
           doc.setFontSize(16);
           doc.setFont('helvetica', 'bold');
-          doc.text('TSR GALLERY', 22, 27);
+          doc.text(companySettings.siteName || 'TSR GALLERY', 22, 27);
         }
         
         // Company tagline with elegant typography
@@ -127,7 +173,7 @@ class SimplePDFService {
         
         // Contact information with smaller, elegant styling
         doc.setFontSize(8);
-        doc.text('Email: info.tsrgallery@gmail.com  |  Phone: +8801339561702', 20, 46);
+        doc.text(`Email: ${companySettings.contactEmail}  |  Phone: ${companySettings.contactPhone}`, 20, 46);
         
         // Invoice title with refined, smaller styling
         doc.setTextColor(255, 255, 255);
@@ -396,26 +442,25 @@ class SimplePDFService {
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
-        doc.text('Thank you for choosing TSR Gallery!', 20, footerY + 8);
+        doc.text(`Thank you for choosing ${companySettings.siteName}!`, 20, footerY + 8);
         
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
-        doc.text(`© ${new Date().getFullYear()} TSR Gallery. All rights reserved.`, 20, footerY + 15);
+        doc.text(`© ${new Date().getFullYear()} ${companySettings.siteName}. All rights reserved.`, 20, footerY + 15);
         
-        // Generate PDF in memory (Vercel-compatible)
-        const pdfOutput = doc.output('arraybuffer');
-        const pdfBuffer = Buffer.from(pdfOutput);
-        
-        // For Vercel, we'll return the buffer directly
-        // The queue service will handle Cloudinary upload
-        logger.info(`Invoice PDF generated successfully in memory for order: ${data.orderNumber}`);
-        resolve(pdfBuffer);
-        
-      } catch (error) {
-        logger.error('Error generating invoice PDF:', error);
-        reject(error);
-      }
-    });
+      // Generate PDF in memory (Vercel-compatible)
+      const pdfOutput = doc.output('arraybuffer');
+      const pdfBuffer = Buffer.from(pdfOutput);
+      
+      // For Vercel, we'll return the buffer directly
+      // The queue service will handle Cloudinary upload
+      logger.info(`Invoice PDF generated successfully in memory for order: ${data.orderNumber}`);
+      return pdfBuffer;
+      
+    } catch (error) {
+      logger.error('Error generating invoice PDF:', error);
+      throw error;
+    }
   }
 }
 
