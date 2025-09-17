@@ -5,7 +5,13 @@ const nextConfig = {
   },
   images: {
     domains: ['res.cloudinary.com', 'images.pexels.com'],
+    formats: ['image/webp', 'image/avif'],
+    minimumCacheTTL: 60,
   },
+  compress: true,
+  poweredByHeader: false,
+  trailingSlash: false,
+  generateEtags: true,
   async headers() {
     return [
       {
@@ -25,6 +31,56 @@ const nextConfig = {
             value: 'Content-Type, Authorization',
           },
         ],
+      },
+      {
+        // SEO and Performance headers for all pages
+        source: '/((?!api).*)',
+        headers: [
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on'
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN'
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin'
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()'
+          }
+        ],
+      },
+      {
+        // Cache static assets
+        source: '/(.*)\\.(ico|png|jpg|jpeg|gif|webp|svg|css|js)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ],
+      },
+    ];
+  },
+  async redirects() {
+    return [
+      {
+        source: '/tsrgallery',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/tsr-gallery',
+        destination: '/',
+        permanent: true,
       },
     ];
   },

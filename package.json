@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "next-sitemap",
     "start": "next start",
     "lint": "next lint"
   },
@@ -78,6 +79,7 @@
     "mongoose": "^8.17.0",
     "next": "^15.0.0",
     "next-auth": "^5.0.0-beta.29",
+    "next-sitemap": "^4.2.3",
     "next-themes": "^0.3.0",
     "node-fetch": "^3.3.2",
     "postcss": "8.4.30",

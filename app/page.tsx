@@ -14,6 +14,7 @@ import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
 import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import ClientOnly from '@/components/providers/ClientOnly';
+import SeoOptimizer from '@/components/seo/SeoOptimizer';
 import FloatingButtons from '@/components/ui/FloatingButtons';
 import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
@@ -88,10 +89,13 @@ export default function Home() {
   }, [mounted, isClient]);
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-white">
-      <ClientOnly>
-        <Header />
-      </ClientOnly>
+    <>
+      <SeoOptimizer pageType="home" />
+      
+      <div ref={containerRef} className="min-h-screen bg-white">
+        <ClientOnly>
+          <Header />
+        </ClientOnly>
       
       <main className="mb-0">
         {/* Hero Carousel section with simple fade-in, no GSAP conflict */}
@@ -162,6 +166,7 @@ export default function Home() {
       <ClientOnly>
         <FloatingButtons />
       </ClientOnly>
-    </div>
+      </div>
+    </>
   );
 }
