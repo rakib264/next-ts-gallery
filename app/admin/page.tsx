@@ -15,14 +15,17 @@ import {
   DollarSign,
   Eye,
   Gift,
+  Moon,
   Package,
   RefreshCw,
   ShoppingBag,
   Star,
+  Sun,
   TrendingUp,
   Users,
   XCircle
 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import {
@@ -73,12 +76,14 @@ interface DashboardData {
 }
 
 export default function AdminDashboard() {
+  const { data: session } = useSession();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('30d');
   const [category, setCategory] = useState('all');
   const [customerType, setCustomerType] = useState('all');
   const [categories, setCategories] = useState<any[]>([]);
+  const [now, setNow] = useState<Date>(new Date());
 
   // Fetch dashboard data
   const fetchDashboardData = async () => {
@@ -144,6 +149,52 @@ export default function AdminDashboard() {
     fetchDashboardData();
   }, [timeRange, category, customerType]);
 
+  // Live clock for a nice time effect
+  useEffect(() => {
+    const intervalId = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const getGreeting = (date: Date) => {
+    const hour = date.getHours();
+    if (hour < 5) return 'Good night';
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    if (hour < 21) return 'Good evening';
+    return 'Good night';
+  };
+
+  const formatTime = (date: Date) =>
+    new Intl.DateTimeFormat(undefined, {
+      hour: 'numeric',
+      minute: '2-digit'
+    }).format(date);
+
+  const formatDate = (date: Date) =>
+    new Intl.DateTimeFormat(undefined, {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
+    }).format(date);
+
+  const getDayPart = (date: Date): 'morning' | 'afternoon' | 'evening' | 'night' => {
+    const hour = date.getHours();
+    if (hour < 5) return 'night';
+    if (hour < 12) return 'morning';
+    if (hour < 17) return 'afternoon';
+    if (hour < 21) return 'evening';
+    return 'night';
+  };
+
+  const dayPart = getDayPart(now);
+  const firstName = session?.user?.name?.split(' ')[0] || '';
+  const headerGradient: Record<string, string> = {
+    morning: 'from-amber-500/10 via-orange-500/10 to-rose-500/10',
+    afternoon: 'from-sky-500/10 via-cyan-500/10 to-emerald-500/10',
+    evening: 'from-violet-500/10 via-fuchsia-500/10 to-pink-500/10',
+    night: 'from-slate-700/20 via-indigo-700/10 to-purple-800/10'
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-BD', {
       style: 'currency',
@@ -154,13 +205,13 @@ export default function AdminDashboard() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'delivered': return 'bg-green-100 text-green-800';
-      case 'confirmed': return 'bg-blue-100 text-blue-800';
-      case 'processing': return 'bg-yellow-100 text-yellow-800';
-      case 'shipped': return 'bg-purple-100 text-purple-800';
-      case 'pending': return 'bg-orange-100 text-orange-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'delivered': return 'bg-success-100 text-success-700';
+      case 'confirmed': return 'bg-info-100 text-info-700';
+      case 'processing': return 'bg-secondary-100 text-secondary-700';
+      case 'shipped': return 'bg-primary-100 text-primary-700';
+      case 'pending': return 'bg-warning-100 text-warning-700';
+      case 'cancelled': return 'bg-destructive-100 text-destructive-700';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -201,22 +252,71 @@ export default function AdminDashboard() {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6 shadow-sm">
+        <div className="relative overflow-hidden rounded-xl border border-border p-4 md:p-6 shadow-sm bg-card">
+          {/* Decorative gradient and glow based on time of day */}
+          <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${headerGradient[dayPart]} opacity-70`} />
+          <div className="pointer-events-none absolute -top-24 -right-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-28 -left-16 h-80 w-80 rounded-full bg-secondary/10 blur-3xl" />
+          <div className="relative">
           {/* Title Section */}
           <div className="mb-6">
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
-              Dashboard
-            </h1>
-            <p className="text-sm md:text-base text-gray-600 leading-relaxed">
-              Welcome back! Here's what's happening with your store today.
-            </p>
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  {dayPart === 'morning' ? (
+                    <Sun size={18} className="text-amber-500" />
+                  ) : dayPart === 'night' ? (
+                    <Moon size={18} className="text-indigo-400" />
+                  ) : (
+                    <Clock size={18} className="text-primary-500" />
+                  )}
+                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">
+                    {getGreeting(now)}{firstName ? `, ${firstName}` : ''}
+                  </h1>
+                </div>
+                <motion.p
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="text-sm md:text-base text-muted-foreground leading-relaxed"
+                >
+                  Here's what's happening with your store today.
+                </motion.p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  {session?.user?.role && (
+                    <span className="inline-flex items-center rounded-full bg-primary/10 text-primary-700 dark:text-primary-300 px-2.5 py-1 text-xs font-medium border border-primary/20">
+                      {session.user.role}
+                    </span>
+                  )}
+                  <span className="inline-flex items-center rounded-full bg-muted/60 px-2.5 py-1 text-xs font-medium text-muted-foreground border border-border">
+                    {formatDate(now)}
+                  </span>
+                </div>
+              </div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-background/70 backdrop-blur px-3 py-1.5 shadow-sm"
+                aria-label="Current time"
+              >
+                <span className="relative inline-flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-primary-500 opacity-75 animate-ping"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-primary-600"></span>
+                </span>
+                <Clock size={14} className="text-muted-foreground" />
+                <span className="text-xs font-medium text-foreground tabular-nums">
+                  {formatTime(now)}
+                </span>
+              </motion.div>
+            </div>
           </div>
 
           {/* Filters Section */}
           <div className="space-y-4">
             {/* Filter Label */}
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                 Filters & Controls
               </h3>
               <Button
@@ -224,9 +324,9 @@ export default function AdminDashboard() {
                 variant="outline"
                 size="sm"
                 disabled={loading}
-                className="h-8 px-3 text-xs font-medium text-gray-900"
+                className="h-8 px-3 text-xs font-medium"
               >
-                <RefreshCw size={14} className={`mr-1.5 ${loading ? 'animate-spin' : 'text-gray-900'}`} />
+                <RefreshCw size={14} className={`mr-1.5 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
             </div>
@@ -235,7 +335,7 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
               {/* Time Range Filter */}
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Time Range
                 </label>
                 <Select value={timeRange} onValueChange={setTimeRange}>
@@ -253,7 +353,7 @@ export default function AdminDashboard() {
 
               {/* Category Filter */}
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Category
                 </label>
                 <Select value={category} onValueChange={setCategory}>
@@ -273,7 +373,7 @@ export default function AdminDashboard() {
 
               {/* Customer Type Filter */}
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Customer Type
                 </label>
                 <Select value={customerType} onValueChange={setCustomerType}>
@@ -313,7 +413,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Mobile Quick Actions */}
-            <div className="xl:hidden pt-2 border-t border-gray-100">
+            <div className="xl:hidden pt-2 border-t border-border">
               <div className="flex gap-2">
                 <Button
                   size="sm"
@@ -330,6 +430,7 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
+          </div>
         </div>
 
         {/* Key Metrics */}
@@ -344,14 +445,14 @@ export default function AdminDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
+                    <p className="text-2xl font-bold text-foreground mt-1">
                       {formatCurrency(data?.statCards.totalRevenue || 0)}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">All time</p>
+                    <p className="text-xs text-muted-foreground mt-1">All time</p>
                   </div>
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <DollarSign size={24} className="text-blue-600" />
+                  <div className="p-3 bg-primary-100 rounded-full">
+                    <DollarSign size={24} className="text-primary-600" />
                   </div>
                 </div>
               </CardContent>
@@ -368,14 +469,14 @@ export default function AdminDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Delivered Revenue</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-sm font-medium text-muted-foreground">Delivered Revenue</p>
+                    <p className="text-2xl font-bold text-foreground mt-1">
                       {formatCurrency(data?.statCards.deliveredRevenue || 0)}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">Completed orders</p>
+                    <p className="text-xs text-muted-foreground mt-1">Completed orders</p>
                   </div>
-                  <div className="p-3 bg-green-100 rounded-full">
-                    <CheckCircle size={24} className="text-green-600" />
+                  <div className="p-3 bg-success-100 rounded-full">
+                    <CheckCircle size={24} className="text-success-600" />
                   </div>
                 </div>
               </CardContent>
@@ -392,14 +493,14 @@ export default function AdminDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-sm font-medium text-muted-foreground">Total Orders</p>
+                    <p className="text-2xl font-bold text-foreground mt-1">
                       {data?.statCards.totalOrders.toLocaleString() || 0}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">All status</p>
+                    <p className="text-xs text-muted-foreground mt-1">All status</p>
                   </div>
-                  <div className="p-3 bg-orange-100 rounded-full">
-                    <ShoppingBag size={24} className="text-orange-600" />
+                  <div className="p-3 bg-warning-100 rounded-full">
+                    <ShoppingBag size={24} className="text-warning-600" />
                   </div>
                 </div>
               </CardContent>
@@ -416,14 +517,14 @@ export default function AdminDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Active Customers</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-sm font-medium text-muted-foreground">Active Customers</p>
+                    <p className="text-2xl font-bold text-foreground mt-1">
                       {data?.statCards.activeCustomers.toLocaleString() || 0}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">Last 30 days</p>
+                    <p className="text-xs text-muted-foreground mt-1">Last 30 days</p>
                   </div>
-                  <div className="p-3 bg-purple-100 rounded-full">
-                    <Users size={24} className="text-purple-600" />
+                  <div className="p-3 bg-secondary-100 rounded-full">
+                    <Users size={24} className="text-secondary-600" />
                   </div>
                 </div>
               </CardContent>
@@ -440,14 +541,14 @@ export default function AdminDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Total Customers</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-sm font-medium text-muted-foreground">Total Customers</p>
+                    <p className="text-2xl font-bold text-foreground mt-1">
                       {data?.statCards.totalCustomers.toLocaleString() || 0}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">Registered users</p>
+                    <p className="text-xs text-muted-foreground mt-1">Registered users</p>
                   </div>
-                  <div className="p-3 bg-indigo-100 rounded-full">
-                    <Users size={24} className="text-indigo-600" />
+                  <div className="p-3 bg-primary-100 rounded-full">
+                    <Users size={24} className="text-primary-600" />
                   </div>
                 </div>
               </CardContent>
@@ -464,14 +565,14 @@ export default function AdminDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Total Products</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-sm font-medium text-muted-foreground">Total Products</p>
+                    <p className="text-2xl font-bold text-foreground mt-1">
                       {data?.statCards.totalProducts.toLocaleString() || 0}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">Active products</p>
+                    <p className="text-xs text-muted-foreground mt-1">Active products</p>
                   </div>
-                  <div className="p-3 bg-teal-100 rounded-full">
-                    <Package size={24} className="text-teal-600" />
+                  <div className="p-3 bg-info-100 rounded-full">
+                    <Package size={24} className="text-info-600" />
                   </div>
                 </div>
               </CardContent>
@@ -488,14 +589,14 @@ export default function AdminDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Active Coupons</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-sm font-medium text-muted-foreground">Active Coupons</p>
+                    <p className="text-2xl font-bold text-foreground mt-1">
                       {data?.statCards.totalCoupons.toLocaleString() || 0}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">Valid coupons</p>
+                    <p className="text-xs text-muted-foreground mt-1">Valid coupons</p>
                   </div>
-                  <div className="p-3 bg-pink-100 rounded-full">
-                    <Gift size={24} className="text-pink-600" />
+                  <div className="p-3 bg-secondary-100 rounded-full">
+                    <Gift size={24} className="text-secondary-600" />
                   </div>
                 </div>
               </CardContent>
@@ -512,14 +613,14 @@ export default function AdminDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Conversion Rate</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-sm font-medium text-muted-foreground">Conversion Rate</p>
+                    <p className="text-2xl font-bold text-foreground mt-1">
                       {data?.statCards.conversionRate || 0}%
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">Orders per customer</p>
+                    <p className="text-xs text-muted-foreground mt-1">Orders per customer</p>
                   </div>
-                  <div className="p-3 bg-yellow-100 rounded-full">
-                    <TrendingUp size={24} className="text-yellow-600" />
+                  <div className="p-3 bg-warning-100 rounded-full">
+                    <TrendingUp size={24} className="text-warning-600" />
                   </div>
                 </div>
               </CardContent>
@@ -547,8 +648,8 @@ export default function AdminDashboard() {
                 <AreaChart data={data?.charts.revenueOvertime || []}>
                   <defs>
                     <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.1}/>
+                      <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.1}/>
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -563,7 +664,7 @@ export default function AdminDashboard() {
                   <Area 
                     type="monotone" 
                     dataKey="revenue" 
-                    stroke="#3B82F6" 
+                    stroke="hsl(var(--chart-1))" 
                     fill="url(#revenueGradient)" 
                   />
                 </AreaChart>
@@ -640,9 +741,9 @@ export default function AdminDashboard() {
                   <Line 
                     type="monotone" 
                     dataKey="customers" 
-                    stroke="#10B981" 
+                    stroke="hsl(var(--chart-3))" 
                     strokeWidth={3}
-                    dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
+                    dot={{ fill: 'hsl(var(--chart-3))', strokeWidth: 2, r: 4 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -666,7 +767,7 @@ export default function AdminDashboard() {
                       name === 'revenue' ? 'Revenue' : 'Sales'
                     ]}
                   />
-                  <Bar dataKey="sales" fill="#8B5CF6" name="sales" />
+                  <Bar dataKey="sales" fill="hsl(var(--chart-2))" name="sales" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -690,25 +791,25 @@ export default function AdminDashboard() {
             <CardContent>
               <div className="space-y-4">
                 {(data?.widgets.recentOrders || []).slice(0, 5).map((order) => (
-                  <div key={order._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div key={order._id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
                         {getStatusIcon(order.orderStatus)}
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">{order.orderNumber}</p>
-                        <p className="text-sm text-gray-600">
+                        <p className="font-medium text-foreground">{order.orderNumber}</p>
+                        <p className="text-sm text-muted-foreground">
                           {order.customer ? `${order.customer.firstName} ${order.customer.lastName}` : 'Guest Order'}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-gray-900">{formatCurrency(order.total)}</p>
+                      <p className="font-medium text-foreground">{formatCurrency(order.total)}</p>
                       <div className="flex items-center space-x-2">
                         <Badge className={`text-xs ${getStatusColor(order.orderStatus)}`}>
                           {order.orderStatus}
                         </Badge>
-                        <span className="text-xs text-gray-500">{formatRelativeTime(order.createdAt)}</span>
+                        <span className="text-xs text-muted-foreground">{formatRelativeTime(order.createdAt)}</span>
                       </div>
                     </div>
                   </div>
@@ -734,18 +835,18 @@ export default function AdminDashboard() {
                 {(data?.widgets.recentCustomers || []).slice(0, 5).map((customer) => (
                   <div key={customer._id} className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <Users size={14} className="text-blue-600" />
+                      <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                        <Users size={14} className="text-primary-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium text-foreground">
                           {customer.firstName} {customer.lastName}
                         </p>
-                        <p className="text-xs text-gray-500">{customer.email}</p>
+                        <p className="text-xs text-muted-foreground">{customer.email}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs text-gray-500">{formatRelativeTime(customer.createdAt)}</p>
+                      <p className="text-xs text-muted-foreground">{formatRelativeTime(customer.createdAt)}</p>
                     </div>
                   </div>
                 ))}
@@ -761,7 +862,7 @@ export default function AdminDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <AlertTriangle size={20} className="text-orange-500" />
+                  <AlertTriangle size={20} className="text-warning-600" />
                   <span>Low Stock Alerts</span>
                 </div>
                 <Link href="/admin/products">
@@ -776,12 +877,12 @@ export default function AdminDashboard() {
                 {(data?.widgets.lowStockProducts || []).slice(0, 5).map((item) => (
                   <div key={item._id} className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{item.name}</p>
-                      <p className="text-xs text-gray-500">{item.sku}</p>
+                      <p className="text-sm font-medium text-foreground">{item.name}</p>
+                      <p className="text-xs text-muted-foreground">{item.sku}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium text-red-600">{item.quantity} left</p>
-                      <p className="text-xs text-gray-500">Min: {item.lowStockThreshold || 10}</p>
+                      <p className="text-sm font-medium text-destructive-600">{item.quantity} left</p>
+                      <p className="text-xs text-muted-foreground">Min: {item.lowStockThreshold || 10}</p>
                     </div>
                   </div>
                 ))}
@@ -794,7 +895,7 @@ export default function AdminDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <Gift size={20} className="text-blue-500" />
+                  <Gift size={20} className="text-secondary-600" />
                   <span>Active Coupons</span>
                 </div>
                 <Link href="/admin/coupons">
@@ -809,12 +910,12 @@ export default function AdminDashboard() {
                 {(data?.widgets.activeCoupons || []).slice(0, 5).map((coupon) => (
                   <div key={coupon._id} className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-900 font-medium">{coupon.code}</span>
+                      <span className="text-sm text-foreground font-medium">{coupon.code}</span>
                       <Badge variant="outline">
                         {coupon.type === 'percentage' ? `${coupon.value}%` : formatCurrency(coupon.value)}
                       </Badge>
                     </div>
-                    <div className="flex items-center justify-between text-xs text-gray-500">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>{coupon.currentUsage}/{coupon.usageLimit || '∞'} used</span>
                       <span>
                         {coupon.usageLimit 
@@ -837,7 +938,7 @@ export default function AdminDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <Star size={20} className="text-yellow-500" />
+                  <Star size={20} className="text-warning-600" />
                   <span>Top Products</span>
                 </div>
                 <Link href="/admin/products">
@@ -852,16 +953,16 @@ export default function AdminDashboard() {
                 {(data?.widgets.topSellingProducts || []).slice(0, 5).map((product) => (
                   <div key={product._id} className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                        <Star size={14} className="text-yellow-600" />
+                      <div className="w-8 h-8 bg-warning-100 rounded-full flex items-center justify-center">
+                        <Star size={14} className="text-warning-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{product.name}</p>
-                        <p className="text-xs text-gray-500">{product.totalSales} sales</p>
+                        <p className="text-sm font-medium text-foreground">{product.name}</p>
+                        <p className="text-xs text-muted-foreground">{product.totalSales} sales</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900">{formatCurrency(product.revenue)}</p>
+                      <p className="text-sm font-medium text-foreground">{formatCurrency(product.revenue)}</p>
                     </div>
                   </div>
                 ))}
@@ -876,7 +977,7 @@ export default function AdminDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <DollarSign size={20} className="text-green-500" />
+                  <DollarSign size={20} className="text-success-600" />
                   <span>High Value Customers</span>
                 </div>
                 <Link href="/admin/customers">
@@ -889,29 +990,29 @@ export default function AdminDashboard() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 {(data?.widgets.highValueCustomers || []).slice(0, 5).map((customer) => (
-                  <div key={customer._id} className="p-4 bg-gray-50 rounded-lg">
+                  <div key={customer._id} className="p-4 bg-muted rounded-lg">
                     <div className="flex items-center space-x-3 mb-2">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                        <DollarSign size={16} className="text-green-600" />
+                      <div className="w-10 h-10 bg-success-100 rounded-full flex items-center justify-center">
+                        <DollarSign size={16} className="text-success-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium text-foreground">
                           {customer.customer.firstName} {customer.customer.lastName}
                         </p>
-                        <p className="text-xs text-gray-500">{customer.customer.email}</p>
+                        <p className="text-xs text-muted-foreground">{customer.customer.email}</p>
                       </div>
                     </div>
                     <div className="space-y-1">
                       <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">Total Spent:</span>
+                        <span className="text-muted-foreground">Total Spent:</span>
                         <span className="font-medium">{formatCurrency(customer.totalSpent)}</span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">Orders:</span>
+                        <span className="text-muted-foreground">Orders:</span>
                         <span className="font-medium">{customer.orderCount}</span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">Avg Order:</span>
+                        <span className="text-muted-foreground">Avg Order:</span>
                         <span className="font-medium">{formatCurrency(customer.averageOrderValue)}</span>
                       </div>
                     </div>

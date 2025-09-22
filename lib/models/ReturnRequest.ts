@@ -165,7 +165,7 @@ const ReturnRequestSchema = new Schema<IReturnRequest>({
 });
 
 // Indexes for better performance
-ReturnRequestSchema.index({ requestId: 1 });
+// Note: requestId already has unique: true which creates an index; avoid duplicating it
 ReturnRequestSchema.index({ orderId: 1 });
 ReturnRequestSchema.index({ userId: 1 });
 ReturnRequestSchema.index({ email: 1 });

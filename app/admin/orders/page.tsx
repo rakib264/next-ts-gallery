@@ -13,7 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
+import { gsap } from 'gsap';
 import {
+  BarChart3,
   Calendar,
   CheckCircle,
   Clock,
@@ -30,12 +32,13 @@ import {
   Send,
   ShoppingBag,
   ShoppingBasket,
+  Sparkles,
   TrendingUp,
   Truck,
   User,
   XCircle
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface Order {
   _id: string;
@@ -105,8 +108,38 @@ export default function AdminOrders() {
   const [updating, setUpdating] = useState(false);
   const [customerStats, setCustomerStats] = useState<{ orderCount: number; lifetimeValue: number }>({ orderCount: 0, lifetimeValue: 0 });
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     fetchOrders();
+    
+    // Enhanced GSAP animations with staggered entrance
+    const tl = gsap.timeline({ delay: 0.2 });
+    
+    if (headerRef.current) {
+      tl.fromTo(headerRef.current, 
+        { opacity: 0, y: -30, scale: 0.95 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power2.out" }
+      );
+    }
+    
+    if (statsRef.current) {
+      tl.fromTo(statsRef.current.children, 
+        { opacity: 0, y: 20, scale: 0.9 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.1, ease: "back.out(1.7)" },
+        "-=0.4"
+      );
+    }
+    
+    if (containerRef.current) {
+      tl.fromTo(containerRef.current.children, 
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" },
+        "-=0.2"
+      );
+    }
   }, []);
 
   const fetchOrders = async () => {
@@ -838,8 +871,27 @@ export default function AdminOrders() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <div className="flex items-center justify-center h-96">
+          <motion.div 
+            className="relative"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full blur-xl opacity-30 animate-pulse" />
+            <motion.div 
+              className="relative animate-spin rounded-full h-32 w-32 border-4 border-primary-200 border-t-primary-600"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+            <motion.div 
+              className="absolute inset-0 flex items-center justify-center"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <Sparkles className="text-primary-600" size={32} />
+            </motion.div>
+          </motion.div>
         </div>
       </AdminLayout>
     );
@@ -847,151 +899,194 @@ export default function AdminOrders() {
 
   return (
     <AdminLayout>
-      <div className="space-y-4 md:space-y-6 w-full max-w-full">
-        {/* Enhanced Mobile-First Header */}
-        <div className="flex flex-col gap-4">
-          <div className="text-left">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              📦 Orders Management
-            </h1>
-            <p className="text-gray-600 mt-2 text-sm">
-              Manage and track all customer orders
-            </p>
-          </div>
-        </div>
-
-        {/* Mobile-First Vertically Stacked Stats Cards */}
-        <div className="flex flex-col space-y-3 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 sm:gap-3 sm:space-y-0">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+      <div className="min-h-screen bg-gradient-to-br from-primary-50/30 via-white to-secondary-50/30">
+        <div ref={containerRef} className="space-y-8 p-4 sm:p-6 lg:p-8">
+          {/* Stunning Header Section */}
+          <motion.div 
+            ref={headerRef}
+            className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-secondary-700 rounded-3xl shadow-2xl border border-primary-200/20"
+            initial={{ opacity: 0, y: -30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 h-full">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex items-center space-x-3 sm:flex-col sm:space-x-0 sm:space-y-2 sm:text-center">
-                  <div className="p-2 sm:p-3 bg-blue-500 rounded-lg sm:rounded-xl shadow-lg flex-shrink-0">
-                    <ShoppingBasket className="text-white" size={16} />
-                  </div>
-                  <div className="flex-1 sm:flex-none">
-                    <p className="text-xs font-bold text-blue-700 uppercase tracking-wide">TOTAL</p>
-                    <p className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-900">{stats.total}</p>
-                    <p className="text-xs text-green-600 font-medium">+12%</p>
-                  </div>
+            {/* Animated Background Elements */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-600/90 to-secondary-600/90" />
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-white/5 to-transparent rounded-full blur-2xl" />
+            
+            {/* Header Content */}
+            <div className="relative p-6 sm:p-8 lg:p-12">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                <div className="space-y-4">
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2, duration: 0.6 }}
+                    className="flex items-center gap-3"
+                  >
+                    <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/20">
+                      <ShoppingBasket className="text-white" size={28} />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white">
+                        Orders
+                      </h1>
+                      <p className="text-primary-100 text-sm sm:text-base lg:text-lg mt-1">
+                        Manage orders with precision and elegance
+                      </p>
+                    </div>
+                  </motion.div>
+                  
+                  <motion.p 
+                    className="text-white/90 text-sm sm:text-base max-w-2xl leading-relaxed"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.6 }}
+                  >
+                    Track customer orders, manage fulfillment, and provide exceptional service with our comprehensive order management system.
+                  </motion.p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+          {/* Enhanced Stats Cards */}
+          <motion.div 
+            ref={statsRef}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 sm:gap-6"
           >
-            <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200 h-full">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex items-center space-x-3 sm:flex-col sm:space-x-0 sm:space-y-2 sm:text-center">
-                  <div className="p-2 sm:p-3 bg-amber-500 rounded-lg sm:rounded-xl shadow-lg flex-shrink-0">
-                    <Clock className="text-white" size={16} />
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="relative overflow-hidden bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200 hover:shadow-xl transition-all duration-500">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary-400/20 to-transparent rounded-full blur-xl" />
+                <CardContent className="relative p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-primary-700 mb-1">Total Orders</p>
+                      <p className="text-3xl font-bold text-primary-900">{stats.total}</p>
+                      <p className="text-xs text-primary-600 mt-1">All time</p>
+                    </div>
+                    <div className="p-4 bg-primary-200/50 rounded-2xl group-hover:bg-primary-300/50 transition-colors">
+                      <ShoppingBasket className="text-primary-700" size={24} />
+                    </div>
                   </div>
-                  <div className="flex-1 sm:flex-none">
-                    <p className="text-xs font-bold text-amber-700 uppercase tracking-wide">PENDING</p>
-                    <p className="text-xl sm:text-2xl md:text-3xl font-bold text-amber-900">{stats.pending}</p>
-                    <p className="text-xs text-red-600 font-medium">⚠️ Attention</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 h-full">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex items-center space-x-3 sm:flex-col sm:space-x-0 sm:space-y-2 sm:text-center">
-                  <div className="p-2 sm:p-3 bg-purple-500 rounded-lg sm:rounded-xl shadow-lg flex-shrink-0">
-                    <Package className="text-white" size={16} />
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="relative overflow-hidden bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200 hover:shadow-xl transition-all duration-500">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-400/20 to-transparent rounded-full blur-xl" />
+                <CardContent className="relative p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-amber-700 mb-1">Pending Orders</p>
+                      <p className="text-3xl font-bold text-amber-900">{stats.pending}</p>
+                      <p className="text-xs text-amber-600 mt-1">Needs attention</p>
+                    </div>
+                    <div className="p-4 bg-amber-200/50 rounded-2xl group-hover:bg-amber-300/50 transition-colors">
+                      <Clock className="text-amber-700" size={24} />
+                    </div>
                   </div>
-                  <div className="flex-1 sm:flex-none">
-                    <p className="text-xs font-bold text-purple-700 uppercase tracking-wide">PROCESS</p>
-                    <p className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-900">{stats.processing}</p>
-                    <p className="text-xs text-blue-600 font-medium">📦 Active</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-green-50 to-green-100 border-green-200 h-full">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex items-center space-x-3 sm:flex-col sm:space-x-0 sm:space-y-2 sm:text-center">
-                  <div className="p-2 sm:p-3 bg-green-500 rounded-lg sm:rounded-xl shadow-lg flex-shrink-0">
-                    <CheckCircle className="text-white" size={16} />
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="relative overflow-hidden bg-gradient-to-br from-violet-50 to-violet-100 border-violet-200 hover:shadow-xl transition-all duration-500">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-400/20 to-transparent rounded-full blur-xl" />
+                <CardContent className="relative p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-violet-700 mb-1">Processing</p>
+                      <p className="text-3xl font-bold text-violet-900">{stats.processing}</p>
+                      <p className="text-xs text-violet-600 mt-1">In progress</p>
+                    </div>
+                    <div className="p-4 bg-violet-200/50 rounded-2xl group-hover:bg-violet-300/50 transition-colors">
+                      <Package className="text-violet-700" size={24} />
+                    </div>
                   </div>
-                  <div className="flex-1 sm:flex-none">
-                    <p className="text-xs font-bold text-green-700 uppercase tracking-wide">DELIVERED</p>
-                    <p className="text-xl sm:text-2xl md:text-3xl font-bold text-green-900">{stats.delivered}</p>
-                    <p className="text-xs text-green-600 font-medium">✅ Complete</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200 h-full">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex items-center space-x-3 sm:flex-col sm:space-x-0 sm:space-y-2 sm:text-center">
-                  <div className="p-2 sm:p-3 bg-emerald-500 rounded-lg sm:rounded-xl shadow-lg flex-shrink-0">
-                    <DollarSign className="text-white" size={16} />
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="relative overflow-hidden bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200 hover:shadow-xl transition-all duration-500">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-transparent rounded-full blur-xl" />
+                <CardContent className="relative p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-emerald-700 mb-1">Delivered</p>
+                      <p className="text-3xl font-bold text-emerald-900">{stats.delivered}</p>
+                      <p className="text-xs text-emerald-600 mt-1">Completed</p>
+                    </div>
+                    <div className="p-4 bg-emerald-200/50 rounded-2xl group-hover:bg-emerald-300/50 transition-colors">
+                      <CheckCircle className="text-emerald-700" size={24} />
+                    </div>
                   </div>
-                  <div className="flex-1 sm:flex-none">
-                    <p className="text-xs font-bold text-emerald-700 uppercase tracking-wide">REVENUE</p>
-                    <p className="text-base sm:text-lg md:text-xl font-bold text-emerald-900">
-                      {formatCurrency(stats.totalRevenue)}
-                    </p>
-                    <p className="text-xs text-emerald-600 font-medium">+8% Growth</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-indigo-50 to-indigo-100 border-indigo-200 h-full">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex items-center space-x-3 sm:flex-col sm:space-x-0 sm:space-y-2 sm:text-center">
-                  <div className="p-2 sm:p-3 bg-indigo-500 rounded-lg sm:rounded-xl shadow-lg flex-shrink-0">
-                    <TrendingUp className="text-white" size={16} />
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="relative overflow-hidden bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200 hover:shadow-xl transition-all duration-500">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-400/20 to-transparent rounded-full blur-xl" />
+                <CardContent className="relative p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-amber-700 mb-1">Total Revenue</p>
+                      <p className="text-2xl font-bold text-amber-900">{formatCurrency(stats.totalRevenue)}</p>
+                      <p className="text-xs text-amber-600 mt-1">All time</p>
+                    </div>
+                    <div className="p-4 bg-amber-200/50 rounded-2xl group-hover:bg-amber-300/50 transition-colors">
+                      <DollarSign className="text-amber-700" size={24} />
+                    </div>
                   </div>
-                  <div className="flex-1 sm:flex-none">
-                    <p className="text-xs font-bold text-indigo-700 uppercase tracking-wide">AVG VALUE</p>
-                    <p className="text-base sm:text-lg md:text-xl font-bold text-indigo-900">
-                      {formatCurrency(stats.avgOrderValue)}
-                    </p>
-                    <p className="text-xs text-indigo-600 font-medium">📊 Trending</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="relative overflow-hidden bg-gradient-to-br from-indigo-50 to-indigo-100 border-indigo-200 hover:shadow-xl transition-all duration-500">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-400/20 to-transparent rounded-full blur-xl" />
+                <CardContent className="relative p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-indigo-700 mb-1">Avg Order Value</p>
+                      <p className="text-2xl font-bold text-indigo-900">{formatCurrency(stats.avgOrderValue)}</p>
+                      <p className="text-xs text-indigo-600 mt-1">Per order</p>
+                    </div>
+                    <div className="p-4 bg-indigo-200/50 rounded-2xl group-hover:bg-indigo-300/50 transition-colors">
+                      <TrendingUp className="text-indigo-700" size={24} />
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </motion.div>
           </motion.div>
-        </div>
 
         {/* Mobile-First Insights Cards */}
         <div className="flex flex-col space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 w-full">
@@ -1091,48 +1186,47 @@ export default function AdminOrders() {
           </motion.div>
         </div>
 
-        {/* Enhanced Mobile-Responsive Orders Table */}
-        <Card className="bg-gradient-to-br from-white to-gray-50 border-gray-200 shadow-lg overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 p-4">
-            <div className="flex flex-col gap-4">
-              <div className="text-center sm:text-left">
-                <CardTitle className="text-lg font-bold text-gray-800 flex items-center justify-center sm:justify-start space-x-2">
-                  <div className="p-2 bg-blue-500 rounded-lg">
-                    <ShoppingBasket size={18} className="text-white" />
+          {/* Orders Grid/List View */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.6 }}
+          >
+            <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-lg rounded-3xl overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-primary-50 to-secondary-50 border-b border-primary-100 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary-100 rounded-xl">
+                      <BarChart3 className="text-primary-700" size={20} />
+                    </div>
+                    <div>
+                      <CardTitle className="text-2xl font-bold text-gray-900">Order Management</CardTitle>
+                      <p className="text-gray-600 mt-1">
+                        {orders.length} total orders
+                      </p>
+                    </div>
                   </div>
-                  <span> Orders Management</span>
-                </CardTitle>
-                <p className="text-sm text-gray-600 mt-1">Manage all customer orders efficiently</p>
-              </div>
-              <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2">
-                <Badge variant="outline" className="text-xs px-3 py-1">
-                  {orders.length} Total Orders
-                </Badge>
-                <Badge variant="secondary" className="text-xs px-3 py-1">
-                  {stats.pending} Pending
-                </Badge>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <DataTable
-                data={orders}
-                columns={columns}
-                filters={filters}
-                bulkActions={bulkActions}
-                selectable
-                exportable
-                onRowClick={handleViewDetails}
-                onView={handleViewDetails}
-                onEdit={handleEditOrder}
-                onDelete={handleDeleteOrder}
-                onSelectionChange={setSelectedOrders}
-                pageSize={10}
-              />
-            </div>
-          </CardContent>
-        </Card>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <DataTable
+                  data={orders}
+                  columns={columns}
+                  filters={filters}
+                  bulkActions={bulkActions}
+                  selectable
+                  exportable
+                  onRowClick={handleViewDetails}
+                  onView={handleViewDetails}
+                  onEdit={handleEditOrder}
+                  onDelete={handleDeleteOrder}
+                  onSelectionChange={setSelectedOrders}
+                  pageSize={10}
+                />
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
 
         {/* Enhanced Mobile-Responsive Order Details Dialog */}
         <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>

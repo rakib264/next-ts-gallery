@@ -21,10 +21,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
-import { BarChart3, Calendar, Edit, Eye, FileText, Globe, Plus, Star, User } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { gsap } from 'gsap';
+import { BarChart3, Calendar, Edit, Eye, FileText, Globe, Plus, Sparkles, Star, User } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Yup from 'yup';
 
 interface Blog {
@@ -149,6 +151,11 @@ export default function BlogsPage() {
   const router = useRouter();
   const { toast } = useToast();
   
+  // Animation refs
+  const containerRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+  
   // State management
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -268,6 +275,36 @@ export default function BlogsPage() {
     };
 
     fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    fetchBlogs();
+    
+    // Enhanced GSAP animations with staggered entrance
+    const tl = gsap.timeline({ delay: 0.2 });
+    
+    if (headerRef.current) {
+      tl.fromTo(headerRef.current, 
+        { opacity: 0, y: -30, scale: 0.95 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power2.out" }
+      );
+    }
+    
+    if (statsRef.current) {
+      tl.fromTo(statsRef.current.children, 
+        { opacity: 0, y: 20, scale: 0.9 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.1, ease: "back.out(1.7)" },
+        "-=0.4"
+      );
+    }
+    
+    if (containerRef.current) {
+      tl.fromTo(containerRef.current.children, 
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" },
+        "-=0.2"
+      );
+    }
   }, []);
 
   // Form handlers
@@ -747,116 +784,238 @@ export default function BlogsPage() {
     },
   ];
 
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-96">
+          <motion.div 
+            className="relative"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full blur-xl opacity-30 animate-pulse" />
+            <motion.div 
+              className="relative animate-spin rounded-full h-32 w-32 border-4 border-primary-200 border-t-primary-600"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+            <motion.div 
+              className="absolute inset-0 flex items-center justify-center"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <Sparkles className="text-primary-600" size={32} />
+            </motion.div>
+          </motion.div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Blog Management</h1>
-            <p className="text-gray-600">Manage your blog content, categories, and publishing workflow</p>
-          </div>
-          <div className="flex space-x-2">
-            <Button onClick={handleCreate}>
-              <Plus size={16} className="mr-2" />
-              Create Blog
-            </Button>
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Blogs</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{pagination.total}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Published</CardTitle>
-              <Globe className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {blogs.filter(blog => blog.status === 'published').length}
+      <div className="min-h-screen bg-gradient-to-br from-primary-50/30 via-white to-secondary-50/30">
+        <div 
+          ref={containerRef} 
+          className="space-y-8 p-4 sm:p-6 lg:p-8"
+        >
+          {/* Stunning Header Section */}
+          <motion.div 
+            ref={headerRef}
+            className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-secondary-700 rounded-3xl shadow-2xl border border-primary-200/20"
+            initial={{ opacity: 0, y: -30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            {/* Animated background elements */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/10"></div>
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-48 translate-x-48 animate-pulse"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/5 to-transparent rounded-full translate-y-32 -translate-x-32 animate-pulse"></div>
+            
+            {/* Header Content */}
+            <div className="relative p-6 sm:p-8 lg:p-12">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+                      <FileText className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl lg:text-4xl font-bold text-white">
+                        Blog Management
+                      </h1>
+                      <p className="text-white/80 text-lg">
+                        Manage your blog content, categories, and publishing workflow
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex flex-wrap gap-3">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button 
+                      onClick={handleCreate}
+                      className="bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-300 px-6 py-3 rounded-xl font-semibold"
+                    >
+                      <Plus className="w-5 h-5 mr-2" />
+                      Create Blog
+                    </Button>
+                  </motion.div>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Drafts</CardTitle>
-              <Edit className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {blogs.filter(blog => blog.status === 'draft').length}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {blogs.reduce((total, blog) => total + blog.viewCount, 0)}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </motion.div>
 
-        {/* Data Table */}
-        <DataTable
-          data={blogs}
-          columns={columns}
-          selectable
-          searchable
-          filterable
-          exportable
-          onSelectionChange={setSelectedBlogs}
-          bulkActions={bulkActions}
-          filters={filters}
-          onView={handleView}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          serverPagination={{
-            page: pagination.page,
-            pageSize: pagination.limit,
-            total: pagination.total,
-            onPageChange: (page) => setPagination(prev => ({ ...prev, page })),
-            onPageSizeChange: (limit) => setPagination(prev => ({ ...prev, limit, page: 1 })),
-          }}
-          serverSort={{
-            sortKey,
-            sortDirection,
-            onChange: (key, direction) => {
-              setSortKey(key || 'createdAt');
-              setSortDirection(direction || 'desc');
-            },
-          }}
-          serverSearch={{
-            value: searchQuery,
-            onChange: setSearchQuery,
-          }}
-          serverFilters={{
-            values: filterValues,
-            onChange: setFilterValues,
-          }}
-        />
+          {/* Enhanced Stats Cards */}
+          <motion.div 
+            ref={statsRef}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
+          >
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">Total Blogs</p>
+                      <p className="text-3xl font-bold text-gray-900">{pagination.total}</p>
+                    </div>
+                    <div className="p-3 bg-blue-100 rounded-full">
+                      <FileText className="w-6 h-6 text-blue-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-        {/* Create/Edit Blog Dialog */}
-        <Dialog open={showCreateDialog || showEditDialog} onOpenChange={(open) => {
-          if (!open) {
-            setShowCreateDialog(false);
-            setShowEditDialog(false);
-            resetForm();
-          }
-        }}>
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">Published</p>
+                      <p className="text-3xl font-bold text-gray-900">
+                        {blogs.filter(blog => blog.status === 'published').length}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-green-100 rounded-full">
+                      <Globe className="w-6 h-6 text-green-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">Drafts</p>
+                      <p className="text-3xl font-bold text-gray-900">
+                        {blogs.filter(blog => blog.status === 'draft').length}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-orange-100 rounded-full">
+                      <Edit className="w-6 h-6 text-orange-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">Total Views</p>
+                      <p className="text-3xl font-bold text-gray-900">
+                        {blogs.reduce((total, blog) => total + blog.viewCount, 0)}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-purple-100 rounded-full">
+                      <BarChart3 className="w-6 h-6 text-purple-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </motion.div>
+
+          {/* Enhanced Data Table */}
+          <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold text-gray-800">Blog Database</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <DataTable
+                data={blogs}
+                columns={columns}
+                selectable
+                searchable
+                filterable
+                exportable
+                onSelectionChange={setSelectedBlogs}
+                bulkActions={bulkActions}
+                filters={filters}
+                onView={handleView}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                serverPagination={{
+                  page: pagination.page,
+                  pageSize: pagination.limit,
+                  total: pagination.total,
+                  onPageChange: (page) => setPagination(prev => ({ ...prev, page })),
+                  onPageSizeChange: (limit) => setPagination(prev => ({ ...prev, limit, page: 1 })),
+                }}
+                serverSort={{
+                  sortKey,
+                  sortDirection,
+                  onChange: (key, direction) => {
+                    setSortKey(key || 'createdAt');
+                    setSortDirection(direction || 'desc');
+                  },
+                }}
+                serverSearch={{
+                  value: searchQuery,
+                  onChange: setSearchQuery,
+                }}
+                serverFilters={{
+                  values: filterValues,
+                  onChange: setFilterValues,
+                }}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Create/Edit Blog Dialog */}
+          <Dialog open={showCreateDialog || showEditDialog} onOpenChange={(open) => {
+            if (!open) {
+              setShowCreateDialog(false);
+              setShowEditDialog(false);
+              resetForm();
+            }
+          }}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
             <DialogHeader>
               <DialogTitle>
@@ -1241,10 +1400,10 @@ export default function BlogsPage() {
               )}
             </Formik>
           </DialogContent>
-        </Dialog>
+          </Dialog>
 
-        {/* View Blog Dialog */}
-        <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
+          {/* View Blog Dialog */}
+          <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
             <DialogHeader>
               <DialogTitle>Blog Preview</DialogTitle>
@@ -1381,29 +1540,28 @@ export default function BlogsPage() {
               </div>
             )}
           </DialogContent>
-        </Dialog>
+          </Dialog>
 
-        {/* Delete Confirmation Dialog */}
-        <DeleteConfirmationDialog
+          {/* Delete Confirmation Dialog */}
+          <DeleteConfirmationDialog
           open={showDeleteDialog}
           onOpenChange={setShowDeleteDialog}
           onConfirm={deleteBlog}
           title="Delete Blog"
           description={`Are you sure you want to delete "${currentBlog?.title}"? This action cannot be undone.`}
           entityName="blog"
-        />
+          />
 
-        {/* Bulk Delete Confirmation Dialog */}
-        <DeleteConfirmationDialog
+          {/* Bulk Delete Confirmation Dialog */}
+          <DeleteConfirmationDialog
           open={showBulkDeleteDialog}
           onOpenChange={setShowBulkDeleteDialog}
           onConfirm={handleBulkDeleteConfirm}
           title="Delete Multiple Blogs"
           description={`Are you sure you want to delete ${selectedBlogs.length} blog(s)? This action cannot be undone.`}
           entityName="blogs"
-        />
-
-
+          />
+        </div>
       </div>
     </AdminLayout>
   );

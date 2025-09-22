@@ -24,7 +24,8 @@ export function formatBDTCurrency(value: number, options: Intl.NumberFormatOptio
     return new Intl.NumberFormat('en-BD', {
       style: 'currency',
       currency: 'BDT',
-      // minimumFractionDigits: 0,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
       ...options,
     }).format(value);
   } catch {

@@ -176,6 +176,19 @@ export default function OrderDetailsPage() {
     );
   }
 
+  // Progress steps for order lifecycle
+  const orderSteps = [
+    { key: "pending", label: "Pending" },
+    { key: "confirmed", label: "Confirmed" },
+    { key: "processing", label: "Processing" },
+    { key: "shipped", label: "Shipped" },
+    { key: "delivered", label: "Delivered" }
+  ];
+  const currentStepIndex = Math.max(
+    0,
+    orderSteps.findIndex((s) => s.key === order.orderStatus)
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-primary-50/30">
       <Header />
@@ -365,6 +378,42 @@ export default function OrderDetailsPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
+                  {/* Visual Progress Tracker */}
+                  <div className="w-full mb-6 sm:mb-8" aria-label="Order progress" role="list">
+                    <div className="relative">
+                      <div className="hidden sm:block absolute top-5 left-0 right-0 h-1 bg-gray-200 rounded-full" />
+                      <div
+                        className="hidden sm:block absolute top-5 left-0 h-1 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full transition-all"
+                        style={{ width: `${(Math.max(0, currentStepIndex) / (orderSteps.length - 1)) * 100}%` }}
+                      />
+                      <div className="grid grid-cols-5 gap-2">
+                        {orderSteps.map((step, idx) => {
+                          const completed = idx <= currentStepIndex;
+                          return (
+                            <div
+                              key={step.key}
+                              className="flex sm:block items-center sm:text-center"
+                              role="listitem"
+                              aria-current={idx === currentStepIndex ? "step" : undefined}
+                            >
+                              <div
+                                className={`relative z-10 w-6 h-6 sm:w-10 sm:h-10 rounded-full mx-auto flex items-center justify-center shadow-sm border-2 ${
+                                  completed
+                                    ? "bg-gradient-to-br from-primary-600 to-secondary-600 text-white border-transparent"
+                                    : "bg-white text-gray-400 border-gray-300"
+                                }`}
+                              >
+                                <span className="text-[10px] sm:text-xs font-bold">{idx + 1}</span>
+                              </div>
+                              <div className="ml-3 sm:mt-2">
+                                <span className={`text-[11px] sm:text-xs md:text-sm font-semibold ${completed ? "text-gray-900" : "text-gray-500"}`}>{step.label}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     <div className="flex items-center space-x-4 p-4 sm:p-5 bg-primary-50 rounded-xl hover:bg-primary-100 transition-all duration-200 hover:shadow-md">
                       <div className="p-3 bg-primary-100 rounded-full shadow-sm">
@@ -432,6 +481,16 @@ export default function OrderDetailsPage() {
                             {order.trackingNumber}
                           </span>
                         </div>
+                      </div>
+                      <div className="mt-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-info-300 text-info-700 hover:bg-info-50"
+                          aria-label="Track package"
+                        >
+                          Track Package
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -694,6 +753,7 @@ export default function OrderDetailsPage() {
                         variant="outline"
                         size="lg"
                         className="w-full border-2 border-success-300 hover:border-success-400 hover:bg-success-50 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 text-sm sm:text-base font-semibold"
+                        aria-label="Leave a review"
                       >
                         <Star size={16} className="mr-2 sm:mr-3" />
                         <span className="text-sm sm:text-base font-semibold">Leave Review</span>
@@ -704,15 +764,52 @@ export default function OrderDetailsPage() {
                         variant="destructive"
                         size="lg"
                         className="w-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 text-sm sm:text-base font-semibold"
+                        aria-label="Cancel order"
                       >
                         <X size={16} className="mr-2 sm:mr-3" />
                         <span className="text-sm sm:text-base font-semibold">Cancel Order</span>
                       </Button>
                     )}
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full border-2 hover:bg-gray-50 text-gray-700"
+                      asChild
+                      aria-label="Contact support"
+                    >
+                      <Link href="/contact">Contact Support</Link>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
             </motion.div>
+          </div>
+        </div>
+      </div>
+
+      {/* Sticky Mobile Action Bar */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur border-t border-gray-200 p-3">
+        <div className="container mx-auto px-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] text-gray-500 font-semibold uppercase tracking-wide">Total</p>
+              <p className="text-base font-extrabold text-primary-600">{formatPrice(order.total || 0)}</p>
+            </div>
+            <div className="flex-1 flex items-center justify-end gap-2">
+              {order.orderStatus === "delivered" ? (
+                <Button size="lg" className="flex-1 bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 font-bold">
+                  <Star size={16} className="mr-2" /> Review
+                </Button>
+              ) : ["pending", "confirmed"].includes(order.orderStatus) ? (
+                <Button variant="destructive" size="lg" className="flex-1 font-bold">
+                  <X size={16} className="mr-2" /> Cancel
+                </Button>
+              ) : (
+                <Button size="lg" className="flex-1 bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 font-bold">
+                  Track Package
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -10,19 +10,21 @@ import { useDeleteConfirmationDialog } from '@/components/ui/delete-confirmation
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToastWithTypes } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
+import gsap from 'gsap';
 import {
-    AlertTriangle,
-    Calendar,
-    Download,
-    Edit,
-    Eye,
-    Plus,
-    Shield,
-    Trash2,
-    User,
-    X
+  AlertTriangle,
+  Calendar,
+  Download,
+  Edit,
+  Eye,
+  Plus,
+  Shield,
+  Sparkles,
+  Trash2,
+  User,
+  X
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface AuditLog {
   _id: string;
@@ -61,6 +63,11 @@ export default function AdminAuditLogs() {
   const [viewingLog, setViewingLog] = useState<AuditLog | null>(null);
   const { showDeleteConfirmation, DeleteConfirmationComponent } = useDeleteConfirmationDialog();
   const { success, error: showError } = useToastWithTypes();
+  
+  // Animation refs
+  const containerRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
 
   // Debounced search
   const debouncedSearch = useCallback(
@@ -83,6 +90,36 @@ export default function AdminAuditLogs() {
   useEffect(() => {
     fetchAuditLogs();
   }, [filters]);
+
+  useEffect(() => {
+    fetchAuditLogs();
+    
+    // Enhanced GSAP animations with staggered entrance
+    const tl = gsap.timeline({ delay: 0.2 });
+    
+    if (headerRef.current) {
+      tl.fromTo(headerRef.current, 
+        { opacity: 0, y: -30, scale: 0.95 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power2.out" }
+      );
+    }
+    
+    if (statsRef.current) {
+      tl.fromTo(statsRef.current.children, 
+        { opacity: 0, y: 20, scale: 0.9 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.1, ease: "back.out(1.7)" },
+        "-=0.4"
+      );
+    }
+    
+    if (containerRef.current) {
+      tl.fromTo(containerRef.current.children, 
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" },
+        "-=0.2"
+      );
+    }
+  }, []);
 
   const fetchAuditLogs = async () => {
     try {
@@ -392,8 +429,27 @@ export default function AdminAuditLogs() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <div className="flex items-center justify-center h-96">
+          <motion.div 
+            className="relative"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full blur-xl opacity-30 animate-pulse" />
+            <motion.div 
+              className="relative animate-spin rounded-full h-32 w-32 border-4 border-primary-200 border-t-primary-600"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+            <motion.div 
+              className="absolute inset-0 flex items-center justify-center"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <Sparkles className="text-primary-600" size={32} />
+            </motion.div>
+          </motion.div>
         </div>
       </AdminLayout>
     );
@@ -401,163 +457,195 @@ export default function AdminAuditLogs() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Audit Logs</h1>
-            <p className="text-gray-600 mt-1">
-              Track all administrative actions and system changes
-            </p>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Select 
-              value={filters.dateRange} 
-              onValueChange={(value) => setFilters(prev => ({ ...prev, dateRange: value }))}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1d">Last 24 hours</SelectItem>
-                <SelectItem value="7d">Last 7 days</SelectItem>
-                <SelectItem value="30d">Last 30 days</SelectItem>
-                <SelectItem value="90d">Last 90 days</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+      <div className="min-h-screen bg-gradient-to-br from-primary-50/30 via-white to-secondary-50/30">
+        <div ref={containerRef} className="space-y-8 p-4 sm:p-6 lg:p-8">
+          {/* Stunning Header Section */}
+          <motion.div 
+            ref={headerRef}
+            className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-secondary-700 rounded-3xl shadow-2xl border border-primary-200/20"
+            initial={{ opacity: 0, y: -30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Actions</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
-                  </div>
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <Shield className="text-blue-600" size={20} />
+            {/* Animated background elements */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/10"></div>
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-48 translate-x-48 animate-pulse"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/5 to-transparent rounded-full translate-y-32 -translate-x-32 animate-pulse"></div>
+            
+            {/* Header Content */}
+            <div className="relative p-6 sm:p-8 lg:p-12">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+                      <Shield className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl lg:text-4xl font-bold text-white">
+                        Audit Logs
+                      </h1>
+                      <p className="text-white/80 text-lg">
+                        Track all administrative actions and system changes
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Today's Actions</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.today}</p>
-                  </div>
-                  <div className="p-3 bg-green-100 rounded-full">
-                    <Calendar className="text-green-600" size={20} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">High Risk Actions</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.highRisk}</p>
-                  </div>
-                  <div className="p-3 bg-red-100 rounded-full">
-                    <AlertTriangle className="text-red-600" size={20} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Active Users</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.uniqueUsers}</p>
-                  </div>
-                  <div className="p-3 bg-purple-100 rounded-full">
-                    <User className="text-purple-600" size={20} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-
-        {/* Audit Logs Table */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Audit Trail</CardTitle>
-              {selectedLogs.length > 0 && (
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-600">
-                    {selectedLogs.length} selected
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleExportSelected}
-                    className="flex items-center space-x-1"
+                
+                <div className="flex flex-wrap gap-3">
+                  <Select 
+                    value={filters.dateRange} 
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, dateRange: value }))}
                   >
-                    <Download size={14} />
-                    <span>Export Selected</span>
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleBulkDelete}
-                    className="flex items-center space-x-1"
-                  >
-                    <Trash2 size={14} />
-                    <span>Delete Selected</span>
-                  </Button>
+                    <SelectTrigger className="w-40 bg-white/10 backdrop-blur-sm border border-white/20 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1d">Last 24 hours</SelectItem>
+                      <SelectItem value="7d">Last 7 days</SelectItem>
+                      <SelectItem value="30d">Last 30 days</SelectItem>
+                      <SelectItem value="90d">Last 90 days</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
+              </div>
             </div>
-          </CardHeader>
-          <CardContent>
-            <DataTable
-              data={logs}
-              columns={columns}
-              filters={filterOptions}
-              exportable
-              searchable
-              selectable
-              pagination
-              pageSize={10}
-              onSelectionChange={setSelectedLogs}
-              onView={handleViewLog}
-            />
-          </CardContent>
-        </Card>
+          </motion.div>
+
+          {/* Enhanced Stats Cards */}
+          <motion.div 
+            ref={statsRef}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
+          >
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">Total Actions</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
+                    </div>
+                    <div className="p-3 bg-blue-100 rounded-full">
+                      <Shield className="w-6 h-6 text-blue-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">Today's Actions</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.today}</p>
+                    </div>
+                    <div className="p-3 bg-green-100 rounded-full">
+                      <Calendar className="w-6 h-6 text-green-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">High Risk Actions</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.highRisk}</p>
+                    </div>
+                    <div className="p-3 bg-red-100 rounded-full">
+                      <AlertTriangle className="w-6 h-6 text-red-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">Active Users</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.uniqueUsers}</p>
+                    </div>
+                    <div className="p-3 bg-purple-100 rounded-full">
+                      <User className="w-6 h-6 text-purple-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </motion.div>
+
+          {/* Enhanced Audit Logs Table */}
+          <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl font-semibold text-gray-800">Audit Trail</CardTitle>
+                {selectedLogs.length > 0 && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-600">
+                      {selectedLogs.length} selected
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleExportSelected}
+                      className="flex items-center space-x-1"
+                    >
+                      <Download size={14} />
+                      <span>Export Selected</span>
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleBulkDelete}
+                      className="flex items-center space-x-1"
+                    >
+                      <Trash2 size={14} />
+                      <span>Delete Selected</span>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <DataTable
+                data={logs}
+                columns={columns}
+                filters={filterOptions}
+                exportable
+                searchable
+                selectable
+                pagination
+                pageSize={10}
+                onSelectionChange={setSelectedLogs}
+                onView={handleViewLog}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
         {/* Delete Confirmation Dialog */}
         <DeleteConfirmationComponent />
@@ -672,7 +760,6 @@ export default function AdminAuditLogs() {
             </div>
           </div>
         )}
-      </div>
     </AdminLayout>
   );
 }

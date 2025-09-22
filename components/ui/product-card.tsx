@@ -258,11 +258,11 @@ export default function ProductCard({
                 <span className="text-sm xs:text-base sm:text-lg lg:text-xl font-bold text-primary-600">
                   {formatBDTCurrency(product.price)}
                 </span>
-                {/* {product.comparePrice && product.comparePrice > product.price && (
+                {product.comparePrice !==0 && product.comparePrice !== undefined && product.comparePrice && product.comparePrice > product.price && (
                   <span className="text-xs xs:text-sm text-gray-500 line-through">
                     {formatBDTCurrency(product.comparePrice)}
                   </span>
-                )} */}
+                )}
               </div>
               
               {/* Add Button - Responsive Size */}

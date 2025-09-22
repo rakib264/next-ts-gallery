@@ -17,7 +17,8 @@ import ProductSelector from '@/components/ui/product-selector';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToastWithTypes } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, Package, Plus, Star, Zap } from 'lucide-react';
+import gsap from 'gsap';
+import { BarChart3, Calendar, Clock, Package, Plus, Sparkles, Star, Zap } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface Event {
@@ -56,6 +57,10 @@ interface EventFormData {
 }
 
 export default function AdminEvents() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+  
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -104,6 +109,30 @@ export default function AdminEvents() {
   // Preview dialog
   const [previewEvent, setPreviewEvent] = useState<Event | null>(null);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
+
+  // GSAP animations
+  useEffect(() => {
+    if (!loading) {
+      const tl = gsap.timeline();
+      
+      // Animate header
+      if (headerRef.current) {
+        tl.fromTo(headerRef.current, 
+          { y: -50, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }
+        );
+      }
+      
+      // Animate stats cards
+      if (statsRef.current) {
+        tl.fromTo(statsRef.current.children,
+          { y: 30, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: "power2.out" },
+          "-=0.4"
+        );
+      }
+    }
+  }, [loading]);
 
   // Debounce search input
   useEffect(() => {
@@ -520,8 +549,27 @@ export default function AdminEvents() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <div className="flex items-center justify-center h-96">
+          <motion.div 
+            className="relative"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full blur-xl opacity-30 animate-pulse" />
+            <motion.div 
+              className="relative animate-spin rounded-full h-32 w-32 border-4 border-primary-200 border-t-primary-600"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+            <motion.div 
+              className="absolute inset-0 flex items-center justify-center"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <Sparkles className="text-primary-600" size={32} />
+            </motion.div>
+          </motion.div>
         </div>
       </AdminLayout>
     );
@@ -529,148 +577,216 @@ export default function AdminEvents() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Events</h1>
-            <p className="text-gray-600 mt-1">
-              Manage promotional events and special offers
-            </p>
+      <div className="min-h-screen bg-gradient-to-br from-primary-50/30 via-white to-secondary-50/30">
+        <div ref={containerRef} className="space-y-8 p-4 sm:p-6 lg:p-8">
+          {/* Stunning Header Section */}
+        <motion.div 
+            ref={headerRef}
+            className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-secondary-700 rounded-3xl shadow-2xl border border-primary-200/20"
+            initial={{ opacity: 0, y: -30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            {/* Animated Background Elements */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-600/90 to-secondary-600/90" />
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-white/5 to-transparent rounded-full blur-2xl" />
+            
+            {/* Header Content */}
+            <div className="relative p-6 sm:p-8 lg:p-12">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                    <Calendar className="text-white" size={24} />
+                  </div>
+                  <div>
+                    <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2">
+                      Events Management
+                    </h1>
+                    <p className="text-pink-100 text-lg">
+                      Create and manage promotional events and special offers
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-4 mt-6">
+                  <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                    <Sparkles className="text-yellow-300" size={16} />
+                    <span className="text-white font-medium">Promotional Campaigns</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                    <BarChart3 className="text-green-300" size={16} />
+                    <span className="text-white font-medium">Event Analytics</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      onClick={resetForm}
+                      className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white hover:text-white transition-all duration-300"
+                    >
+                      <Plus size={16} className="mr-2" />
+                      <span className="hidden sm:inline">Create Event</span>
+                      <span className="sm:hidden">Create</span>
+                    </Button>
+                  </DialogTrigger>
+                </Dialog>
+              </div>
+            </div>
           </div>
-          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-            <DialogTrigger asChild>
-              <Button onClick={resetForm}>
-                <Plus size={16} className="mr-2" />
-                Create Event
-              </Button>
-            </DialogTrigger>
-          </Dialog>
+        </motion.div>
+
+        {/* Enhanced Stats Cards */}
+        <div ref={statsRef} className="px-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">Total Events</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
+                      <div className="flex items-center mt-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                        <span className="text-xs text-gray-500">All time</span>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg">
+                      <Calendar className="text-white" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">Active Events</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.active}</p>
+                      <div className="flex items-center mt-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                        <span className="text-xs text-gray-500">Running now</span>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg">
+                      <Zap className="text-white" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">Upcoming</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.upcoming}</p>
+                      <div className="flex items-center mt-2">
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                        <span className="text-xs text-gray-500">Scheduled</span>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl shadow-lg">
+                      <Clock className="text-white" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">Expired</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.expired}</p>
+                      <div className="flex items-center mt-2">
+                        <div className="w-2 h-2 bg-gray-500 rounded-full mr-2"></div>
+                        <span className="text-xs text-gray-500">Completed</span>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-gradient-to-br from-gray-500 to-gray-600 rounded-2xl shadow-lg">
+                      <Star className="text-white" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Events</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
-                  </div>
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <Calendar className="text-blue-600" size={20} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Active Events</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.active}</p>
-                  </div>
-                  <div className="p-3 bg-green-100 rounded-full">
-                    <Zap className="text-green-600" size={20} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Upcoming Events</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.upcoming}</p>
-                  </div>
-                  <div className="p-3 bg-yellow-100 rounded-full">
-                    <Clock className="text-yellow-600" size={20} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Expired Events</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.expired}</p>
-                  </div>
-                  <div className="p-3 bg-gray-100 rounded-full">
-                    <Star className="text-gray-600" size={20} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+        {/* Enhanced Events Table */}
+        <div className="px-6 pb-8">
+          <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-t-xl">
+              <CardTitle className="text-xl font-semibold text-gray-800">Events Database</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <DataTable
+                data={events}
+                columns={columns}
+                filters={filters}
+                bulkActions={bulkActions}
+                selectable
+                exportable
+                serverSearch={{
+                  value: searchInput,
+                  onChange: (v) => setSearchInput(v)
+                }}
+                serverFilters={{
+                  values: filterValues,
+                  onChange: (v) => { setFilterValues(v); setPage(1); }
+                }}
+                serverSort={{
+                  sortKey: sortKey,
+                  sortDirection: sortDirection as any,
+                  onChange: (key, dir) => { setSortKey(key); setSortDirection(dir); setPage(1); }
+                }}
+                serverPagination={{
+                  page,
+                  pageSize: limit,
+                  total,
+                  onPageChange: (p) => setPage(p),
+                  onPageSizeChange: (size) => { setLimit(size); setPage(1); },
+                  pageSizeOptions: [5, 10, 25, 50]
+                }}
+                onView={handleView}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            </CardContent>
+          </Card>
         </div>
-
-        {/* Events Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Events List</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DataTable
-              data={events}
-              columns={columns}
-              filters={filters}
-              bulkActions={bulkActions}
-              selectable
-              exportable
-              serverSearch={{
-                value: searchInput,
-                onChange: (v) => setSearchInput(v)
-              }}
-              serverFilters={{
-                values: filterValues,
-                onChange: (v) => { setFilterValues(v); setPage(1); }
-              }}
-              serverSort={{
-                sortKey: sortKey,
-                sortDirection: sortDirection as any,
-                onChange: (key, dir) => { setSortKey(key); setSortDirection(dir); setPage(1); }
-              }}
-              serverPagination={{
-                page,
-                pageSize: limit,
-                total,
-                onPageChange: (p) => setPage(p),
-                onPageSizeChange: (size) => { setLimit(size); setPage(1); },
-                pageSizeOptions: [5, 10, 25, 50]
-              }}
-              onView={handleView}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          </CardContent>
-        </Card>
 
         {/* Create/Edit Event Dialog */}
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
@@ -862,6 +978,7 @@ export default function AdminEvents() {
           isLoading={isConfirming}
           tone={pendingAction === 'activate' ? 'success' : 'warning'}
         />
+        </div>
       </div>
     </AdminLayout>
   );

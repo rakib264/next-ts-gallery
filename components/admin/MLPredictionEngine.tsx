@@ -5,29 +5,29 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-    AlertTriangle,
-    Award,
-    Brain,
-    Calendar,
-    Target,
-    TrendingUp,
-    Zap
+  AlertTriangle,
+  Award,
+  Brain,
+  Calendar,
+  Target,
+  TrendingUp,
+  Zap
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-    Area,
-    AreaChart,
-    CartesianGrid,
-    Legend,
-    Line,
-    LineChart,
-    ReferenceLine,
-    ResponsiveContainer,
-    Scatter,
-    ScatterChart,
-    Tooltip,
-    XAxis,
-    YAxis
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Scatter,
+  ScatterChart,
+  Tooltip,
+  XAxis,
+  YAxis
 } from 'recharts';
 
 interface MLPrediction {
@@ -40,9 +40,21 @@ interface MLPrediction {
   growthRate: number;
   trend: 'growing' | 'declining' | 'stable';
   confidence: number;
-  seasonality?: number;
-  marketSaturation?: number;
-  competitionScore?: number;
+  seasonality: number;
+  marketSaturation: number;
+  competitionScore: number;
+  modelAccuracy: number; // Historical prediction accuracy
+  predictionInterval: { lower: number; upper: number }; // 95% confidence interval
+  featureImportance: { [key: string]: number }; // Feature importance scores
+  mlModel: {
+    algorithm: string;
+    trainingDate: string;
+    dataPoints: number;
+    crossValidationScore: number;
+  };
+  riskFactors: string[];
+  opportunities: string[];
+  lastUpdated: string;
 }
 
 interface CustomerLifetimeValue {
@@ -51,6 +63,16 @@ interface CustomerLifetimeValue {
   predictedValue: number;
   churnProbability: number;
   recommendedActions: string[];
+  confidence: number;
+  predictionHorizon: string; // '12 months', '24 months', etc.
+  valueDrivers: string[]; // Key factors driving LTV
+  riskSegments: string[]; // Risk categories
+  retentionStrategy: {
+    primaryTactic: string;
+    expectedUplift: number;
+    investmentRequired: number;
+    timeframe: string;
+  };
 }
 
 interface MarketOpportunity {
@@ -61,14 +83,65 @@ interface MarketOpportunity {
   recommendedInvestment: number;
   riskLevel: 'low' | 'medium' | 'high';
   timeToROI: number; // months
+  confidence: number;
+  mlInsights: {
+    demandPattern: string;
+    seasonalFactors: number;
+    competitiveAdvantage: string[];
+    marketBarriers: string[];
+  };
+  projectedRevenue: {
+    year1: number;
+    year2: number;
+    year3: number;
+  };
+}
+
+interface ModelPerformanceMetrics {
+  modelName: string;
+  accuracy: number;
+  precision: number;
+  recall: number;
+  f1Score: number;
+  mape: number; // Mean Absolute Percentage Error
+  lastTrainingDate: string;
+  dataQuality: number;
+  predictionDrift: number;
+  status: 'healthy' | 'degrading' | 'needs_retraining';
+}
+
+interface ExplainableAI {
+  prediction: number;
+  explanation: {
+    topFactors: Array<{
+      feature: string;
+      contribution: number;
+      description: string;
+    }>;
+    baselineValue: number;
+    totalContribution: number;
+  };
+  counterfactuals: Array<{
+    scenario: string;
+    change: string;
+    newPrediction: number;
+    feasibility: number;
+  }>;
 }
 
 const MLPredictionEngine: React.FC = () => {
   const [predictions, setPredictions] = useState<MLPrediction[]>([]);
   const [customerLTV, setCustomerLTV] = useState<CustomerLifetimeValue[]>([]);
   const [marketOpportunities, setMarketOpportunities] = useState<MarketOpportunity[]>([]);
+  const [modelPerformance, setModelPerformance] = useState<ModelPerformanceMetrics[]>([]);
+  const [explainableAI, setExplainableAI] = useState<ExplainableAI[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isMLTraining, setIsMLTraining] = useState(false);
   const [selectedTimeframe, setSelectedTimeframe] = useState('12');
+  const [confidenceThreshold, setConfidenceThreshold] = useState(0.8);
+  const [showAdvancedMetrics, setShowAdvancedMetrics] = useState(false);
+  const [selectedModel, setSelectedModel] = useState('ensemble');
+  const [autoRetraining, setAutoRetraining] = useState(true);
 
   // Advanced ML Analytics
   const advancedAnalytics = useMemo(() => {
@@ -129,28 +202,68 @@ const MLPredictionEngine: React.FC = () => {
           currentValue: 15000,
           predictedValue: 18500,
           churnProbability: 0.05,
-          recommendedActions: ['VIP program enrollment', 'Personalized offers']
+          recommendedActions: ['VIP program enrollment', 'Personalized offers'],
+          confidence: 0.92,
+          predictionHorizon: '12 months',
+          valueDrivers: ['Purchase frequency', 'AOV'],
+          riskSegments: ['low'],
+          retentionStrategy: {
+            primaryTactic: 'VIP loyalty program',
+            expectedUplift: 0.12,
+            investmentRequired: 50000,
+            timeframe: 'Q1'
+          }
         },
         {
           segment: 'High-Value Occasional',
           currentValue: 8000,
           predictedValue: 9200,
           churnProbability: 0.15,
-          recommendedActions: ['Engagement campaigns', 'Frequency incentives']
+          recommendedActions: ['Engagement campaigns', 'Frequency incentives'],
+          confidence: 0.88,
+          predictionHorizon: '12 months',
+          valueDrivers: ['Recency', 'Seasonality'],
+          riskSegments: ['medium'],
+          retentionStrategy: {
+            primaryTactic: 'Reactivation email + offers',
+            expectedUplift: 0.08,
+            investmentRequired: 30000,
+            timeframe: 'Q1'
+          }
         },
         {
           segment: 'Low-Value Frequent',
           currentValue: 3000,
           predictedValue: 3600,
           churnProbability: 0.25,
-          recommendedActions: ['Upselling campaigns', 'Loyalty rewards']
+          recommendedActions: ['Upselling campaigns', 'Loyalty rewards'],
+          confidence: 0.82,
+          predictionHorizon: '12 months',
+          valueDrivers: ['Frequency', 'Discount sensitivity'],
+          riskSegments: ['medium'],
+          retentionStrategy: {
+            primaryTactic: 'Tiered loyalty incentives',
+            expectedUplift: 0.06,
+            investmentRequired: 20000,
+            timeframe: 'Q2'
+          }
         },
         {
           segment: 'New Customers',
           currentValue: 500,
           predictedValue: 2500,
           churnProbability: 0.35,
-          recommendedActions: ['Onboarding program', 'First purchase incentives']
+          recommendedActions: ['Onboarding program', 'First purchase incentives'],
+          confidence: 0.8,
+          predictionHorizon: '12 months',
+          valueDrivers: ['Onboarding completion', 'First-90-day activity'],
+          riskSegments: ['high'],
+          retentionStrategy: {
+            primaryTactic: 'Onboarding + welcome series',
+            expectedUplift: 0.1,
+            investmentRequired: 15000,
+            timeframe: 'First 90 days'
+          }
         }
       ];
       setCustomerLTV(ltvData);

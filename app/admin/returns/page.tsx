@@ -13,23 +13,25 @@ import { Textarea } from '@/components/ui/textarea';
 import { PAGE_SIZE_OPTIONS } from '@/constants';
 import { toast } from '@/hooks/use-toast';
 import { AnimatePresence, motion } from 'framer-motion';
+import { gsap } from 'gsap';
 import {
-    AlertCircle,
-    CheckCircle,
-    Clock,
-    CreditCard,
-    Eye,
-    FileText,
-    MapPin,
-    Package,
-    RefreshCw,
-    Search,
-    Trash2,
-    Truck,
-    User,
-    X
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  CreditCard,
+  Eye,
+  FileText,
+  MapPin,
+  Package,
+  RefreshCw,
+  Search,
+  Sparkles,
+  Trash2,
+  Truck,
+  User,
+  X
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface ReturnRequest {
   _id: string;
@@ -168,9 +170,44 @@ export default function AdminReturnsPage() {
     courierName: ''
   });
 
+  // Animation refs
+  const containerRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     fetchReturnRequests(currentPage);
   }, [currentPage, itemsPerPage]);
+
+  useEffect(() => {
+    fetchReturnRequests();
+    
+    // Enhanced GSAP animations with staggered entrance
+    const tl = gsap.timeline({ delay: 0.2 });
+    
+    if (headerRef.current) {
+      tl.fromTo(headerRef.current, 
+        { opacity: 0, y: -30, scale: 0.95 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power2.out" }
+      );
+    }
+    
+    if (statsRef.current) {
+      tl.fromTo(statsRef.current.children, 
+        { opacity: 0, y: 20, scale: 0.9 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.1, ease: "back.out(1.7)" },
+        "-=0.4"
+      );
+    }
+    
+    if (containerRef.current) {
+      tl.fromTo(containerRef.current.children, 
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" },
+        "-=0.2"
+      );
+    }
+  }, []);
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
@@ -402,8 +439,27 @@ export default function AdminReturnsPage() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <div className="flex items-center justify-center h-96">
+          <motion.div 
+            className="relative"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full blur-xl opacity-30 animate-pulse" />
+            <motion.div 
+              className="relative animate-spin rounded-full h-32 w-32 border-4 border-primary-200 border-t-primary-600"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+            <motion.div 
+              className="absolute inset-0 flex items-center justify-center"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <Sparkles className="text-primary-600" size={32} />
+            </motion.div>
+          </motion.div>
         </div>
       </AdminLayout>
     );
@@ -411,43 +467,96 @@ export default function AdminReturnsPage() {
 
   return (
     <AdminLayout>
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Return & Exchange Management</h1>
-          <p className="text-muted-foreground mt-2">
-            Manage customer return and exchange requests
-          </p>
-        </div>
-        <Button onClick={() => fetchReturnRequests(currentPage)} variant="outline" className="bg-white hover:bg-gray-50 border-gray-200">
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Refresh
-        </Button>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
-        {Object.entries(statusCounts).map(([status, count]) => {
-          const StatusIcon = getStatusIcon(status);
-          return (
-            <motion.div
-              key={status}
-              className="text-center p-4 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300"
-              whileHover={{ scale: 1.02, y: -2 }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-primary/10 to-primary/20 rounded-xl mx-auto mb-3">
-                <StatusIcon className="text-primary" size={18} />
+      <div className="min-h-screen bg-gradient-to-br from-primary-50/30 via-white to-secondary-50/30">
+        <div 
+          ref={containerRef} 
+          className="space-y-8 p-4 sm:p-6 lg:p-8"
+        >
+          {/* Stunning Header Section */}
+          <motion.div 
+            ref={headerRef}
+            className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-secondary-700 rounded-3xl shadow-2xl border border-primary-200/20"
+            initial={{ opacity: 0, y: -30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            {/* Animated background elements */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/10"></div>
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-48 translate-x-48 animate-pulse"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/5 to-transparent rounded-full translate-y-32 -translate-x-32 animate-pulse"></div>
+            
+            {/* Header Content */}
+            <div className="relative p-6 sm:p-8 lg:p-12">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+                      <RefreshCw className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl lg:text-4xl font-bold text-white">
+                        Return & Exchange Management
+                      </h1>
+                      <p className="text-white/80 text-lg">
+                        Manage customer return and exchange requests
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex flex-wrap gap-3">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button 
+                      onClick={() => fetchReturnRequests(currentPage)}
+                      className="bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-300 px-6 py-3 rounded-xl font-semibold"
+                    >
+                      <RefreshCw className="w-5 h-5 mr-2" />
+                      Refresh
+                    </Button>
+                  </motion.div>
+                </div>
               </div>
-              <div className="text-2xl font-bold text-gray-900">{count}</div>
-              <div className="text-sm text-gray-600 capitalize font-medium">{status}</div>
-            </motion.div>
-          );
-        })}
-      </div>
+            </div>
+          </motion.div>
 
-      {/* Search and Filter */}
-      <Card className="mb-6 bg-gradient-to-r from-white to-gray-50 border-gray-200 shadow-sm">
+          {/* Enhanced Stats Cards */}
+          <motion.div 
+            ref={statsRef}
+            className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8"
+          >
+            {Object.entries(statusCounts).map(([status, count]) => {
+              const StatusIcon = getStatusIcon(status);
+              return (
+                <motion.div
+                  key={status}
+                  whileHover={{ y: -8, scale: 1.02 }}
+                  transition={{ duration: 0.3 }}
+                  className="group"
+                >
+                  <Card className="relative overflow-hidden bg-gradient-to-br from-white to-gray-50 border-gray-200 hover:shadow-xl transition-all duration-500">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary-400/20 to-transparent rounded-full blur-xl" />
+                    <CardContent className="relative p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-2xl font-bold text-gray-900">{count}</p>
+                          <p className="text-sm text-gray-600 capitalize font-medium">{status}</p>
+                        </div>
+                        <div className="p-3 bg-primary-200/50 rounded-2xl group-hover:bg-primary-300/50 transition-colors">
+                          <StatusIcon className="text-primary-700" size={18} />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+
+          {/* Enhanced Search and Filter Bar */}
+          <Card className="bg-white/80 backdrop-blur-lg rounded-2xl border border-primary-200/50 shadow-lg">
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
@@ -498,8 +607,8 @@ export default function AdminReturnsPage() {
         </CardContent>
       </Card>
 
-      {/* Return Requests Table */}
-      <Card className="bg-white border-gray-200 shadow-sm">
+          {/* Enhanced Return Requests Table */}
+          <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-lg rounded-3xl overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-200">
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center">
@@ -1195,9 +1304,10 @@ export default function AdminReturnsPage() {
         )}
       </AnimatePresence>
       
-      {/* Delete Confirmation Dialog */}
-      <DeleteConfirmationComponent />
-    </div>
+          {/* Delete Confirmation Dialog */}
+          <DeleteConfirmationComponent />
+        </div>
+      </div>
     </AdminLayout>
   );
 }

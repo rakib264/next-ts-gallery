@@ -24,37 +24,39 @@ import { Textarea } from '@/components/ui/textarea';
 import { useDebounce } from '@/hooks/use-debounce';
 import PaymentSettings from '@/lib/models/PaymentSettings';
 import { useFormik } from 'formik';
+import { motion } from 'framer-motion';
+import { gsap } from 'gsap';
 import {
-    ArrowRight,
-    Bell,
-    ChevronDown,
-    ChevronUp,
-    CreditCard,
-    Database,
-    Edit,
-    Eye,
-    Facebook,
-    Filter,
-    Globe,
-    Image,
-    ImageIcon,
-    Instagram,
-    Mail,
-    MapPin,
-    Palette,
-    Phone,
-    Plus,
-    RefreshCw,
-    Save,
-    Search,
-    Shield,
-    Sparkles,
-    Star,
-    Trash2,
-    X,
-    Youtube
+  ArrowRight,
+  Bell,
+  ChevronDown,
+  ChevronUp,
+  CreditCard,
+  Database,
+  Edit,
+  Eye,
+  Facebook,
+  Filter,
+  Globe,
+  Image,
+  ImageIcon,
+  Instagram,
+  Mail,
+  MapPin,
+  Palette,
+  Phone,
+  Plus,
+  RefreshCw,
+  Save,
+  Search,
+  Shield,
+  Sparkles,
+  Star,
+  Trash2,
+  X,
+  Youtube
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as Yup from 'yup';
 
 interface AuthSettings {
@@ -183,6 +185,11 @@ export default function AdminSettings() {
   const { showSuccess, SuccessDialogComponent } = useSuccessDialog();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Animation refs
+  const containerRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
 
   // Courier Settings Validation Schema (simplified delivery charges)
   const courierValidationSchema = Yup.object({
@@ -801,11 +808,58 @@ export default function AdminSettings() {
     setCurrentPage(1);
   };
 
+  useEffect(() => {
+    // Enhanced GSAP animations with staggered entrance
+    const tl = gsap.timeline({ delay: 0.2 });
+    
+    if (headerRef.current) {
+      tl.fromTo(headerRef.current, 
+        { opacity: 0, y: -30, scale: 0.95 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power2.out" }
+      );
+    }
+    
+    if (statsRef.current) {
+      tl.fromTo(statsRef.current.children, 
+        { opacity: 0, y: 20, scale: 0.9 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.1, ease: "back.out(1.7)" },
+        "-=0.4"
+      );
+    }
+    
+    if (containerRef.current) {
+      tl.fromTo(containerRef.current.children, 
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" },
+        "-=0.2"
+      );
+    }
+  }, []);
+
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <div className="flex items-center justify-center h-96">
+          <motion.div 
+            className="relative"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full blur-xl opacity-30 animate-pulse" />
+            <motion.div 
+              className="relative animate-spin rounded-full h-32 w-32 border-4 border-primary-200 border-t-primary-600"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+            <motion.div 
+              className="absolute inset-0 flex items-center justify-center"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <Sparkles className="text-primary-600" size={32} />
+            </motion.div>
+          </motion.div>
         </div>
       </AdminLayout>
     );
@@ -813,20 +867,60 @@ export default function AdminSettings() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-            <p className="text-gray-600 mt-1">
-              Configure your application settings and integrations
-            </p>
-          </div>
-          <Button onClick={fetchSettings} variant="outline">
-            <RefreshCw size={16} className="mr-2" />
-            Refresh
-          </Button>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-primary-50/30 via-white to-secondary-50/30">
+        <div 
+          ref={containerRef} 
+          className="space-y-8 p-4 sm:p-6 lg:p-8"
+        >
+          {/* Stunning Header Section */}
+          <motion.div 
+            ref={headerRef}
+            className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-secondary-700 rounded-3xl shadow-2xl border border-primary-200/20"
+            initial={{ opacity: 0, y: -30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            {/* Animated background elements */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/10"></div>
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-48 translate-x-48 animate-pulse"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-white/5 to-transparent rounded-full translate-y-32 -translate-x-32 animate-pulse"></div>
+            
+            {/* Header Content */}
+            <div className="relative p-6 sm:p-8 lg:p-12">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+                      <Shield className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl lg:text-4xl font-bold text-white">
+                        Settings
+                      </h1>
+                      <p className="text-white/80 text-lg">
+                        Configure your application settings and integrations
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex flex-wrap gap-3">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button 
+                      onClick={fetchSettings}
+                      className="bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-300 px-6 py-3 rounded-xl font-semibold"
+                    >
+                      <RefreshCw className="w-5 h-5 mr-2" />
+                      Refresh
+                    </Button>
+                  </motion.div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
 
         <Tabs defaultValue="general" className="space-y-6">
           <TabsList className="grid w-full grid-cols-7">
@@ -2877,21 +2971,22 @@ export default function AdminSettings() {
         </DialogContent>
       </Dialog>
 
-      <ErrorDialogComponent />
-      <SuccessDialogComponent />
-      <DeleteConfirmationComponent />
-      
-      {/* Activate/Deactivate confirmation */}
-      <ActionConfirmationDialog
-        open={actionConfirmOpen && pendingAction !== null}
-        onOpenChange={setActionConfirmOpen}
-        onConfirm={onConfirmAction}
-        title={pendingAction === 'activate' ? `Activate ${pendingRows.length} Banner${pendingRows.length > 1 ? 's' : ''}?` : `Deactivate ${pendingRows.length} Banner${pendingRows.length > 1 ? 's' : ''}?`}
-        description={pendingAction === 'activate' ? 'Selected banners will become active and visible to customers on your homepage carousel.' : 'Selected banners will be deactivated and hidden from customers. They will be removed from the current list.'}
-        confirmLabel={pendingAction === 'activate' ? 'Activate' : 'Deactivate'}
-        isLoading={isConfirming}
-        tone={pendingAction === 'activate' ? 'success' : 'warning'}
-      />
+          <ErrorDialogComponent />
+          <SuccessDialogComponent />
+          <DeleteConfirmationComponent />
+          
+          {/* Activate/Deactivate confirmation */}
+          <ActionConfirmationDialog
+            open={actionConfirmOpen && pendingAction !== null}
+            onOpenChange={setActionConfirmOpen}
+            onConfirm={onConfirmAction}
+            title={pendingAction === 'activate' ? `Activate ${pendingRows.length} Banner${pendingRows.length > 1 ? 's' : ''}?` : `Deactivate ${pendingRows.length} Banner${pendingRows.length > 1 ? 's' : ''}?`}
+            description={pendingAction === 'activate' ? 'Selected banners will become active and visible to customers on your homepage carousel.' : 'Selected banners will be deactivated and hidden from customers. They will be removed from the current list.'}
+            confirmLabel={pendingAction === 'activate' ? 'Activate' : 'Deactivate'}
+            isLoading={isConfirming}
+            tone={pendingAction === 'activate' ? 'success' : 'warning'}
+          />
+        </div>
     </AdminLayout>
   );
 }

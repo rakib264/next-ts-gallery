@@ -17,8 +17,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useToastWithTypes } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
+import gsap from 'gsap';
 import {
   AlertTriangle,
+  BarChart3,
   Calendar,
   CheckCircle,
   Clock,
@@ -26,10 +28,11 @@ import {
   Phone,
   RefreshCw,
   Send,
+  Sparkles,
   Target,
   XCircle
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface Customer {
   _id: string;
@@ -74,6 +77,10 @@ interface MessageFormData {
 }
 
 export default function AdminMessaging() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+  
   const [messages, setMessages] = useState<Message[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
@@ -115,6 +122,30 @@ export default function AdminMessaging() {
   const { showError, ErrorDialogComponent } = useErrorDialog();
   const { success, error: showToastError, warning } = useToastWithTypes();
   const { showDeleteConfirmation, DeleteConfirmationComponent } = useDeleteConfirmationDialog();
+
+  // GSAP animations
+  useEffect(() => {
+    if (!loading) {
+      const tl = gsap.timeline();
+      
+      // Animate header
+      if (headerRef.current) {
+        tl.fromTo(headerRef.current, 
+          { y: -50, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }
+        );
+      }
+      
+      // Animate stats cards
+      if (statsRef.current) {
+        tl.fromTo(statsRef.current.children,
+          { y: 30, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: "power2.out" },
+          "-=0.4"
+        );
+      }
+    }
+  }, [loading]);
 
   useEffect(() => {
     fetchMessages();
@@ -651,8 +682,27 @@ export default function AdminMessaging() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <div className="flex items-center justify-center h-96">
+          <motion.div 
+            className="relative"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full blur-xl opacity-30 animate-pulse" />
+            <motion.div 
+              className="relative animate-spin rounded-full h-32 w-32 border-4 border-primary-200 border-t-primary-600"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+            <motion.div 
+              className="absolute inset-0 flex items-center justify-center"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <Sparkles className="text-primary-600" size={32} />
+            </motion.div>
+          </motion.div>
         </div>
       </AdminLayout>
     );
@@ -660,23 +710,257 @@ export default function AdminMessaging() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Messaging</h1>
-            <p className="text-gray-600 mt-1">
-              Send SMS messages to your customers
-            </p>
+      <div className="min-h-screen bg-gradient-to-br from-primary-50/30 via-white to-secondary-50/30">
+        <div ref={containerRef} className="space-y-8 p-4 sm:p-6 lg:p-8">
+          {/* Stunning Header Section */}
+        <motion.div 
+            ref={headerRef}
+            className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-secondary-700 rounded-3xl shadow-2xl border border-primary-200/20"
+            initial={{ opacity: 0, y: -30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            {/* Animated Background Elements */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-600/90 to-secondary-600/90" />
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-white/5 to-transparent rounded-full blur-2xl" />
+            
+            {/* Header Content */}
+            <div className="relative p-6 sm:p-8 lg:p-12">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                    <MessageSquare className="text-white" size={24} />
+                  </div>
+                  <div>
+                    <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2">
+                      Messaging Center
+                    </h1>
+                    <p className="text-cyan-100 text-lg">
+                      Send SMS messages and manage customer communications
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-4 mt-6">
+                  <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                    <Sparkles className="text-yellow-300" size={16} />
+                    <span className="text-white font-medium">Bulk Messaging</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                    <BarChart3 className="text-green-300" size={16} />
+                    <span className="text-white font-medium">Delivery Analytics</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white hover:text-white transition-all duration-300"
+                    >
+                      <MessageSquare size={16} className="mr-2" />
+                      <span className="hidden sm:inline">Compose Message</span>
+                      <span className="sm:hidden">Compose</span>
+                    </Button>
+                  </DialogTrigger>
+                </Dialog>
+              </div>
+            </div>
           </div>
-          <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <MessageSquare size={16} className="mr-2" />
-                Compose Message
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
+        </motion.div>
+
+        {/* Enhanced Stats Cards */}
+        <div ref={statsRef}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">Total Messages</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.totalMessages}</p>
+                      <div className="flex items-center mt-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                        <span className="text-xs text-gray-500">All time</span>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg">
+                      <MessageSquare className="text-white" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">SMS Sent</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.totalSent}</p>
+                      <div className="flex items-center mt-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                        <span className="text-xs text-gray-500">Delivered</span>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg">
+                      <Send className="text-white" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">Delivered</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.totalDelivered}</p>
+                      <div className="flex items-center mt-2">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
+                        <span className="text-xs text-gray-500">Successful</span>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg">
+                      <CheckCircle className="text-white" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">Failed</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.totalFailed}</p>
+                      <div className="flex items-center mt-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                        <span className="text-xs text-gray-500">Errors</span>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl shadow-lg">
+                      <XCircle className="text-white" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">Total Cost</p>
+                      <p className="text-3xl font-bold text-gray-900">
+                        {formatCurrency(stats.totalCost)}
+                      </p>
+                      <div className="flex items-center mt-2">
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                        <span className="text-xs text-gray-500">Spent</span>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl shadow-lg">
+                      <Phone className="text-white" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Enhanced Messages History */}
+        <div>
+          <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-t-xl">
+              <CardTitle className="text-xl font-semibold text-gray-800 flex items-center justify-between">
+                <span>Message History</span>
+                <div className="flex items-center space-x-2">
+                  <Button variant="outline" size="sm" onClick={fetchMessages}>
+                    <RefreshCw size={16} className="mr-2" />
+                    Refresh
+                  </Button>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <DataTable
+                data={messages}
+                columns={messageColumns}
+                searchable
+                filterable
+                exportable
+                selectable
+                pagination
+                pageSize={pagination.pageSize}
+                filters={messageFilters}
+                bulkActions={bulkActions}
+                onView={handleViewMessage}
+                onDelete={handleDeleteMessage}
+                serverPagination={{
+                  page: pagination.page,
+                  pageSize: pagination.pageSize,
+                  total: pagination.total,
+                  onPageChange: (page) => setPagination(prev => ({ ...prev, page })),
+                  onPageSizeChange: (size) => setPagination(prev => ({ ...prev, pageSize: size, page: 1 })),
+                  pageSizeOptions: [10, 25, 50, 100]
+                }}
+                serverSort={{
+                  sortKey: sort.key,
+                  sortDirection: sort.direction,
+                  onChange: (key, direction) => setSort({ key, direction })
+                }}
+                serverSearch={{
+                  value: search,
+                  onChange: setSearch
+                }}
+                serverFilters={{
+                  values: filters,
+                  onChange: setFilters
+                }}
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Compose Message Dialog */}
+        <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
               <DialogHeader>
                 <DialogTitle>Compose SMS Message</DialogTitle>
               </DialogHeader>
@@ -902,164 +1186,6 @@ export default function AdminMessaging() {
               </Tabs>
             </DialogContent>
           </Dialog>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Messages</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalMessages}</p>
-                  </div>
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <MessageSquare className="text-blue-600" size={20} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">SMS Sent</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalSent}</p>
-                  </div>
-                  <div className="p-3 bg-green-100 rounded-full">
-                    <Send className="text-green-600" size={20} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Delivered</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalDelivered}</p>
-                  </div>
-                  <div className="p-3 bg-purple-100 rounded-full">
-                    <CheckCircle className="text-purple-600" size={20} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Failed</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalFailed}</p>
-                  </div>
-                  <div className="p-3 bg-red-100 rounded-full">
-                    <XCircle className="text-red-600" size={20} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Cost</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
-                      {formatCurrency(stats.totalCost)}
-                    </p>
-                  </div>
-                  <div className="p-3 bg-yellow-100 rounded-full">
-                    <Phone className="text-yellow-600" size={20} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-
-        {/* Messages History */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Message History</span>
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm" onClick={fetchMessages}>
-                  <RefreshCw size={16} className="mr-2" />
-                  Refresh
-                </Button>
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DataTable
-              data={messages}
-              columns={messageColumns}
-              searchable
-              filterable
-              exportable
-              selectable
-              pagination
-              pageSize={pagination.pageSize}
-              filters={messageFilters}
-              bulkActions={bulkActions}
-              onView={handleViewMessage}
-              onDelete={handleDeleteMessage}
-              serverPagination={{
-                page: pagination.page,
-                pageSize: pagination.pageSize,
-                total: pagination.total,
-                onPageChange: (page) => setPagination(prev => ({ ...prev, page })),
-                onPageSizeChange: (size) => setPagination(prev => ({ ...prev, pageSize: size, page: 1 })),
-                pageSizeOptions: [10, 25, 50, 100]
-              }}
-              serverSort={{
-                sortKey: sort.key,
-                sortDirection: sort.direction,
-                onChange: (key, direction) => setSort({ key, direction })
-              }}
-              serverSearch={{
-                value: search,
-                onChange: setSearch
-              }}
-              serverFilters={{
-                values: filters,
-                onChange: setFilters
-              }}
-            />
-          </CardContent>
-        </Card>
 
         {/* Message Details Dialog */}
         <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
@@ -1258,6 +1384,7 @@ export default function AdminMessaging() {
             )}
           </DialogContent>
         </Dialog>
+        </div>
       </div>
       <ErrorDialogComponent />
       <DeleteConfirmationComponent />

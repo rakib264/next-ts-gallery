@@ -7,12 +7,12 @@ import { HeatmapLayer, HexagonLayer } from '@deck.gl/aggregation-layers';
 import { ScatterplotLayer } from '@deck.gl/layers';
 import { DeckGL } from '@deck.gl/react';
 import {
-  BarChart3,
-  DollarSign,
-  Filter,
-  MapPin,
-  TrendingUp,
-  Users
+    BarChart3,
+    DollarSign,
+    Filter,
+    MapPin,
+    TrendingUp,
+    Users
 } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Map, { MapRef, Popup } from 'react-map-gl/maplibre';
@@ -436,6 +436,16 @@ const CustomerMap: React.FC<CustomerMapProps> = ({ className }) => {
 
   return (
     <div className={`w-full h-full ${className}`}>
+      {/* Migration Notice */}
+      <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="bg-blue-100 text-blue-700">New!</Badge>
+          <p className="text-sm text-blue-700">
+            <strong>Enhanced Heatmap Available:</strong> Check out the new "District Heatmap" tab for amCharts5-powered Bangladesh district analytics with postal code breakdowns.
+          </p>
+        </div>
+      </div>
+
       {/* Control Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
         {/* Visualization Mode Controls */}
@@ -585,8 +595,9 @@ const CustomerMap: React.FC<CustomerMapProps> = ({ className }) => {
           onMove={evt => setViewState(evt.viewState)}
           style={{ width: '100%', height: '100%' }}
           mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
-          minZoom={5}
-          maxZoom={18}
+          // Disable zoom to avoid inconsistencies
+          minZoom={INITIAL_VIEW_STATE.zoom}
+          maxZoom={INITIAL_VIEW_STATE.zoom}
           maxBounds={[
             [86.0, 20.0], // Southwest coordinates of Bangladesh
             [95.0, 27.0]  // Northeast coordinates of Bangladesh
@@ -595,7 +606,8 @@ const CustomerMap: React.FC<CustomerMapProps> = ({ className }) => {
           <DeckGL
             viewState={viewState}
             layers={layers}
-            controller={true}
+            // Disable all interactive controls (zoom, rotate, pan) except needed map pan from Map component
+            controller={false}
           />
 
           {/* Enhanced Order Details Popup */}

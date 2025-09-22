@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import DeleteConfirmationDialog from '@/components/ui/delete-confirmation-dialog';
 import { useToastWithTypes } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
-import { AlertTriangle, Package, Plus, Star, TrendingUp } from 'lucide-react';
+import { gsap } from 'gsap';
+import { AlertTriangle, BarChart3, Eye, Package, Plus, Sparkles, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -74,6 +75,10 @@ export default function AdminProducts() {
   const [pendingAction, setPendingAction] = useState<null | 'activate' | 'deactivate' | 'delete'>(null);
   const [pendingRows, setPendingRows] = useState<Product[]>([]);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+
   // Debounce search input
   useEffect(() => {
     const t = setTimeout(() => {
@@ -97,6 +102,32 @@ export default function AdminProducts() {
       }
     };
     fetchCategories();
+    
+    // Enhanced GSAP animations with staggered entrance
+    const tl = gsap.timeline({ delay: 0.2 });
+    
+    if (headerRef.current) {
+      tl.fromTo(headerRef.current, 
+        { opacity: 0, y: -30, scale: 0.95 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power2.out" }
+      );
+    }
+    
+    if (statsRef.current) {
+      tl.fromTo(statsRef.current.children, 
+        { opacity: 0, y: 20, scale: 0.9 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.1, ease: "back.out(1.7)" },
+        "-=0.4"
+      );
+    }
+    
+    if (containerRef.current) {
+      tl.fromTo(containerRef.current.children, 
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" },
+        "-=0.2"
+      );
+    }
   }, []);
 
   const fetchProducts = async () => {
@@ -244,9 +275,9 @@ export default function AdminProducts() {
       label: 'Category',
       filterable: true,
       render: (value: any) => (
-        <Badge variant="outline">
+        <div className="text-sm text-gray-600">
           {value?.name || 'Uncategorized'}
-        </Badge>
+        </div>
       )
     },
     {
@@ -256,7 +287,7 @@ export default function AdminProducts() {
       render: (value: number, row: Product) => (
         <div>
           <p className="font-medium">{formatPrice(value)}</p>
-          {row.comparePrice && (
+          {row?.comparePrice !== 0 && row.comparePrice !== undefined && row.comparePrice > 0 && (
             <p className="text-sm text-gray-500 line-through">
               {formatPrice(row.comparePrice)}
             </p>
@@ -492,8 +523,27 @@ export default function AdminProducts() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <div className="flex items-center justify-center h-96">
+          <motion.div 
+            className="relative"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full blur-xl opacity-30 animate-pulse" />
+            <motion.div 
+              className="relative animate-spin rounded-full h-32 w-32 border-4 border-primary-200 border-t-primary-600"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+            <motion.div 
+              className="absolute inset-0 flex items-center justify-center"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <Sparkles className="text-primary-600" size={32} />
+            </motion.div>
+          </motion.div>
         </div>
       </AdminLayout>
     );
@@ -501,149 +551,238 @@ export default function AdminProducts() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Products</h1>
-            <p className="text-gray-600 mt-1">
-              Manage your product catalog and inventory
-            </p>
-          </div>
-          <Link href="/admin/products/new">
-            <Button>
-              <Plus size={16} className="mr-2" />
-              Add Product
-            </Button>
-          </Link>
+      <div className="min-h-screen bg-gradient-to-br from-primary-50/30 via-white to-secondary-50/30">
+        <div ref={containerRef} className="space-y-8 p-4 sm:p-6 lg:p-8">
+          {/* Stunning Header Section */}
+          <motion.div 
+            ref={headerRef}
+            className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-secondary-700 rounded-3xl shadow-2xl border border-primary-200/20"
+            initial={{ opacity: 0, y: -30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            {/* Animated Background Elements */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-600/90 to-secondary-600/90" />
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-white/5 to-transparent rounded-full blur-2xl" />
+            
+            {/* Header Content */}
+            <div className="relative p-6 sm:p-8 lg:p-12">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                <div className="space-y-4">
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2, duration: 0.6 }}
+                    className="flex items-center gap-3"
+                  >
+                    <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/20">
+                      <Package className="text-white" size={28} />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white">
+                        Products
+                      </h1>
+                      <p className="text-primary-100 text-sm sm:text-base lg:text-lg mt-1">
+                        Manage your product catalog with elegance
+                      </p>
+                    </div>
+                  </motion.div>
+                  
+                  <motion.p 
+                    className="text-white/90 text-sm sm:text-base max-w-2xl leading-relaxed"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.6 }}
+                  >
+                    Create stunning product listings with advanced inventory management, SEO optimization, and seamless organization for your e-commerce platform.
+                  </motion.p>
+                </div>
+
+                {/* Action Buttons */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                  className="flex flex-col sm:flex-row gap-3"
+                >
+                  <Link href="/admin/products/new">
+                    <motion.div
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button 
+                        className="bg-white text-primary-700 hover:bg-primary-50 hover:text-primary-800 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold px-6 py-3 rounded-xl"
+                        size="lg"
+                      >
+                        <Plus size={20} className="mr-2" />
+                        <span className="hidden sm:inline">Add Product</span>
+                        <span className="sm:hidden">Add</span>
+                      </Button>
+                    </motion.div>
+                  </Link>
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Enhanced Stats Cards */}
+          <motion.div 
+            ref={statsRef}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
+          >
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="relative overflow-hidden bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200 hover:shadow-xl transition-all duration-500">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary-400/20 to-transparent rounded-full blur-xl" />
+                <CardContent className="relative p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-primary-700 mb-1">Total Products</p>
+                      <p className="text-3xl font-bold text-primary-900">{stats.total}</p>
+                      <p className="text-xs text-primary-600 mt-1">In catalog</p>
+                    </div>
+                    <div className="p-4 bg-primary-200/50 rounded-2xl group-hover:bg-primary-300/50 transition-colors">
+                      <Package className="text-primary-700" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="relative overflow-hidden bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200 hover:shadow-xl transition-all duration-500">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-transparent rounded-full blur-xl" />
+                <CardContent className="relative p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-emerald-700 mb-1">Active Products</p>
+                      <p className="text-3xl font-bold text-emerald-900">{stats.active}</p>
+                      <p className="text-xs text-emerald-600 mt-1">Live & visible</p>
+                    </div>
+                    <div className="p-4 bg-emerald-200/50 rounded-2xl group-hover:bg-emerald-300/50 transition-colors">
+                      <Eye className="text-emerald-700" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="relative overflow-hidden bg-gradient-to-br from-violet-50 to-violet-100 border-violet-200 hover:shadow-xl transition-all duration-500">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-400/20 to-transparent rounded-full blur-xl" />
+                <CardContent className="relative p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-violet-700 mb-1">Featured Products</p>
+                      <p className="text-3xl font-bold text-violet-900">{stats.featured}</p>
+                      <p className="text-xs text-violet-600 mt-1">Highlighted</p>
+                    </div>
+                    <div className="p-4 bg-violet-200/50 rounded-2xl group-hover:bg-violet-300/50 transition-colors">
+                      <Star className="text-violet-700" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="relative overflow-hidden bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200 hover:shadow-xl transition-all duration-500">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-400/20 to-transparent rounded-full blur-xl" />
+                <CardContent className="relative p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-amber-700 mb-1">Low Stock</p>
+                      <p className="text-3xl font-bold text-amber-900">{stats.lowStock}</p>
+                      <p className="text-xs text-amber-600 mt-1">Need restocking</p>
+                    </div>
+                    <div className="p-4 bg-amber-200/50 rounded-2xl group-hover:bg-amber-300/50 transition-colors">
+                      <AlertTriangle className="text-amber-700" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </motion.div>
+
+          {/* Products Grid/List View */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.6 }}
+          >
+            <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-lg rounded-3xl overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-primary-50 to-secondary-50 border-b border-primary-100 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary-100 rounded-xl">
+                      <BarChart3 className="text-primary-700" size={20} />
+                    </div>
+                    <div>
+                      <CardTitle className="text-2xl font-bold text-gray-900">Product Management</CardTitle>
+                      <p className="text-gray-600 mt-1">
+                        {products.length} of {total} products
+                        {searchInput && ` matching "${searchInput}"`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <DataTable
+                  data={products}
+                  columns={columns}
+                  filters={filters}
+                  bulkActions={bulkActions}
+                  selectable
+                  exportable
+                  serverSearch={{
+                    value: searchInput,
+                    onChange: (v) => setSearchInput(v)
+                  }}
+                  serverFilters={{
+                    values: filterValues,
+                    onChange: (v) => { setFilterValues(v); setPage(1); }
+                  }}
+                  serverSort={{
+                    sortKey: sortKey,
+                    sortDirection: sortDirection as any,
+                    onChange: (key, dir) => { setSortKey(key); setSortDirection(dir); setPage(1); }
+                  }}
+                  serverPagination={{
+                    page,
+                    pageSize: limit,
+                    total,
+                    onPageChange: (p) => setPage(p),
+                    onPageSizeChange: (size) => { setLimit(size); setPage(1); },
+                    pageSizeOptions: [5, 10, 12, 25, 50, 100]
+                  }}
+                  onView={handleView}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onRowClick={(product) => {
+                    // console.log('View product:', product);
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Products</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
-                  </div>
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <Package className="text-blue-600" size={20} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Active Products</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.active}</p>
-                  </div>
-                  <div className="p-3 bg-green-100 rounded-full">
-                    <TrendingUp className="text-green-600" size={20} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Featured Products</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.featured}</p>
-                  </div>
-                  <div className="p-3 bg-yellow-100 rounded-full">
-                    <Star className="text-yellow-600" size={20} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Low Stock</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{stats.lowStock}</p>
-                  </div>
-                  <div className="p-3 bg-red-100 rounded-full">
-                    <AlertTriangle className="text-red-600" size={20} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-
-        {/* Products Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Products List</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DataTable
-              data={products}
-              columns={columns}
-              filters={filters}
-              bulkActions={bulkActions}
-              selectable
-              exportable
-              serverSearch={{
-                value: searchInput,
-                onChange: (v) => setSearchInput(v)
-              }}
-              serverFilters={{
-                values: filterValues,
-                onChange: (v) => { setFilterValues(v); setPage(1); }
-              }}
-              serverSort={{
-                sortKey: sortKey,
-                sortDirection: sortDirection as any,
-                onChange: (key, dir) => { setSortKey(key); setSortDirection(dir); setPage(1); }
-              }}
-              serverPagination={{
-                page,
-                pageSize: limit,
-                total,
-                onPageChange: (p) => setPage(p),
-                onPageSizeChange: (size) => { setLimit(size); setPage(1); },
-                pageSizeOptions: [5, 10, 12, 25, 50, 100]
-              }}
-              onView={handleView}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onRowClick={(product) => {
-                // console.log('View product:', product);
-              }}
-            />
-          </CardContent>
-        </Card>
 
         {/* Delete confirmation */}
         <DeleteConfirmationDialog
@@ -670,5 +809,5 @@ export default function AdminProducts() {
         />
       </div>
     </AdminLayout>
-  );
-}
+    );
+  }

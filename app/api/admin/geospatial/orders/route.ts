@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     const division = searchParams.get('division');
     const district = searchParams.get('district');
     const postalCode = searchParams.get('postalCode');
-    const customerSegment = searchParams.get('customerSegment'); // frequent, new, high-value, low-value
+    const customerSegment = searchParams.get('customerSegment');
     const dateFrom = searchParams.get('dateFrom');
     const dateTo = searchParams.get('dateTo');
     const includeCounts = searchParams.get('includeCounts') === 'true';

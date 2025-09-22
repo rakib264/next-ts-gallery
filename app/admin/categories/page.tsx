@@ -16,7 +16,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, Formik } from 'formik';
 import { motion } from 'framer-motion';
 import { gsap } from 'gsap';
-import { AlertCircle, CheckCircle, Eye, Plus, Tag } from 'lucide-react';
+import {
+  AlertCircle,
+  BarChart3,
+  CheckCircle,
+  Crown,
+  Eye,
+  Package,
+  Plus,
+  Sparkles,
+  Tag
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import * as Yup from 'yup';
 
@@ -89,7 +99,7 @@ export default function AdminCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [viewMode, setViewMode] = useState(false);
+  const [dialogViewMode, setDialogViewMode] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
@@ -109,15 +119,45 @@ export default function AdminCategories() {
     metaDescription: ''
   });
 
+  // Enhanced UI state
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'createdAt' | 'productCount' | 'sortOrder'>('sortOrder');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [showFilters, setShowFilters] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'inactive' | 'root' | 'sub'>('all');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+
   const containerRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchCategories();
-    // Initialize GSAP animations
+    
+    // Enhanced GSAP animations with staggered entrance
+    const tl = gsap.timeline({ delay: 0.2 });
+    
+    if (headerRef.current) {
+      tl.fromTo(headerRef.current, 
+        { opacity: 0, y: -30, scale: 0.95 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power2.out" }
+      );
+    }
+    
+    if (statsRef.current) {
+      tl.fromTo(statsRef.current.children, 
+        { opacity: 0, y: 20, scale: 0.9 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.1, ease: "back.out(1.7)" },
+        "-=0.4"
+      );
+    }
+    
     if (containerRef.current) {
-      gsap.fromTo(containerRef.current.children, 
+      tl.fromTo(containerRef.current.children, 
         { opacity: 0, y: 30 },
-        { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: "power2.out" }
+        { opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out" },
+        "-=0.2"
       );
     }
   }, []);
@@ -159,12 +199,67 @@ export default function AdminCategories() {
       metaDescription: ''
     });
     setEditingCategory(null);
-    setViewMode(false);
+    setDialogViewMode(false);
   };
+
+  // Enhanced filtering and sorting logic
+  const filteredAndSortedCategories = categories
+    .filter(category => {
+      // Search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        return category.name.toLowerCase().includes(query) || 
+               category.slug.toLowerCase().includes(query) ||
+               (category.description && category.description.toLowerCase().includes(query));
+      }
+      
+      // Status filter
+      switch (activeFilter) {
+        case 'active':
+          return category.isActive;
+        case 'inactive':
+          return !category.isActive;
+        case 'root':
+          return !category.parent;
+        case 'sub':
+          return !!category.parent;
+        default:
+          return true;
+      }
+    })
+    .sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+        case 'name':
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+          break;
+        case 'createdAt':
+          aValue = new Date(a.createdAt).getTime();
+          bValue = new Date(b.createdAt).getTime();
+          break;
+        case 'productCount':
+          aValue = a.productCount || 0;
+          bValue = b.productCount || 0;
+          break;
+        case 'sortOrder':
+        default:
+          aValue = a.sortOrder;
+          bValue = b.sortOrder;
+          break;
+      }
+      
+      if (sortOrder === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
 
   const handleEdit = (category: Category) => {
     setEditingCategory(category);
-    setViewMode(false);
+    setDialogViewMode(false);
     setFormData({
       name: category.name,
       slug: category.slug,
@@ -181,7 +276,7 @@ export default function AdminCategories() {
 
   const handleView = (category: Category) => {
     setEditingCategory(category);
-    setViewMode(true);
+    setDialogViewMode(true);
     setFormData({
       name: category.name,
       slug: category.slug,
@@ -386,12 +481,27 @@ export default function AdminCategories() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center h-64">
+        <div className="flex items-center justify-center h-96">
           <motion.div 
-            className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"
+            className="relative"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full blur-xl opacity-30 animate-pulse" />
+            <motion.div 
+              className="relative animate-spin rounded-full h-32 w-32 border-4 border-primary-200 border-t-primary-600"
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           />
+            <motion.div 
+              className="absolute inset-0 flex items-center justify-center"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <Sparkles className="text-primary-600" size={32} />
+            </motion.div>
+          </motion.div>
         </div>
       </AdminLayout>
     );
@@ -399,44 +509,287 @@ export default function AdminCategories() {
 
   return (
     <AdminLayout>
-      <div ref={containerRef} className="space-y-8">
-        {/* Enhanced Header */}
+      <div className="min-h-screen bg-gradient-to-br from-primary-50/30 via-white to-secondary-50/30">
+        <div ref={containerRef} className="space-y-8 p-4 sm:p-6 lg:p-8">
+          {/* Stunning Header Section */}
         <motion.div 
-          className="flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-100"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
+            ref={headerRef}
+            className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-secondary-700 rounded-3xl shadow-2xl border border-primary-200/20"
+            initial={{ opacity: 0, y: -30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            {/* Animated Background Elements */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-600/90 to-secondary-600/90" />
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-white/5 to-transparent rounded-full blur-2xl" />
+            
+            {/* Header Content */}
+            <div className="relative p-6 sm:p-8 lg:p-12">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                <div className="space-y-4">
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2, duration: 0.6 }}
+                    className="flex items-center gap-3"
+                  >
+                    <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/20">
+                      <Tag className="text-white" size={28} />
+                    </div>
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                      <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white">
               Categories
             </h1>
-            <p className="text-gray-600 mt-2 text-lg">
-              Organize your products with elegant categories and subcategories
+                      <p className="text-primary-100 text-sm sm:text-base lg:text-lg mt-1">
+                        Organize your products with elegance
             </p>
           </div>
+                  </motion.div>
+                  
+                  <motion.p 
+                    className="text-white/90 text-sm sm:text-base max-w-2xl leading-relaxed"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.6 }}
+                  >
+                    Create beautiful category hierarchies with stunning visuals, SEO optimization, and seamless organization for your e-commerce platform.
+                  </motion.p>
+                </div>
+
+                {/* Action Buttons */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                  className="flex flex-col sm:flex-row gap-3"
+                >
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <motion.div
-                whileHover={{ scale: 1.05 }}
+                        whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <Button 
                   onClick={resetForm}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg"
+                          className="bg-white text-primary-700 hover:bg-primary-50 hover:text-primary-800 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold px-6 py-3 rounded-xl"
                   size="lg"
                 >
                   <Plus size={20} className="mr-2" />
-                  Add Category
+                          <span className="hidden sm:inline">Add Category</span>
+                          <span className="sm:hidden">Add</span>
                 </Button>
               </motion.div>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto custom-scrollbar bg-white">
+                  </Dialog>
+                  
+
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Enhanced Search and Filter Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+            className="bg-white/80 backdrop-blur-lg rounded-2xl border border-primary-200/50 shadow-lg p-4 sm:p-6"
+          >
+            <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
+              
+
+              {/* Filter and Sort Controls */}
+              <div className="flex flex-wrap gap-3 items-center">
+                {/* Filter Pills */}
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { key: 'all', label: 'All', count: categories.length },
+                    { key: 'active', label: 'Active', count: categories.filter(c => c.isActive).length },
+                    { key: 'inactive', label: 'Inactive', count: categories.filter(c => !c.isActive).length },
+                    { key: 'root', label: 'Root', count: categories.filter(c => !c.parent).length },
+                    { key: 'sub', label: 'Sub', count: categories.filter(c => c.parent).length }
+                  ].map((filter) => (
+                    <Button
+                      key={filter.key}
+                      variant={activeFilter === filter.key ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setActiveFilter(filter.key as any)}
+                      className={`rounded-full px-4 py-2 transition-all duration-300 ${
+                        activeFilter === filter.key
+                          ? 'bg-primary-600 text-white shadow-lg'
+                          : 'bg-white/80 border-primary-200 text-primary-700 hover:bg-primary-50'
+                      }`}
+                    >
+                      {filter.label}
+                      <Badge 
+                        variant="secondary" 
+                        className={`ml-2 px-2 py-0.5 text-xs ${
+                          activeFilter === filter.key 
+                            ? 'bg-white/20 text-white' 
+                            : 'bg-primary-100 text-primary-700'
+                        }`}
+                      >
+                        {filter.count}
+                      </Badge>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Enhanced Stats Cards */}
+          <motion.div 
+            ref={statsRef}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
+          >
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="relative overflow-hidden bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200 hover:shadow-xl transition-all duration-500">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary-400/20 to-transparent rounded-full blur-xl" />
+                <CardContent className="relative p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-primary-700 mb-1">Total Categories</p>
+                      <p className="text-3xl font-bold text-primary-900">{categories.length}</p>
+                      <p className="text-xs text-primary-600 mt-1">Organized structure</p>
+                    </div>
+                    <div className="p-4 bg-primary-200/50 rounded-2xl group-hover:bg-primary-300/50 transition-colors">
+                      <Tag className="text-primary-700" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="relative overflow-hidden bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200 hover:shadow-xl transition-all duration-500">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-transparent rounded-full blur-xl" />
+                <CardContent className="relative p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-emerald-700 mb-1">Active Categories</p>
+                      <p className="text-3xl font-bold text-emerald-900">
+                        {categories.filter(c => c.isActive).length}
+                      </p>
+                      <p className="text-xs text-emerald-600 mt-1">Live & visible</p>
+                    </div>
+                    <div className="p-4 bg-emerald-200/50 rounded-2xl group-hover:bg-emerald-300/50 transition-colors">
+                      <Eye className="text-emerald-700" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="relative overflow-hidden bg-gradient-to-br from-violet-50 to-violet-100 border-violet-200 hover:shadow-xl transition-all duration-500">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-400/20 to-transparent rounded-full blur-xl" />
+                <CardContent className="relative p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-violet-700 mb-1">Root Categories</p>
+                      <p className="text-3xl font-bold text-violet-900">
+                        {categories.filter(c => !c.parent).length}
+                      </p>
+                      <p className="text-xs text-violet-600 mt-1">Top level</p>
+                    </div>
+                    <div className="p-4 bg-violet-200/50 rounded-2xl group-hover:bg-violet-300/50 transition-colors">
+                      <Crown className="text-violet-700" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="group"
+            >
+              <Card className="relative overflow-hidden bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200 hover:shadow-xl transition-all duration-500">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-400/20 to-transparent rounded-full blur-xl" />
+                <CardContent className="relative p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-amber-700 mb-1">Subcategories</p>
+                      <p className="text-3xl font-bold text-amber-900">
+                        {categories.filter(c => c.parent).length}
+                      </p>
+                      <p className="text-xs text-amber-600 mt-1">Nested structure</p>
+                    </div>
+                    <div className="p-4 bg-amber-200/50 rounded-2xl group-hover:bg-amber-300/50 transition-colors">
+                      <Package className="text-amber-700" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </motion.div>
+
+          {/* Categories Grid/List View */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.6 }}
+          >
+            <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-lg rounded-3xl overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-primary-50 to-secondary-50 border-b border-primary-100 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary-100 rounded-xl">
+                      <BarChart3 className="text-primary-700" size={20} />
+                    </div>
+                    <div>
+                      <CardTitle className="text-2xl font-bold text-gray-900">Category Management</CardTitle>
+                      <p className="text-gray-600 mt-1">
+                        {filteredAndSortedCategories.length} of {categories.length} categories
+                        {searchQuery && ` matching "${searchQuery}"`}
+                      </p>
+                    </div>
+                  </div>
+                  
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <DataTable
+                  key={`categories-${categories.length}-${viewMode}`}
+                  data={filteredAndSortedCategories}
+                  columns={columns}
+                  filters={filters}
+                  bulkActions={bulkActions}
+                  selectable
+                  exportable
+                  onRowClick={(category) => handleEdit(category)}
+                  onView={(category) => handleView(category)}
+                  onEdit={(category) => handleEdit(category)}
+                  onDelete={(category) => handleDelete(category)}
+                  onSelectionChange={setSelectedRows}
+                />
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto custom-scrollbar bg-white rounded-3xl">
               <DialogHeader className="pb-6">
                 <DialogTitle className="text-2xl font-bold text-gray-900">
-                  {viewMode ? 'View Category Details' : (editingCategory ? 'Edit Category' : 'Create New Category')}
+                  {dialogViewMode ? 'View Category Details' : (editingCategory ? 'Edit Category' : 'Create New Category')}
                 </DialogTitle>
-                {viewMode && (
+                {dialogViewMode && (
                   <p className="text-gray-600 mt-2">
                     Viewing category information. Click outside to close.
                   </p>
@@ -502,7 +855,7 @@ export default function AdminCategories() {
                             placeholder="Enter category name"
                             className="mt-2 h-12 text-base"
                             required
-                            disabled={viewMode}
+                            disabled={dialogViewMode}
                           />
                           {touched.name && errors.name && (
                             <motion.p 
@@ -526,7 +879,7 @@ export default function AdminCategories() {
                             onChange={(e) => setFieldValue('slug', e.target.value)}
                             placeholder="category-slug"
                             className="mt-2 h-12 text-base font-mono"
-                            disabled={viewMode}
+                            disabled={dialogViewMode}
                           />
                           {touched.slug && errors.slug && (
                             <motion.p 
@@ -547,7 +900,7 @@ export default function AdminCategories() {
                           <Select
                             value={values.parent || '__root__'}
                             onValueChange={(value) => setFieldValue('parent', value === '__root__' ? '' : value)}
-                            disabled={viewMode}
+                            disabled={dialogViewMode}
                           >
                             <SelectTrigger className="mt-2 h-12 text-base">
                               <SelectValue placeholder="Select parent (optional)" />
@@ -574,7 +927,7 @@ export default function AdminCategories() {
                             onChange={(e) => setFieldValue('sortOrder', Number(e.target.value))}
                             placeholder="0"
                             className="mt-2 h-12 text-base"
-                            disabled={viewMode}
+                            disabled={dialogViewMode}
                           />
                           {touched.sortOrder && errors.sortOrder && (
                             <motion.p 
@@ -601,7 +954,7 @@ export default function AdminCategories() {
                             placeholder="Category description"
                             rows={4}
                             className="mt-2 text-base resize-none"
-                            disabled={viewMode}
+                            disabled={dialogViewMode}
                           />
                           {touched.description && errors.description && (
                             <motion.p 
@@ -625,7 +978,7 @@ export default function AdminCategories() {
                             onChange={(e) => setFieldValue('metaTitle', e.target.value)}
                             placeholder="SEO title"
                             className="mt-2 h-12 text-base"
-                            disabled={viewMode}
+                            disabled={dialogViewMode}
                           />
                           {touched.metaTitle && errors.metaTitle && (
                             <motion.p 
@@ -650,7 +1003,7 @@ export default function AdminCategories() {
                             placeholder="SEO description"
                             rows={3}
                             className="mt-2 text-base resize-none"
-                            disabled={viewMode}
+                            disabled={dialogViewMode}
                           />
                           {touched.metaDescription && errors.metaDescription && (
                             <motion.p 
@@ -665,7 +1018,7 @@ export default function AdminCategories() {
                         </div>
 
                         <div className="flex items-center space-x-3 pt-4">
-                          {viewMode ? (
+                          {dialogViewMode ? (
                             <div className="flex items-center space-x-2">
                               <Badge variant={values.isActive ? "default" : "secondary"} className={values.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}>
                                 Status: {values.isActive ? 'Active' : 'Inactive'}
@@ -689,10 +1042,10 @@ export default function AdminCategories() {
                     </div>
 
                                                             {/* Category Image - Full Width */}
-                    {(values.image || !viewMode) && (
+                    {(values.image || !dialogViewMode) && (
                       <div className="space-y-4">
                         <Label className="text-lg font-semibold text-gray-900">Category Image</Label>
-                        {!viewMode && (
+                        {!dialogViewMode && (
                           <div>
                             <FileUpload
                               accept="image/*"
@@ -731,7 +1084,7 @@ export default function AdminCategories() {
 
                     {/* Form Actions */}
                     <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
-                      {viewMode ? (
+                      {dialogViewMode ? (
                         <Button 
                           type="button" 
                           variant="outline" 
@@ -781,130 +1134,7 @@ export default function AdminCategories() {
               </Formik>
             </DialogContent>
           </Dialog>
-        </motion.div>
-
-        {/* Enhanced Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            whileHover={{ y: -5 }}
-          >
-            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-blue-700">Total Categories</p>
-                    <p className="text-3xl font-bold text-blue-900 mt-1">{categories.length}</p>
-                  </div>
-                  <div className="p-4 bg-blue-200 rounded-full">
-                    <Tag className="text-blue-700" size={24} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            whileHover={{ y: -5 }}
-          >
-            <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-green-700">Active Categories</p>
-                    <p className="text-3xl font-bold text-green-900 mt-1">
-                      {categories.filter(c => c.isActive).length}
-                    </p>
-                  </div>
-                  <div className="p-4 bg-green-200 rounded-full">
-                    <Eye className="text-green-700" size={24} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            whileHover={{ y: -5 }}
-          >
-            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-purple-700">Root Categories</p>
-                    <p className="text-3xl font-bold text-purple-900 mt-1">
-                      {categories.filter(c => !c.parent).length}
-                    </p>
-                  </div>
-                  <div className="p-4 bg-purple-200 rounded-full">
-                    <Tag className="text-purple-700" size={24} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            whileHover={{ y: -5 }}
-          >
-            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-lg transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-orange-700">Subcategories</p>
-                    <p className="text-3xl font-bold text-orange-900 mt-1">
-                      {categories.filter(c => c.parent).length}
-                    </p>
-                  </div>
-                  <div className="p-4 bg-orange-200 rounded-full">
-                    <Tag className="text-orange-700" size={24} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
         </div>
-
-        {/* Enhanced Categories Table */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <Card className="shadow-lg border-0 bg-white">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-              <CardTitle className="text-2xl font-bold text-gray-900">Categories Management</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <DataTable
-                key={`categories-${categories.length}`}
-                data={categories}
-                columns={columns}
-                filters={filters}
-                bulkActions={bulkActions}
-                selectable
-                exportable
-                onRowClick={(category) => handleEdit(category)}
-                onView={(category) => handleView(category)}
-                onEdit={(category) => handleEdit(category)}
-                onDelete={(category) => handleDelete(category)}
-                onSelectionChange={setSelectedRows}
-              />
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
 
       {/* Reusable Delete Confirmation Dialog */}
       <DeleteConfirmationDialog
@@ -914,7 +1144,7 @@ export default function AdminCategories() {
         title={categoryToDelete ? 'Delete Category' : 'Delete Multiple Categories'}
         description={
           categoryToDelete 
-            ? `Are you sure you want to delete "${categoryToDelete.name}"? This action cannot be undone and will remove all associated data.`
+            ? `Are you sure you want to delete "${categoryToDelete?.name}"? This action cannot be undone and will remove all associated data.`
             : `Are you sure you want to delete ${categoriesToDelete.length} selected categor${categoriesToDelete.length > 1 ? 'ies' : 'y'}? This action cannot be undone.`
         }
         entityName="Category"

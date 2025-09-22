@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@amcharts/amcharts5": "^5.13.6",
     "@deck.gl/aggregation-layers": "^9.1.14",
     "@deck.gl/core": "^9.1.14",
     "@deck.gl/geo-layers": "^9.1.14",

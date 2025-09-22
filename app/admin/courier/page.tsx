@@ -13,23 +13,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { motion } from 'framer-motion';
+import gsap from 'gsap';
 import {
-  AlertTriangle,
-  Calendar,
+  AlertTriangle, BarChart3, Calendar,
   CheckCircle,
   Clock,
   CreditCard,
   Edit,
-  Eye,
-  MapPin,
-  Package,
+  Eye, Package,
   Phone,
-  Plus, Truck,
+  Plus, Sparkles, Truck,
   User,
   Weight,
   XCircle
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface Courier {
   _id: string;
@@ -107,6 +105,10 @@ interface CourierFormData {
 }
 
 export default function AdminCourier() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+  
   const [couriers, setCouriers] = useState<Courier[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -156,6 +158,30 @@ export default function AdminCourier() {
     fetchCouriers();
     fetchCourierSettings();
   }, []);
+
+  // GSAP animations
+  useEffect(() => {
+    if (!loading) {
+      const tl = gsap.timeline();
+      
+      // Animate header
+      if (headerRef.current) {
+        tl.fromTo(headerRef.current, 
+          { y: -50, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }
+        );
+      }
+      
+      // Animate stats cards
+      if (statsRef.current) {
+        tl.fromTo(statsRef.current.children,
+          { y: 30, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: "power2.out" },
+          "-=0.4"
+        );
+      }
+    }
+  }, [loading]);
 
   const fetchCourierSettings = async () => {
     try {
@@ -805,8 +831,27 @@ export default function AdminCourier() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <div className="flex items-center justify-center h-96">
+          <motion.div 
+            className="relative"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full blur-xl opacity-30 animate-pulse" />
+            <motion.div 
+              className="relative animate-spin rounded-full h-32 w-32 border-4 border-primary-200 border-t-primary-600"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+            <motion.div 
+              className="absolute inset-0 flex items-center justify-center"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <Sparkles className="text-primary-600" size={32} />
+            </motion.div>
+          </motion.div>
         </div>
       </AdminLayout>
     );
@@ -814,496 +859,568 @@ export default function AdminCourier() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Courier Management</h1>
-            <p className="text-gray-600 mt-1">
-              Manage deliveries and track shipments
-            </p>
+      <div className="min-h-screen bg-gradient-to-br from-primary-50/30 via-white to-secondary-50/30">
+        <div ref={containerRef} className="space-y-8 p-4 sm:p-6 lg:p-8">
+          {/* Stunning Header Section */}
+        <motion.div 
+            ref={headerRef}
+            className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-secondary-700 rounded-3xl shadow-2xl border border-primary-200/20"
+            initial={{ opacity: 0, y: -30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            {/* Animated Background Elements */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-600/90 to-secondary-600/90" />
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-white/5 to-transparent rounded-full blur-2xl" />
+            
+            {/* Header Content */}
+            <div className="relative p-6 sm:p-8 lg:p-12">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                    <Truck className="text-white" size={24} />
+                  </div>
+                  <div>
+                    <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2">
+                      Courier Management
+                    </h1>
+                    <p className="text-blue-100 text-lg">
+                      Manage deliveries and track shipments with precision
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-4 mt-6">
+                  <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                    <Sparkles className="text-yellow-300" size={16} />
+                    <span className="text-white font-medium">Real-time Tracking</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                    <BarChart3 className="text-green-300" size={16} />
+                    <span className="text-white font-medium">Delivery Analytics</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      onClick={resetForm}
+                      className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white hover:text-white transition-all duration-300"
+                    >
+                      <Plus size={16} className="mr-2" />
+                      <span className="hidden sm:inline">Create Courier</span>
+                      <span className="sm:hidden">Create</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
+                    <DialogHeader>
+                      <DialogTitle>
+                        {editingCourier ? 'Edit Courier' : 'Create New Courier'}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      {/* Order Selection */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-sm">Order Information</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div>
+                            <Label htmlFor="orderId">Order ID</Label>
+                            <Input
+                              id="orderId"
+                              value={formData.orderId}
+                              onChange={(e) => setFormData(prev => ({ ...prev, orderId: e.target.value }))}
+                              placeholder="Select or enter order ID"
+                              required
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Sender & Receiver */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-sm">Sender Information</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div>
+                              <Label htmlFor="senderName">Name</Label>
+                              <Input
+                                id="senderName"
+                                value={formData.senderName}
+                                onChange={(e) => setFormData(prev => ({ ...prev, senderName: e.target.value }))}
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="senderPhone">Phone</Label>
+                              <Input
+                                id="senderPhone"
+                                value={formData.senderPhone}
+                                onChange={(e) => setFormData(prev => ({ ...prev, senderPhone: e.target.value }))}
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="senderAddress">Address</Label>
+                              <Textarea
+                                id="senderAddress"
+                                value={formData.senderAddress}
+                                onChange={(e) => setFormData(prev => ({ ...prev, senderAddress: e.target.value }))}
+                                rows={2}
+                                required
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <Label htmlFor="senderDivision">Division</Label>
+                                <Input
+                                  id="senderDivision"
+                                  value={formData.senderDivision}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, senderDivision: e.target.value }))}
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="senderDistrict">District</Label>
+                                <Input
+                                  id="senderDistrict"
+                                  value={formData.senderDistrict}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, senderDistrict: e.target.value }))}
+                                  required
+                                />
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-sm">Receiver Information</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div>
+                              <Label htmlFor="receiverName">Name</Label>
+                              <Input
+                                id="receiverName"
+                                value={formData.receiverName}
+                                onChange={(e) => setFormData(prev => ({ ...prev, receiverName: e.target.value }))}
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="receiverPhone">Phone</Label>
+                              <Input
+                                id="receiverPhone"
+                                value={formData.receiverPhone}
+                                onChange={(e) => setFormData(prev => ({ ...prev, receiverPhone: e.target.value }))}
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="receiverAddress">Address</Label>
+                              <Textarea
+                                id="receiverAddress"
+                                value={formData.receiverAddress}
+                                onChange={(e) => setFormData(prev => ({ ...prev, receiverAddress: e.target.value }))}
+                                rows={2}
+                                required
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <Label htmlFor="receiverDivision">Division</Label>
+                                <Input
+                                  id="receiverDivision"
+                                  value={formData.receiverDivision}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, receiverDivision: e.target.value }))}
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="receiverDistrict">District</Label>
+                                <Input
+                                  id="receiverDistrict"
+                                  value={formData.receiverDistrict}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, receiverDistrict: e.target.value }))}
+                                  required
+                                />
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      {/* Parcel Details */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-sm">Parcel Details</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                              <Label htmlFor="parcelType">Type</Label>
+                              <Select value={formData.parcelType} onValueChange={(value: 'regular' | 'express' | 'fragile') => setFormData(prev => ({ ...prev, parcelType: value }))}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="regular">Regular</SelectItem>
+                                  <SelectItem value="express">Express</SelectItem>
+                                  <SelectItem value="fragile">Fragile</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label htmlFor="quantity">Quantity</Label>
+                              <Input
+                                id="quantity"
+                                type="number"
+                                value={formData.quantity}
+                                onChange={(e) => setFormData(prev => ({ ...prev, quantity: Number(e.target.value) }))}
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="weight">Weight (kg)</Label>
+                              <Input
+                                id="weight"
+                                type="number"
+                                step="0.1"
+                                value={formData.weight}
+                                onChange={(e) => setFormData(prev => ({ ...prev, weight: Number(e.target.value) }))}
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="value">Value (BDT)</Label>
+                              <Input
+                                id="value"
+                                type="number"
+                                value={formData.value}
+                                onChange={(e) => setFormData(prev => ({ ...prev, value: Number(e.target.value) }))}
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label htmlFor="description">Description</Label>
+                            <Textarea
+                              id="description"
+                              value={formData.description}
+                              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                              placeholder="Describe the parcel contents"
+                              rows={2}
+                              required
+                            />
+                          </div>
+
+                          <div className="flex items-center space-x-6">
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                id="isCOD"
+                                checked={formData.isCOD}
+                                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isCOD: checked }))}
+                              />
+                              <Label htmlFor="isCOD">Cash on Delivery</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                id="isFragile"
+                                checked={formData.isFragile}
+                                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isFragile: checked }))}
+                              />
+                              <Label htmlFor="isFragile">Fragile</Label>
+                            </div>
+                          </div>
+
+                          {formData.isCOD && (
+                            <div>
+                              <Label htmlFor="codAmount">COD Amount (BDT)</Label>
+                              <Input
+                                id="codAmount"
+                                type="number"
+                                value={formData.codAmount}
+                                onChange={(e) => setFormData(prev => ({ ...prev, codAmount: Number(e.target.value) }))}
+                                required
+                              />
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      {/* Charges & Partner */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-sm">Charges</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div>
+                              <Label htmlFor="deliveryCharge">Delivery Charge</Label>
+                              <Input
+                                id="deliveryCharge"
+                                type="number"
+                                value={formData.deliveryCharge}
+                                onChange={(e) => setFormData(prev => ({ ...prev, deliveryCharge: Number(e.target.value) }))}
+                                required
+                              />
+                            </div>
+                            {formData.isCOD && (
+                              <div>
+                                <Label htmlFor="codCharge">COD Charge</Label>
+                                <Input
+                                  id="codCharge"
+                                  type="number"
+                                  value={formData.codCharge}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, codCharge: Number(e.target.value) }))}
+                                  required
+                                />
+                              </div>
+                            )}
+                            <div className="pt-2 border-t">
+                              <div className="flex justify-between font-medium">
+                                <span>Total Charge:</span>
+                                <span>{formatCurrency(formData.deliveryCharge + formData.codCharge)}</span>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-sm">Courier Partner</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div>
+                              <Label htmlFor="courierPartner">Partner</Label>
+                              <Select value={formData.courierPartner} onValueChange={(value) => setFormData(prev => ({ ...prev, courierPartner: value }))}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select courier partner" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="steadfast">Steadfast</SelectItem>
+                                  <SelectItem value="pathao">Pathao</SelectItem>
+                                  <SelectItem value="redx">RedX</SelectItem>
+                                  <SelectItem value="paperfly">Paperfly</SelectItem>
+                                  <SelectItem value="sundarban">Sundarban</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label htmlFor="notes">Notes</Label>
+                              <Textarea
+                                id="notes"
+                                value={formData.notes}
+                                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                                placeholder="Additional notes or instructions"
+                                rows={3}
+                              />
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      <div className="flex justify-end space-x-2">
+                        <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit">
+                          {editingCourier ? 'Update' : 'Create'} Courier
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={resetForm}>
-                <Plus size={16} className="mr-2" />
-                Create Courier
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingCourier ? 'Edit Courier' : 'Create New Courier'}
-                </DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Order Selection */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm">Order Information</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div>
-                      <Label htmlFor="orderId">Order ID</Label>
-                      <Input
-                        id="orderId"
-                        value={formData.orderId}
-                        onChange={(e) => setFormData(prev => ({ ...prev, orderId: e.target.value }))}
-                        placeholder="Select or enter order ID"
-                        required
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
+        </motion.div>
 
-                {/* Sender & Receiver */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm">Sender Information</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <Label htmlFor="senderName">Name</Label>
-                        <Input
-                          id="senderName"
-                          value={formData.senderName}
-                          onChange={(e) => setFormData(prev => ({ ...prev, senderName: e.target.value }))}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="senderPhone">Phone</Label>
-                        <Input
-                          id="senderPhone"
-                          value={formData.senderPhone}
-                          onChange={(e) => setFormData(prev => ({ ...prev, senderPhone: e.target.value }))}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="senderAddress">Address</Label>
-                        <Textarea
-                          id="senderAddress"
-                          value={formData.senderAddress}
-                          onChange={(e) => setFormData(prev => ({ ...prev, senderAddress: e.target.value }))}
-                          rows={2}
-                          required
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <Label htmlFor="senderDivision">Division</Label>
-                          <Input
-                            id="senderDivision"
-                            value={formData.senderDivision}
-                            onChange={(e) => setFormData(prev => ({ ...prev, senderDivision: e.target.value }))}
-                            required
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="senderDistrict">District</Label>
-                          <Input
-                            id="senderDistrict"
-                            value={formData.senderDistrict}
-                            onChange={(e) => setFormData(prev => ({ ...prev, senderDistrict: e.target.value }))}
-                            required
-                          />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm">Receiver Information</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <Label htmlFor="receiverName">Name</Label>
-                        <Input
-                          id="receiverName"
-                          value={formData.receiverName}
-                          onChange={(e) => setFormData(prev => ({ ...prev, receiverName: e.target.value }))}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="receiverPhone">Phone</Label>
-                        <Input
-                          id="receiverPhone"
-                          value={formData.receiverPhone}
-                          onChange={(e) => setFormData(prev => ({ ...prev, receiverPhone: e.target.value }))}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="receiverAddress">Address</Label>
-                        <Textarea
-                          id="receiverAddress"
-                          value={formData.receiverAddress}
-                          onChange={(e) => setFormData(prev => ({ ...prev, receiverAddress: e.target.value }))}
-                          rows={2}
-                          required
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <Label htmlFor="receiverDivision">Division</Label>
-                          <Input
-                            id="receiverDivision"
-                            value={formData.receiverDivision}
-                            onChange={(e) => setFormData(prev => ({ ...prev, receiverDivision: e.target.value }))}
-                            required
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="receiverDistrict">District</Label>
-                          <Input
-                            id="receiverDistrict"
-                            value={formData.receiverDistrict}
-                            onChange={(e) => setFormData(prev => ({ ...prev, receiverDistrict: e.target.value }))}
-                            required
-                          />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Parcel Details */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm">Parcel Details</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div>
-                        <Label htmlFor="parcelType">Type</Label>
-                        <Select value={formData.parcelType} onValueChange={(value: 'regular' | 'express' | 'fragile') => setFormData(prev => ({ ...prev, parcelType: value }))}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="regular">Regular</SelectItem>
-                            <SelectItem value="express">Express</SelectItem>
-                            <SelectItem value="fragile">Fragile</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="quantity">Quantity</Label>
-                        <Input
-                          id="quantity"
-                          type="number"
-                          value={formData.quantity}
-                          onChange={(e) => setFormData(prev => ({ ...prev, quantity: Number(e.target.value) }))}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="weight">Weight (kg)</Label>
-                        <Input
-                          id="weight"
-                          type="number"
-                          step="0.1"
-                          value={formData.weight}
-                          onChange={(e) => setFormData(prev => ({ ...prev, weight: Number(e.target.value) }))}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="value">Value (BDT)</Label>
-                        <Input
-                          id="value"
-                          type="number"
-                          value={formData.value}
-                          onChange={(e) => setFormData(prev => ({ ...prev, value: Number(e.target.value) }))}
-                          required
-                        />
+        {/* Enhanced Stats Cards */}
+        <div ref={statsRef} className="px-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">Total Shipments</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
+                      <div className="flex items-center mt-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                        <span className="text-xs text-gray-500">All time</span>
                       </div>
                     </div>
-
-                    <div>
-                      <Label htmlFor="description">Description</Label>
-                      <Textarea
-                        id="description"
-                        value={formData.description}
-                        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Describe the parcel contents"
-                        rows={2}
-                        required
-                      />
+                    <div className="p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg">
+                      <Package className="text-white" size={24} />
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-                    <div className="flex items-center space-x-6">
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          id="isCOD"
-                          checked={formData.isCOD}
-                          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isCOD: checked }))}
-                        />
-                        <Label htmlFor="isCOD">Cash on Delivery</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          id="isFragile"
-                          checked={formData.isFragile}
-                          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isFragile: checked }))}
-                        />
-                        <Label htmlFor="isFragile">Fragile</Label>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">Pending</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.pending}</p>
+                      <div className="flex items-center mt-2">
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                        <span className="text-xs text-gray-500">Awaiting pickup</span>
                       </div>
                     </div>
+                    <div className="p-4 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl shadow-lg">
+                      <Clock className="text-white" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-                    {formData.isCOD && (
-                      <div>
-                        <Label htmlFor="codAmount">COD Amount (BDT)</Label>
-                        <Input
-                          id="codAmount"
-                          type="number"
-                          value={formData.codAmount}
-                          onChange={(e) => setFormData(prev => ({ ...prev, codAmount: Number(e.target.value) }))}
-                          required
-                        />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">In Transit</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.inTransit}</p>
+                      <div className="flex items-center mt-2">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
+                        <span className="text-xs text-gray-500">On the way</span>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
+                    </div>
+                    <div className="p-4 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg">
+                      <Truck className="text-white" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-                {/* Charges & Partner */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm">Charges</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <Label htmlFor="deliveryCharge">Delivery Charge</Label>
-                        <Input
-                          id="deliveryCharge"
-                          type="number"
-                          value={formData.deliveryCharge}
-                          onChange={(e) => setFormData(prev => ({ ...prev, deliveryCharge: Number(e.target.value) }))}
-                          required
-                        />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">Delivered</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.delivered}</p>
+                      <div className="flex items-center mt-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                        <span className="text-xs text-gray-500">Completed</span>
                       </div>
-                      {formData.isCOD && (
-                        <div>
-                          <Label htmlFor="codCharge">COD Charge</Label>
-                          <Input
-                            id="codCharge"
-                            type="number"
-                            value={formData.codCharge}
-                            onChange={(e) => setFormData(prev => ({ ...prev, codCharge: Number(e.target.value) }))}
-                            required
-                          />
-                        </div>
-                      )}
-                      <div className="pt-2 border-t">
-                        <div className="flex justify-between font-medium">
-                          <span>Total Charge:</span>
-                          <span>{formatCurrency(formData.deliveryCharge + formData.codCharge)}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                    <div className="p-4 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg">
+                      <CheckCircle className="text-white" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm">Courier Partner</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <Label htmlFor="courierPartner">Partner</Label>
-                        <Select value={formData.courierPartner} onValueChange={(value) => setFormData(prev => ({ ...prev, courierPartner: value }))}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select courier partner" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="steadfast">Steadfast</SelectItem>
-                            <SelectItem value="pathao">Pathao</SelectItem>
-                            <SelectItem value="redx">RedX</SelectItem>
-                            <SelectItem value="paperfly">Paperfly</SelectItem>
-                            <SelectItem value="sundarban">Sundarban</SelectItem>
-                          </SelectContent>
-                        </Select>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">Returned</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.returned}</p>
+                      <div className="flex items-center mt-2">
+                        <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
+                        <span className="text-xs text-gray-500">Back to sender</span>
                       </div>
-                      <div>
-                        <Label htmlFor="notes">Notes</Label>
-                        <Textarea
-                          id="notes"
-                          value={formData.notes}
-                          onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                          placeholder="Additional notes or instructions"
-                          rows={3}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
+                    </div>
+                    <div className="p-4 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl shadow-lg">
+                      <AlertTriangle className="text-white" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-                <div className="flex justify-end space-x-2">
-                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit">
-                    {editingCourier ? 'Update' : 'Create'} Courier
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="group"
+            >
+              <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 mb-1">COD Orders</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.cod}</p>
+                      <div className="flex items-center mt-2">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></div>
+                        <span className="text-xs text-gray-500">Cash on delivery</span>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl shadow-lg">
+                      <CreditCard className="text-white" size={24} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
         </div>
 
-        {/* Enhanced Stats Dashboard */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-blue-700 uppercase tracking-wide">Total</p>
-                    <p className="text-2xl font-bold text-blue-900 mt-1">{stats.total}</p>
-                    <p className="text-xs text-blue-600">Shipments</p>
-                  </div>
-                  <div className="p-2 bg-blue-500 rounded-lg shadow-lg">
-                    <Package className="text-white" size={16} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-yellow-700 uppercase tracking-wide">Pending</p>
-                    <p className="text-2xl font-bold text-yellow-900 mt-1">{stats.pending}</p>
-                    <p className="text-xs text-yellow-600">⏳ Awaiting</p>
-                  </div>
-                  <div className="p-2 bg-yellow-500 rounded-lg shadow-lg">
-                    <Clock className="text-white" size={16} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-purple-700 uppercase tracking-wide">In Transit</p>
-                    <p className="text-2xl font-bold text-purple-900 mt-1">{stats.inTransit}</p>
-                    <p className="text-xs text-purple-600">🚛 Moving</p>
-                  </div>
-                  <div className="p-2 bg-purple-500 rounded-lg shadow-lg">
-                    <Truck className="text-white" size={16} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-green-700 uppercase tracking-wide">Delivered</p>
-                    <p className="text-2xl font-bold text-green-900 mt-1">{stats.delivered}</p>
-                    <p className="text-xs text-green-600">✅ Complete</p>
-                  </div>
-                  <div className="p-2 bg-green-500 rounded-lg shadow-lg">
-                    <CheckCircle className="text-white" size={16} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-orange-700 uppercase tracking-wide">Returned</p>
-                    <p className="text-2xl font-bold text-orange-900 mt-1">{stats.returned}</p>
-                    <p className="text-xs text-orange-600">↩️ Back</p>
-                  </div>
-                  <div className="p-2 bg-orange-500 rounded-lg shadow-lg">
-                    <AlertTriangle className="text-white" size={16} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-emerald-700 uppercase tracking-wide">COD</p>
-                    <p className="text-2xl font-bold text-emerald-900 mt-1">{stats.cod}</p>
-                    <p className="text-xs text-emerald-600">💰 Cash</p>
-                  </div>
-                  <div className="p-2 bg-emerald-500 rounded-lg shadow-lg">
-                    <MapPin className="text-white" size={16} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+        {/* Enhanced Couriers Table */}
+        <div className="px-6 pb-8">
+          <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-t-xl">
+              <CardTitle className="text-xl font-semibold text-gray-800">Courier Database</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <DataTable
+                data={transformedCouriers}
+                columns={columns}
+                filters={filters}
+                bulkActions={bulkActions}
+                selectable
+                exportable
+                onRowClick={(courier) => handleView(courier)}
+                onView={handleView}
+                onEdit={handleUpdate}
+                onDelete={handleDelete}
+              />
+            </CardContent>
+          </Card>
         </div>
-
-        {/* Couriers Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Courier List</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DataTable
-              data={transformedCouriers}
-              columns={columns}
-              filters={filters}
-              bulkActions={bulkActions}
-              selectable
-              exportable
-              onRowClick={(courier) => handleView(courier)}
-              onView={handleView}
-              onEdit={handleUpdate}
-              onDelete={handleDelete}
-            />
-          </CardContent>
-        </Card>
 
         {/* View Courier Modal */}
         <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
@@ -1908,6 +2025,7 @@ export default function AdminCourier() {
           entityName="courier"
           entityCount={couriersToDelete.length}
         />
+        </div>
       </div>
     </AdminLayout>
   );

@@ -391,7 +391,7 @@ export default function DataTable({
           <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-x-4 sm:space-y-0">
             {searchable && (
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                <Search className="absolute z-10 left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                 <Input
                   placeholder="Search..."
                   value={serverSearch ? serverSearch.value : searchQuery}
@@ -438,7 +438,7 @@ export default function DataTable({
             )}
 
             {selectedRows.length > 0 && bulkActions.length > 0 && (
-              <div className="space-y-2">
+              <div className="flex items-center space-x-2">
                 <span className="text-sm text-gray-600 block">
                   {selectedRows.length} selected
                 </span>
@@ -692,7 +692,7 @@ export default function DataTable({
       {/* Table or Empty State */}
       {emptyStateInfo ? (
         <motion.div 
-          className="border rounded-lg overflow-hidden bg-white"
+          className="border rounded-2xl overflow-hidden bg-white shadow-lg"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3 }}
@@ -745,13 +745,13 @@ export default function DataTable({
           </div>
         </motion.div>
       ) : (
-        <div className="border rounded-lg overflow-hidden">
+        <div className="border rounded-2xl overflow-hidden shadow-lg bg-white">
           <div className="overflow-x-auto custom-scrollbar">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                 <tr>
                   {selectable && (
-                    <th className="w-12 px-4 py-3">
+                    <th className="w-12 px-4 py-4">
                       <Checkbox
                         checked={selectedRows.length === paginatedData.length && paginatedData.length > 0}
                         onCheckedChange={handleSelectAll}
@@ -761,8 +761,8 @@ export default function DataTable({
                   {visibleColumnsData?.map((column) => (
                     <th
                       key={column.key}
-                      className={`px-4 py-3 text-left text-sm font-medium text-gray-900 ${
-                        column.sortable ? 'cursor-pointer hover:bg-gray-100' : ''
+                      className={`px-4 py-4 text-left text-sm font-semibold text-gray-900 ${
+                        column.sortable ? 'cursor-pointer hover:bg-gray-200 transition-colors' : ''
                       }`}
                       style={{ width: column.width }}
                       onClick={() => column.sortable && handleSort(column.key)}
@@ -785,7 +785,7 @@ export default function DataTable({
                       </div>
                     </th>
                   ))}
-                  <th className="w-12 px-4 py-3"></th>
+                  <th className="w-12 px-4 py-4"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -795,11 +795,11 @@ export default function DataTable({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: index * 0.05 }}
-                    className={`hover:bg-gray-50 ${onRowClick ? 'cursor-pointer' : ''}`}
+                    className={`hover:bg-gray-50/80 transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
                     onClick={() => onRowClick?.(row)}
                   >
                     {selectable && (
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-4">
                         <Checkbox
                           checked={selectedRows.some(r => getRowId(r) === getRowId(row))}
                           onCheckedChange={(checked) => handleSelectRow(row, checked as boolean)}
@@ -808,11 +808,11 @@ export default function DataTable({
                       </td>
                     )}
                     {visibleColumnsData?.map((column) => (
-                      <td key={column?.key} className="px-4 py-3 text-sm text-gray-900">
+                      <td key={column?.key} className="px-4 py-4 text-sm text-gray-900">
                         {column?.render ? column?.render(row[column?.key], row) : row[column?.key]}
                       </td>
                     ))}
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-4">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()}>

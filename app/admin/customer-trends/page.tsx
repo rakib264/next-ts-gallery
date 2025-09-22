@@ -1,7 +1,7 @@
 'use client';
 
 import AdminLayout from '@/components/admin/AdminLayout';
-import CustomerMap from '@/components/admin/CustomerMap';
+import CustomerMapHeatmap from '@/components/admin/CustomerMapHeatmap';
 import LocationTargetingInsights from '@/components/admin/LocationTargetingInsights';
 import MLPredictionEngine from '@/components/admin/MLPredictionEngine';
 import ProductDemandAnalytics from '@/components/admin/ProductDemandAnalytics';
@@ -9,15 +9,16 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-    BarChart3,
-    Brain,
-    Map,
-    MapPin,
-    Package,
-    Sparkles,
-    Target,
-    TrendingUp,
-    Zap
+  Activity,
+  BarChart3,
+  Brain,
+  MapPin,
+  Package,
+  Sparkles,
+  Target,
+  TrendingUp,
+  Users,
+  Zap
 } from 'lucide-react';
 
 export default function CustomerTrendsPage() {
@@ -30,10 +31,10 @@ export default function CustomerTrendsPage() {
             <div className="flex items-center justify-between">
               <div className="space-y-2">
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                  Interactive Map Analytics
+                  Customer Trends & Analytics
                 </h1>
-                <p className="text-lg text-slate-600 max-w-2xl">
-                  Advanced geospatial visualization with ML-powered insights, product demand analysis, and strategic targeting recommendations
+                <p className="text-lg text-slate-600 max-w-3xl">
+                  Comprehensive customer analytics with geographic heatmaps, AI-powered demand forecasting, location targeting insights, and advanced ML predictions
                 </p>
                 <div className="flex items-center gap-2 mt-3">
                   <Badge variant="secondary" className="bg-blue-100 text-blue-700">
@@ -48,17 +49,56 @@ export default function CustomerTrendsPage() {
                     <BarChart3 className="h-3 w-3 mr-1" />
                     Interactive
                   </Badge>
+                  <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                    <Brain className="h-3 w-3 mr-1" />
+                    ML Insights
+                  </Badge>
                 </div>
               </div>
               <div className="hidden lg:flex items-center gap-4">
-                <div className="bg-white/70 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Map className="h-6 w-6 text-blue-600" />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-blue-100 rounded-lg">
+                        <MapPin className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-700 text-sm">Heatmap</p>
+                        <p className="text-xs text-slate-500">Geographic insights</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold text-slate-700">Interactive Mapping</p>
-                      <p className="text-sm text-slate-500">4 visualization modes</p>
+                  </div>
+                  <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-purple-100 rounded-lg">
+                        <Target className="h-4 w-4 text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-700 text-sm">Targeting</p>
+                        <p className="text-xs text-slate-500">Campaign insights</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-green-100 rounded-lg">
+                        <Package className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-700 text-sm">Demand</p>
+                        <p className="text-xs text-slate-500">Product analytics</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-indigo-100 rounded-lg">
+                        <Brain className="h-4 w-4 text-indigo-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-700 text-sm">ML Engine</p>
+                        <p className="text-xs text-slate-500">AI predictions</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -69,11 +109,11 @@ export default function CustomerTrendsPage() {
 
         {/* Main Content */}
         <div className="p-6 space-y-8">
-          <Tabs defaultValue="map" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5 bg-white/60 backdrop-blur-md border border-white/20 p-1">
-              <TabsTrigger value="map" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:shadow-md transition-all">
-                <Map className="h-4 w-4" />
-                <span className="hidden sm:inline">Interactive Map</span>
+          <Tabs defaultValue="heatmap" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-4 bg-white/60 backdrop-blur-md border border-white/20 p-1">
+              <TabsTrigger value="heatmap" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:shadow-md transition-all">
+                <MapPin className="h-4 w-4" />
+                <span className="hidden sm:inline">Geographic Heatmap</span>
               </TabsTrigger>
               <TabsTrigger value="demand" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:shadow-md transition-all">
                 <Package className="h-4 w-4" />
@@ -81,126 +121,155 @@ export default function CustomerTrendsPage() {
               </TabsTrigger>
               <TabsTrigger value="targeting" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:shadow-md transition-all">
                 <Target className="h-4 w-4" />
-                <span className="hidden sm:inline">Location Targeting</span>
+                <span className="hidden sm:inline">Campaign Targeting</span>
               </TabsTrigger>
               <TabsTrigger value="ml" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:shadow-md transition-all">
                 <Brain className="h-4 w-4" />
-                <span className="hidden sm:inline">ML Insights</span>
-              </TabsTrigger>
-              <TabsTrigger value="analytics" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:shadow-md transition-all">
-                <TrendingUp className="h-4 w-4" />
-                <span className="hidden sm:inline">Analytics</span>
+                <span className="hidden sm:inline">ML Predictions</span>
               </TabsTrigger>
             </TabsList>
 
-            {/* Interactive Map Tab */}
-            <TabsContent value="map" className="space-y-6">
+            {/* Geographic Heatmap Tab */}
+            <TabsContent value="heatmap" className="space-y-6">
               <Card className="bg-white/80 backdrop-blur-md border-white/20 shadow-xl">
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <MapPin className="h-5 w-5 text-blue-600" />
+                      <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg">
+                        <MapPin className="h-5 w-5 text-white" />
                       </div>
                       <div>
-                        <CardTitle className="text-xl">Bangladesh Customer Map</CardTitle>
-                        <p className="text-sm text-muted-foreground">Interactive visualization with advanced filtering</p>
+                        <CardTitle className="text-xl">Customer Geographic Heatmap</CardTitle>
+                        <p className="text-sm text-muted-foreground">Interactive Bangladesh district visualization with customer density and order analytics</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        <Activity className="h-3 w-3 mr-1" />
+                        Live Data
+                      </Badge>
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        <Users className="h-3 w-3 mr-1" />
+                        Customer Insights
+                      </Badge>
+                      <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                        amCharts5
+                      </Badge>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <CustomerMapHeatmap />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Product Demand Analytics Tab */}
+            <TabsContent value="demand" className="space-y-6">
+              <Card className="bg-white/80 backdrop-blur-md border-white/20 shadow-xl">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg">
+                        <Package className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl">AI Product Demand Analytics</CardTitle>
+                        <p className="text-sm text-muted-foreground">Advanced ML-powered demand forecasting, stock optimization, and scenario analysis</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                        Live Data
+                        <Sparkles className="h-3 w-3 mr-1" />
+                        AI Powered
                       </Badge>
                       <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                        MapLibre GL
+                        <BarChart3 className="h-3 w-3 mr-1" />
+                        Stock Insights
+                      </Badge>
+                      <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                        XGBoost + LSTM
                       </Badge>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="p-0">
-                  <CustomerMap />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Product Demand Tab */}
-            <TabsContent value="demand" className="space-y-6">
-              <Card className="bg-white/80 backdrop-blur-md border-white/20 shadow-xl">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <Package className="h-5 w-5 text-green-600" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl">Product Demand Analytics</CardTitle>
-                      <p className="text-sm text-muted-foreground">AI-powered stock recommendations and demand forecasting</p>
-                    </div>
+                  <div className="p-6">
+                    <ProductDemandAnalytics />
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <ProductDemandAnalytics />
                 </CardContent>
               </Card>
             </TabsContent>
 
-            {/* Location Targeting Tab */}
+            {/* Location Targeting Insights Tab */}
             <TabsContent value="targeting" className="space-y-6">
               <Card className="bg-white/80 backdrop-blur-md border-white/20 shadow-xl">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-100 rounded-lg">
-                      <Target className="h-5 w-5 text-purple-600" />
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-gradient-to-br from-purple-500 to-violet-600 rounded-lg">
+                        <Target className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl">AI Location Targeting Insights</CardTitle>
+                        <p className="text-sm text-muted-foreground">Smart geographic targeting with ML-powered campaign optimization and ROI predictions</p>
+                      </div>
                     </div>
-                    <div>
-                      <CardTitle className="text-xl">Campaign Targeting Insights</CardTitle>
-                      <p className="text-sm text-muted-foreground">Strategic recommendations for marketing campaigns</p>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                        <Target className="h-3 w-3 mr-1" />
+                        Geo-Targeting
+                      </Badge>
+                      <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                        ROI Optimization
+                      </Badge>
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        Campaign AI
+                      </Badge>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <LocationTargetingInsights />
+                <CardContent className="p-0">
+                  <div className="p-6">
+                    <LocationTargetingInsights />
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
-            {/* ML Insights Tab */}
+            {/* ML Prediction Engine Tab */}
             <TabsContent value="ml" className="space-y-6">
               <Card className="bg-white/80 backdrop-blur-md border-white/20 shadow-xl">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-indigo-100 rounded-lg">
-                      <Brain className="h-5 w-5 text-indigo-600" />
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg">
+                        <Brain className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl">ML Prediction Engine</CardTitle>
+                        <p className="text-sm text-muted-foreground">Advanced machine learning analytics with explainable AI and customer lifetime value predictions</p>
+                      </div>
                     </div>
-                    <div>
-                      <CardTitle className="text-xl">ML Prediction Engine</CardTitle>
-                      <p className="text-sm text-muted-foreground">Advanced machine learning analytics and forecasting</p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <MLPredictionEngine />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Analytics Tab */}
-            <TabsContent value="analytics" className="space-y-6">
-              <Card className="bg-white/80 backdrop-blur-md border-white/20 shadow-xl">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-orange-100 rounded-lg">
-                      <TrendingUp className="h-5 w-5 text-orange-600" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl">Advanced Analytics Dashboard</CardTitle>
-                      <p className="text-sm text-muted-foreground">Comprehensive business intelligence and insights</p>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200">
+                        <Brain className="h-3 w-3 mr-1" />
+                        Deep Learning
+                      </Badge>
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        <Activity className="h-3 w-3 mr-1" />
+                        Model Monitoring
+                      </Badge>
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        Explainable AI
+                      </Badge>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-muted-foreground">
-                    <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Advanced analytics dashboard coming soon...</p>
+                <CardContent className="p-0">
+                  <div className="p-6">
+                    <MLPredictionEngine />
                   </div>
                 </CardContent>
               </Card>
