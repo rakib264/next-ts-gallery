@@ -1,10 +1,5 @@
 import ClientOnly from '@/components/providers/ClientOnly';
-import { FaviconProvider } from '@/components/providers/FaviconProvider';
-import NextAuthProvider from '@/components/providers/NextAuthProvider';
-import { ThemeProvider } from '@/components/providers/ThemeProvider';
-import AutoStartup from '@/components/startup/AutoStartup';
-import ShoppingBasket from '@/components/ui/shopping-cart';
-import { Toaster } from '@/components/ui/toaster';
+import { AutoStartup, FaviconProvider, NextAuthProvider, ShoppingBasket, ThemeProvider, Toaster } from '@/components/providers/ClientProviders';
 import StoreProvider from '@/lib/providers/StoreProvider';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
@@ -101,6 +96,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} font-sans`}>
       <head>
+        <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+        <link rel="preconnect" href="https://images.pexels.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://images.pexels.com" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="theme-color" content="#000000" />

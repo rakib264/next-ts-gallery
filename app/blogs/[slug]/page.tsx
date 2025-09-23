@@ -9,14 +9,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import {
-  BookOpen,
-  Calendar,
-  Clock,
-  Eye,
-  Heart,
-  Share2,
-  User,
+    BookOpen,
+    Calendar,
+    Clock,
+    Eye,
+    Heart,
+    Share2,
+    User,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -337,10 +338,13 @@ export default function BlogPostPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5 }}
               >
-                <img
+                <Image
                   src={blog.coverImage}
                   alt={blog.title}
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="(max-width: 1280px) 100vw, 1200px"
+                  className="object-cover"
+                  priority={false}
                 />
                 {blog.isFeatured && (
                   <Badge className="absolute top-4 right-4 bg-primary-600 text-white">
@@ -395,9 +399,11 @@ export default function BlogPostPage() {
                         window.open(image, '_blank');
                       }}
                     >
-                      <img
+                      <Image
                         src={image}
                         alt={`Blog image ${index + 1}`}
+                        width={800}
+                        height={400}
                         className="w-full h-40 sm:h-48 md:h-52 lg:h-56 object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
@@ -497,10 +503,12 @@ export default function BlogPostPage() {
                       <Card className="h-full hover:shadow-lg transition-shadow border-0 shadow-sm">
                         {relatedBlog.coverImage && (
                           <div className="h-32 sm:h-36 md:h-40 lg:h-44 overflow-hidden rounded-t-lg">
-                            <img
+                            <Image
                               src={relatedBlog.coverImage}
                               alt={relatedBlog.title}
-                              className="w-full h-full object-cover"
+                              fill
+                              sizes="(max-width: 768px) 100vw, 400px"
+                              className="object-cover"
                             />
                           </div>
                         )}

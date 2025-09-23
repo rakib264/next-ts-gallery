@@ -21,16 +21,17 @@ import { addToWishlist, removeFromWishlist } from '@/lib/store/slices/wishlistSl
 import { RootState } from '@/lib/store/store';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  ChevronDown,
-  Grid,
-  Heart,
-  List,
-  Search,
-  ShoppingBasket,
-  SlidersHorizontal,
-  Star,
-  X
+    ChevronDown,
+    Grid,
+    Heart,
+    List,
+    Search,
+    ShoppingBasket,
+    SlidersHorizontal,
+    Star,
+    X
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -551,10 +552,12 @@ export default function ProductsPage() {
                                 {/* Image Container - Responsive */}
                                 <div className="relative w-full md:w-48 h-48 md:h-32 overflow-hidden bg-gray-50">
                                   <Link href={`/products/${product.slug}`} className="block h-full">
-                                    <img
+                                    <Image
                                       src={product.thumbnailImage}
                                       alt={product.name}
-                                      className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                                      fill
+                                      sizes="(max-width: 768px) 100vw, 192px"
+                                      className="object-contain transition-transform duration-300 group-hover:scale-105"
                                     />
                                   </Link>
                                   
@@ -810,10 +813,12 @@ export default function ProductsPage() {
                               {/* Image Container - Responsive */}
                               <div className="relative w-full md:w-48 h-48 md:h-32 overflow-hidden bg-gray-50">
                                 <Link href={`/products/${product.slug}`} className="block h-full">
-                                  <img
+                                  <Image
                                     src={product.thumbnailImage}
                                     alt={product.name}
-                                    className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, 192px"
+                                    className="object-contain transition-transform duration-300 group-hover:scale-105"
                                   />
                                 </Link>
                                 

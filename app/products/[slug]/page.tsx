@@ -47,6 +47,7 @@ import {
   Video
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -498,7 +499,7 @@ export default function ProductPage() {
                         }`}
                         aria-label={`Show image ${index + 1}`}
                       >
-                        <img src={image} alt={`${product.name} ${index + 1}`} loading="lazy" className="w-full h-full object-cover" />
+                        <Image src={image} alt={`${product.name} ${index + 1}`} width={80} height={80} className="w-full h-full object-cover" />
                         {selectedImage === index && (
                           <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
                             <div className="w-3 h-3 bg-primary rounded-full shadow-sm"></div>
@@ -519,15 +520,20 @@ export default function ProductPage() {
                   onMouseMove={handleImageHover}
                   onClick={() => setIsLightboxOpen(true)}
                 >
-                  <img
-                    src={galleryImages[selectedImage] || product.thumbnailImage}
-                    alt={product.name}
-                    className="w-full h-[500px] object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
-                    style={{
-                      transform: isZooming ? 'scale(2.05)' : 'scale(1)',
-                      transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`
-                    }}
-                  />
+                  <div className="relative w-full h-[500px]">
+                    <Image
+                      src={galleryImages[selectedImage] || product.thumbnailImage}
+                      alt={product.name}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 800px"
+                      className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
+                      style={{
+                        transform: isZooming ? 'scale(2.05)' : 'scale(1)',
+                        transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`
+                      }}
+                      priority={false}
+                    />
+                  </div>
 
                   {/* Enhanced subtle vignette while zooming */}
                   <div
@@ -595,15 +601,19 @@ export default function ProductPage() {
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
               >
-                <img
-                  src={galleryImages[selectedImage] || product.thumbnailImage}
-                  alt={product.name}
-                  className="w-full h-64 sm:h-80 md:h-96 object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                  style={{
-                    transform: isZooming ? 'scale(2.05)' : 'scale(1)',
-                    transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`
-                  }}
-                />
+                <div className="relative w-full h-64 sm:h-80 md:h-96">
+                  <Image
+                    src={galleryImages[selectedImage] || product.thumbnailImage}
+                    alt={product.name}
+                    fill
+                    sizes="100vw"
+                    className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                    style={{
+                      transform: isZooming ? 'scale(2.05)' : 'scale(1)',
+                      transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`
+                    }}
+                  />
+                </div>
 
                 {/* Enhanced Discount Badge */}
                 {product?.comparePrice !== 0 && product?.comparePrice !== undefined && product?.comparePrice && product?.comparePrice > 0 && getDiscountPercentage() > 0 && (
@@ -683,7 +693,7 @@ export default function ProductPage() {
                       }`}
                       aria-label={`Show image ${index + 1}`}
                     >
-                      <img src={image} alt={`${product.name} ${index + 1}`} loading="lazy" className="w-full h-full object-cover" />
+                      <Image src={image} alt={`${product.name} ${index + 1}`} width={80} height={80} className="w-full h-full object-cover" />
                       {selectedImage === index && (
                         <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
                           <div className="w-2 h-2 bg-primary rounded-full shadow-sm"></div>
@@ -702,11 +712,15 @@ export default function ProductPage() {
                   <DialogTitle className="sr-only">{product.name} image preview</DialogTitle>
                 </DialogHeader>
                 <div className="relative bg-black">
-                  <img
-                    src={galleryImages[selectedImage] || product.thumbnailImage}
-                    alt={product.name}
-                    className="w-full max-h-[80vh] object-contain bg-black"
-                  />
+                  <div className="relative w-full max-h-[80vh]" style={{ height: '80vh' }}>
+                    <Image
+                      src={galleryImages[selectedImage] || product.thumbnailImage}
+                      alt={product.name}
+                      fill
+                      sizes="100vw"
+                      className="object-contain bg-black"
+                    />
+                  </div>
                   {galleryImages.length > 1 && (
                     <>
                       <Button
@@ -743,7 +757,7 @@ export default function ProductPage() {
                         }`}
                         aria-label={`Select image ${index + 1}`}
                       >
-                        <img src={image} alt={`${product.name} ${index + 1}`} loading="lazy" className="w-full h-full object-cover" />
+                        <Image src={image} alt={`${product.name} ${index + 1}`} width={64} height={64} className="w-full h-full object-cover" />
                       </button>
                     ))}
                   </div>
@@ -866,9 +880,11 @@ export default function ProductPage() {
                         >
                           {option.image && (
                             <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 overflow-hidden rounded-full border-2 border-gray-200">
-                              <img 
+                              <Image 
                                 src={option.image} 
                                 alt={option.value}
+                                width={48}
+                                height={48}
                                 className="w-full h-full object-cover"
                               />
                             </div>

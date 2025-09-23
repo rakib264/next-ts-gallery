@@ -1,23 +1,24 @@
 'use client';
 
-import BestSellingProducts from '@/components/home/BestSellingProducts';
-import CategorySection from '@/components/home/CategorySection';
-import DealsSection from '@/components/home/DealsSection';
-import FeaturedProducts from '@/components/home/FeaturedProducts';
-import HeroCarousel from '@/components/home/HeroCarousel';
-import HeroPromo from '@/components/home/HeroPromo';
-import LimitedEdition from '@/components/home/LimitedEdition';
-import NewArrivals from '@/components/home/NewArrivals';
-import Newsletter from '@/components/home/Newsletter';
-import SocialProof from '@/components/home/SocialProof';
-import Footer from '@/components/layout/Footer';
-import Header from '@/components/layout/Header';
-import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import ClientOnly from '@/components/providers/ClientOnly';
 import SeoOptimizer from '@/components/seo/SeoOptimizer';
 import FloatingButtons from '@/components/ui/FloatingButtons';
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
+const HeroCarousel = dynamic(() => import('@/components/home/HeroCarousel'), { ssr: false });
+const CategorySection = dynamic(() => import('@/components/home/CategorySection'), { ssr: false });
+const HeroPromo = dynamic(() => import('@/components/home/HeroPromo'), { ssr: false });
+const DealsSection = dynamic(() => import('@/components/home/DealsSection'), { ssr: false });
+const FeaturedProducts = dynamic(() => import('@/components/home/FeaturedProducts'), { ssr: false });
+const NewArrivals = dynamic(() => import('@/components/home/NewArrivals'), { ssr: false });
+const BestSellingProducts = dynamic(() => import('@/components/home/BestSellingProducts'), { ssr: false });
+const LimitedEdition = dynamic(() => import('@/components/home/LimitedEdition'), { ssr: false });
+const SocialProof = dynamic(() => import('@/components/home/SocialProof'), { ssr: false });
+const Newsletter = dynamic(() => import('@/components/home/Newsletter'), { ssr: false });
+const Header = dynamic(() => import('@/components/layout/Header'), { ssr: false });
+const Footer = dynamic(() => import('@/components/layout/Footer'), { ssr: false });
+const MobileBottomNav = dynamic(() => import('@/components/layout/MobileBottomNav'), { ssr: false });
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -38,6 +39,11 @@ export default function Home() {
     const initGSAP = async () => {
       if (typeof window !== 'undefined') {
         try {
+          // Respect reduced motion and skip on small screens for perf
+          const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          const isSmallScreen = window.innerWidth < 768;
+          if (prefersReducedMotion || isSmallScreen) return;
+
           const GSAP = await import('gsap');
           const ST = await import('gsap/ScrollTrigger');
           
@@ -83,7 +89,7 @@ export default function Home() {
     };
 
     // Delay GSAP initialization to ensure DOM is ready and Framer Motion has completed
-    const timeoutId = setTimeout(initGSAP, 1000);
+    const timeoutId = setTimeout(initGSAP, 1200);
     
     return () => clearTimeout(timeoutId);
   }, [mounted, isClient]);
