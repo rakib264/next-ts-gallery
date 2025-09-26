@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import ProductCard, { Product } from '@/components/ui/product-card';
 import { motion } from 'framer-motion';
-import { ArrowRight, Crown, Flame, Timer } from 'lucide-react';
+import { ArrowRight, Crown, Timer } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -43,6 +43,11 @@ export default function LimitedEdition({
     }
   };
 
+  // Don't render if no products
+  if (!loading && products.length === 0) {
+    return null;
+  }
+
 
   if (loading) {
     return (
@@ -63,7 +68,7 @@ export default function LimitedEdition({
   }
 
   return (
-    <section className={`py-16 lg:py-24 bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white relative overflow-hidden ${className}`}>
+    <section className={`py-16 lg:py-24 bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white relative overflow-hidden scroll-reveal ${className}`}>
       {/* Enhanced Premium Background Pattern */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-20 w-48 h-48 bg-gradient-to-r from-yellow-400/30 to-pink-400/30 rounded-full blur-3xl animate-pulse"></div>
@@ -141,21 +146,6 @@ export default function LimitedEdition({
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold bg-gradient-to-r from-yellow-400 via-pink-300 to-purple-300 bg-clip-text text-transparent text-center">
               {title}
             </h2>
-            <motion.div
-              animate={{ 
-                scale: [1, 1.1, 1],
-                rotate: [0, -5, 5, 0]
-              }}
-              transition={{ 
-                duration: 1.5, 
-                repeat: Infinity, 
-                ease: "easeInOut",
-                delay: 0.5
-              }}
-              className="p-4 sm:p-5 bg-gradient-to-r from-orange-400 to-red-400 rounded-3xl shadow-2xl"
-            >
-              <Flame className="text-white" size={28} />
-            </motion.div>
           </div>
           <p className="text-purple-100 text-lg sm:text-xl lg:text-2xl max-w-4xl mx-auto leading-relaxed mb-8 px-4">
             {subtitle}
@@ -272,31 +262,6 @@ export default function LimitedEdition({
           </motion.div>
         )}
 
-        {/* No Products */}
-        {!loading && products.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center py-16"
-          >
-            <motion.div
-              animate={{ 
-                scale: [1, 1.1, 1],
-                rotate: [0, 5, -5, 0]
-              }}
-              transition={{ 
-                duration: 2, 
-                repeat: Infinity, 
-                ease: "easeInOut" 
-              }}
-            >
-              <Crown size={80} className="mx-auto text-purple-300 mb-6" />
-            </motion.div>
-            <h3 className="text-2xl font-bold text-purple-100 mb-4">No Limited Edition Items</h3>
-            <p className="text-purple-200 text-lg">Check back soon for exclusive limited edition releases!</p>
-          </motion.div>
-        )}
       </div>
     </section>
   );

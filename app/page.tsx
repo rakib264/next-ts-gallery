@@ -125,9 +125,7 @@ export default function Home() {
         </div>
 
                 {/* Deals Section - Events Carousel */}
-                <div className="scroll-reveal" suppressHydrationWarning>
-          <DealsSection />
-        </div>
+                <DealsSection />
         
         {/* Featured Products - Horizontal Carousel */}
         <div className="scroll-reveal" suppressHydrationWarning>
@@ -145,9 +143,7 @@ export default function Home() {
         </div>
         
         {/* Limited Edition - Horizontal Carousel */}
-        <div className="scroll-reveal" suppressHydrationWarning>
-          <LimitedEdition />
-        </div>
+        <LimitedEdition />
 
         {/* Brand Story Section */}
         {/* <div className="scroll-reveal" suppressHydrationWarning>

@@ -78,9 +78,14 @@ export default function DealsSection() {
     }
   };
 
-  const activeEvents = events.filter(e => e.status === 'active');
-  const upcomingEvents = events.filter(e => e.status === 'upcoming');
+  const activeEvents = events.filter(e => e.status === 'active' && e.products && e.products.length > 0);
+  const upcomingEvents = events.filter(e => e.status === 'upcoming' && e.products && e.products.length > 0);
   const totalProducts = events.reduce((sum, event) => sum + (event.productsCount || 0), 0);
+
+  // Don't render if no events with products
+  if (!loading && events.length === 0) {
+    return null;
+  }
 
   if (loading) {
     return (
@@ -101,7 +106,7 @@ export default function DealsSection() {
   }
 
   return (
-    <section className="py-16 lg:py-24 bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 relative overflow-hidden">
+    <section className="py-16 lg:py-24 bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 relative overflow-hidden scroll-reveal">
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-red-200/40 to-orange-200/40 rounded-full blur-3xl"></div>
@@ -141,7 +146,7 @@ export default function DealsSection() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="text-center mb-12 lg:mb-16"
         >
-          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-6">
             <motion.div
               animate={{ 
                 scale: [1, 1.2, 1],
@@ -445,8 +450,8 @@ export default function DealsSection() {
           </motion.div>
         )}
 
-        {/* No Events */}
-        {!loading && events.length === 0 && (
+        {/* No Events with Products */}
+        {!loading && activeEvents.length === 0 && upcomingEvents.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

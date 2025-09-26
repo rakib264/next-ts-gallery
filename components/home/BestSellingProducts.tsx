@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import ProductCard, { Product } from '@/components/ui/product-card';
 import { motion } from 'framer-motion';
-import { ArrowRight, Award, TrendingUp, Users } from 'lucide-react';
+import { ArrowRight, TrendingUp, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -132,22 +132,8 @@ export default function BestSellingProducts({
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 bg-clip-text text-transparent text-center">
               {title}
             </h2>
-            <motion.div
-              animate={{ 
-                scale: [1, 1.2, 1],
-                rotate: [0, 10, -10, 0]
-              }}
-              transition={{ 
-                duration: 2.5, 
-                repeat: Infinity, 
-                ease: "easeInOut" 
-              }}
-              className="p-3 sm:p-4 bg-gradient-to-r from-red-500 to-pink-500 rounded-2xl sm:rounded-3xl shadow-xl"
-            >
-              <Award className="text-white" size={24} />
-            </motion.div>
           </div>
-          <p className="text-gray-600 text-base sm:text-lg lg:text-xl max-w-3xl mx-auto leading-relaxed mb-6 sm:mb-8 px-4">
+          <p className="text-gray-600 text-base sm:text-lg lg:text-xl max-w-3xl leading-relaxed mb-6 sm:mb-8 px-4">
             {subtitle}
           </p>
           

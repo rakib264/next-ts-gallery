@@ -85,9 +85,9 @@ export default function FeaturedProducts() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-center mb-12 lg:mb-16"
+          className="text-left mb-12 lg:mb-16"
         >
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-8">
+          <div className="flex flex-col sm:flex-row items-center justify-start gap-4 sm:gap-6 mb-8">
             <motion.div
               animate={{ 
                 scale: [1, 1.1, 1],
@@ -102,26 +102,11 @@ export default function FeaturedProducts() {
             >
               <Sparkles className="text-white" size={32} />
             </motion.div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent text-center">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent text-left">
               Featured Products
             </h2>
-            <motion.div
-              animate={{ 
-                scale: [1, 1.05, 1],
-                rotate: [0, -5, 5, 0]
-              }}
-              transition={{ 
-                duration: 2.5, 
-                repeat: Infinity, 
-                ease: "easeInOut",
-                delay: 0.5
-              }}
-              className="p-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-3xl shadow-2xl"
-            >
-              <Sparkles className="text-white" size={32} />
-            </motion.div>
           </div>
-          <p className="text-gray-600 text-lg lg:text-xl max-w-4xl mx-auto leading-relaxed mb-8">
+          <p className="text-gray-600 text-left text-lg lg:text-xl max-w-4xl leading-relaxed mb-8">
             Discover our handpicked selection of premium products with the latest technology 
             and exceptional quality, curated just for you.
           </p>

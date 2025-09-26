@@ -164,15 +164,15 @@ export default function SocialProof() {
             <span className="text-2xl">⭐</span>
             <span className="text-sm font-semibold text-gray-700">4.6/5 Average Rating</span>
           </div>
-          <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 lg:mb-8">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 md:mb-6 lg:mb-8">
             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
               Trusted by 10K+ Customers
             </span>
           </h2>
-          <p className="text-xl sm:text-2xl text-gray-600 max-w-5xl mx-auto leading-relaxed px-4 mb-8">
+          <p className="text-lg sm:text-xl md:text-2xl text-gray-600 max-w-4xl md:max-w-5xl mx-auto leading-relaxed px-4 mb-6 md:mb-8">
             See what our amazing customers are saying about us on social media. Real reviews from real people across Bangladesh.
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-500">
+          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 text-xs md:text-sm text-gray-500">
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 bg-green-500 rounded-full"></span>
               Live Reviews
@@ -194,7 +194,7 @@ export default function SocialProof() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mb-20 lg:mb-24"
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 lg:gap-8 mb-16 md:mb-20 lg:mb-24"
         >
           {stats.map((stat, index) => (
             <motion.div
@@ -207,14 +207,14 @@ export default function SocialProof() {
                 delay: index * 0.1,
                 ease: "easeOut"
               }}
-              className="text-center p-8 bg-white/90 backdrop-blur-sm border border-white/70 rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-500 group relative overflow-hidden"
+              className="text-center p-4 md:p-6 lg:p-8 bg-white/90 backdrop-blur-sm border border-white/70 rounded-2xl md:rounded-3xl shadow-xl md:shadow-2xl hover:shadow-2xl md:hover:shadow-3xl transition-all duration-500 group relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative z-10">
-                <div className="text-4xl sm:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4 group-hover:scale-110 transition-transform duration-500">
+                <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2 md:mb-4 group-hover:scale-110 transition-transform duration-500">
                   {stat.number}
                 </div>
-                <div className="text-base sm:text-lg text-gray-700 font-semibold">
+                <div className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-700 font-semibold">
                   {stat.label}
                 </div>
               </div>
@@ -228,7 +228,7 @@ export default function SocialProof() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 lg:gap-8"
         >
           {socialReviews.map((review, index) => (
             <motion.div
@@ -245,59 +245,59 @@ export default function SocialProof() {
                 y: -8,
                 transition: { duration: 0.3 }
               }}
-              className="bg-white rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-500 overflow-hidden border border-gray-100/50 group"
+              className="bg-white rounded-2xl md:rounded-3xl shadow-xl md:shadow-2xl hover:shadow-2xl md:hover:shadow-3xl transition-all duration-500 overflow-hidden border border-gray-100/50 group h-full flex flex-col"
             >
               {/* Platform Header */}
-              <div className={`${review.platformColor} px-5 py-4 flex items-center justify-between relative overflow-hidden`}>
+              <div className={`${review.platformColor} px-3 md:px-4 lg:px-5 py-3 md:py-4 flex items-center justify-between relative overflow-hidden`}>
                 <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"></div>
-                <div className="flex items-center gap-3 relative z-10">
-                  <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                    <span className="text-lg">{review.platformIcon}</span>
+                <div className="flex items-center gap-2 md:gap-3 relative z-10">
+                  <div className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 bg-white/20 rounded-full flex items-center justify-center">
+                    <span className="text-sm md:text-base lg:text-lg">{review.platformIcon}</span>
                   </div>
                   <div>
-                    <div className="text-white font-bold text-sm">{review.platformName}</div>
+                    <div className="text-white font-bold text-xs md:text-sm">{review.platformName}</div>
                     <div className="text-white/90 text-xs font-medium">{review.timeAgo}</div>
                   </div>
                 </div>
-                <MoreHorizontal className="text-white/80 hover:text-white transition-colors duration-200" size={20} />
+                <MoreHorizontal className="text-white/80 hover:text-white transition-colors duration-200" size={16} />
               </div>
 
               {/* Customer Info */}
-              <div className="px-5 py-4 border-b border-gray-100/50 bg-gradient-to-r from-gray-50/50 to-white/50">
-                <div className="flex items-center gap-4">
-                  <div className="relative">
+              <div className="px-3 md:px-4 lg:px-5 py-3 md:py-4 border-b border-gray-100/50 bg-gradient-to-r from-gray-50/50 to-white/50">
+                <div className="flex items-center gap-2 md:gap-3 lg:gap-4">
+                  <div className="relative flex-shrink-0">
                     <img 
                       src={review.customer.avatar} 
                       alt={review.customer.nameEn}
-                      className="w-14 h-14 rounded-full object-cover border-3 border-white shadow-lg ring-2 ring-gray-100"
+                      className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full object-cover border-2 md:border-3 border-white shadow-lg ring-1 md:ring-2 ring-gray-100"
                       onError={(e) => {
                         e.currentTarget.src = `https://ui-avatars.com/api/?name=${review.customer.nameEn}&background=6366f1&color=fff&size=150`;
                       }}
                     />
                     {review.customer.verified && (
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg">
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg">
                         <span className="text-white text-xs font-bold">✓</span>
                       </div>
                     )}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="font-bold text-gray-900 text-base">{review.customer.name}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1 md:gap-2 mb-1">
+                      <div className="font-bold text-gray-900 text-sm md:text-base truncate">{review.customer.name}</div>
                       {review.customer.verified && (
-                        <div className="w-4 h-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                        <div className="w-3 h-3 md:w-4 md:h-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
                           <span className="text-white text-xs font-bold">✓</span>
                         </div>
                       )}
                     </div>
-                    <div className="text-gray-600 text-sm font-medium">{review.customer.nameEn}</div>
+                    <div className="text-gray-600 text-xs md:text-sm font-medium truncate">{review.customer.nameEn}</div>
                     <div className="text-gray-500 text-xs flex items-center gap-1 font-medium">
                       <span className="text-blue-500">📍</span>
-                      {review.customer.location}
+                      <span className="truncate">{review.customer.location}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 bg-yellow-50 px-3 py-1 rounded-full">
+                  <div className="flex items-center gap-1 bg-yellow-50 px-2 md:px-3 py-1 rounded-full flex-shrink-0">
                     {[...Array(review.rating)].map((_, i) => (
-                      <Star key={i} className="text-yellow-400 fill-current" size={16} />
+                      <Star key={i} className="text-yellow-400 fill-current" size={12} />
                     ))}
                     <span className="text-xs font-semibold text-gray-700 ml-1">{review.rating}.0</span>
                   </div>
@@ -305,57 +305,13 @@ export default function SocialProof() {
               </div>
 
               {/* Review Message */}
-              <div className="px-5 py-5">
-                <p className="text-gray-800 text-sm leading-relaxed mb-3 font-medium">
+              <div className="px-3 md:px-4 lg:px-5 py-3 md:py-4 lg:py-5 flex-1 flex flex-col">
+                <p className="text-gray-800 text-xs md:text-sm leading-relaxed font-medium flex-1">
                   {review.message}
                 </p>
-                <p className="text-gray-600 text-xs italic mb-5 bg-gray-50 p-3 rounded-lg border-l-4 border-blue-200">
-                  {review.messageEn}
-                </p>
                 
-                {/* Product Image */}
-                {/* <div className="relative group mb-4">
-                  <img 
-                    src={review.productImage} 
-                    alt="Product review"
-                    className="w-full h-36 object-cover rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300"
-                    onError={(e) => {
-                      e.currentTarget.src = `https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=300&h=200&fit=crop&auto=format&q=80`;
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
-                    <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
-                      <span className="text-xs font-bold text-gray-800 flex items-center gap-1">
-                        <span>👀</span>
-                        View Product
-                      </span>
-                    </div>
-                  </div>
-                </div> */}
               </div>
 
-              {/* Social Actions */}
-              {/* <div className="px-5 py-4 border-t border-gray-100/50 bg-gradient-to-r from-gray-50/30 to-white/30">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-6">
-                    <button className="flex items-center gap-2 text-gray-600 hover:text-red-500 transition-all duration-200 hover:scale-105">
-                      <Heart className="text-red-500" size={18} />
-                      <span className="text-sm font-semibold">{review.likes}</span>
-                    </button>
-                    <button className="flex items-center gap-2 text-gray-600 hover:text-blue-500 transition-all duration-200 hover:scale-105">
-                      <MessageCircle size={18} />
-                      <span className="text-sm font-semibold">{review.comments}</span>
-                    </button>
-                    <button className="flex items-center gap-2 text-gray-600 hover:text-green-500 transition-all duration-200 hover:scale-105">
-                      <Share2 size={18} />
-                      <span className="text-sm font-semibold">{review.shares}</span>
-                    </button>
-                  </div>
-                  <button className="text-gray-400 hover:text-blue-500 transition-all duration-200 hover:scale-110">
-                    <ThumbsUp size={18} />
-                  </button>
-                </div>
-              </div> */}
             </motion.div>
           ))}
         </motion.div>
@@ -366,10 +322,10 @@ export default function SocialProof() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="mt-20 text-center"
+          className="mt-16 md:mt-20 text-center"
         >
-          <h3 className="text-2xl font-bold text-gray-800 mb-8">Why Customers Trust TSR Gallery</h3>
-          <div className="flex flex-wrap items-center justify-center gap-6 lg:gap-8">
+          <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 md:mb-8">Why Customers Trust TSR Gallery</h3>
+          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 lg:gap-6 xl:gap-8">
             {[
               { icon: "🔒", text: "SSL Secured" },
               { icon: "🚚", text: "Free Shipping" },
@@ -388,9 +344,9 @@ export default function SocialProof() {
                   delay: index * 0.1,
                   ease: "easeOut"
                 }}
-                className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-white hover:shadow-lg transition-all duration-300 flex items-center gap-2"
+                className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full px-3 md:px-4 lg:px-6 py-2 md:py-3 text-xs md:text-sm font-semibold text-gray-700 hover:bg-white hover:shadow-lg transition-all duration-300 flex items-center gap-1 md:gap-2"
               >
-                <span className="text-lg">{badge.icon}</span>
+                <span className="text-sm md:text-base lg:text-lg">{badge.icon}</span>
                 {badge.text}
               </motion.div>
             ))}

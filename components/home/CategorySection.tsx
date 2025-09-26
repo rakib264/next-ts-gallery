@@ -204,7 +204,7 @@ export default function CategorySection() {
         </motion.div>
 
         {/* Desktop & Tablet: Premium Grid Layout */}
-        <div className="hidden lg:block mb-12">
+        <div className="hidden lg:block mb-12 relative">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {categories.map((category, index) => (
               <div
@@ -241,38 +241,52 @@ export default function CategorySection() {
                     )}
                   </motion.div>
                 </Link>
+              </div>
+            ))}
+          </div>
 
-                {/* Premium Mega Menu Dropdown */}
-                <AnimatePresence>
-                  {hoveredCategory === category._id && category.children && category.children.length > 0 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 15, scale: 0.95 }}
-                      transition={{ duration: 0.3, ease: "easeOut" }}
-                      className="absolute top-full left-1/2 transform -translate-x-1/2 mt-4 w-80 bg-white/95 backdrop-blur-xl border border-gray-200/50 rounded-2xl shadow-2xl z-50 p-6"
-                    >
-                      <div className="text-center mb-4">
-                        <h4 className="font-bold text-lg text-gray-900 mb-1">{category.name}</h4>
+          {/* Full-Width Mega Menu Dropdown - Positioned relative to the grid container */}
+          <AnimatePresence>
+            {(() => {
+              const category = categories.find(cat => cat._id === hoveredCategory);
+              return hoveredCategory && category?.children && category.children.length > 0;
+            })() && (
+              <motion.div
+                initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 15, scale: 0.95 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="absolute top-full left-0 right-0 mt-4 bg-white/95 backdrop-blur-xl border border-gray-200/50 rounded-2xl shadow-2xl z-50 p-8"
+                onMouseEnter={() => setHoveredCategory(hoveredCategory)}
+                onMouseLeave={() => setHoveredCategory(null)}
+              >
+                {(() => {
+                  const category = categories.find(cat => cat._id === hoveredCategory);
+                  if (!category || !category.children) return null;
+                  
+                  return (
+                    <>
+                      <div className="text-center mb-6">
+                        <h4 className="font-bold text-xl text-gray-900 mb-2">{category.name}</h4>
                         <p className="text-sm text-gray-500">Explore subcategories</p>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-3 mb-4">
-                        {category.children.slice(0, 6).map((child) => (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 mb-6">
+                        {category.children.map((child) => (
                           <Link
                             key={child._id}
                             href={`/categories/${child.slug}`}
-                            className="flex items-center space-x-3 p-3 rounded-xl hover:bg-gradient-to-r hover:from-indigo-50 hover:to-violet-50 transition-all duration-200 group"
+                            className="flex flex-col items-center space-y-3 p-4 rounded-xl hover:bg-gradient-to-r hover:from-indigo-50 hover:to-violet-50 transition-all duration-200 group"
                           >
                             <div className="flex-shrink-0">
                               {getCategoryDisplay(child, 'dropdown')}
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors truncate">
+                            <div className="text-center">
+                              <p className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors break-words">
                                 {child.name}
                               </p>
                               {child.productCount && (
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs text-gray-500 mt-1">
                                   {child.productCount} items
                                 </p>
                               )}
@@ -281,7 +295,7 @@ export default function CategorySection() {
                         ))}
                       </div>
                       
-                      <div className="pt-4 border-t border-gray-100">
+                      <div className="pt-6 border-t border-gray-100">
                         <Link
                           href={`/categories/${category.slug}`}
                           className="flex items-center justify-center space-x-2 w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 group"
@@ -290,12 +304,12 @@ export default function CategorySection() {
                           <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                         </Link>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
-          </div>
+                    </>
+                  );
+                })()}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Mobile & Tablet: Expandable Vertical List */}

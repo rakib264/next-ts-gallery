@@ -248,7 +248,7 @@ export default function SearchComponent({ isOpen, onClose, isMobile = false }: S
             
             {/* Clean Search Input */}
             <div className="relative">
-              <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-gray-400" size={22} />
+              <Search className="absolute z-10 left-6 top-1/2 transform -translate-y-1/2 text-gray-400" size={22} />
               <Input
                 type="text"
                 // placeholder="Type to search..."
@@ -317,41 +317,10 @@ export default function SearchComponent({ isOpen, onClose, isMobile = false }: S
                   scrollbarColor: 'rgb(59 130 246) rgb(243 244 246)',
                 }}
               >
-                {/* Categories */}
-                {results.categories.length > 0 && (
-                  <div className="mb-8">
-                    <h3 className="text-sm font-semibold text-gray-600 mb-4 flex items-center">
-                      <Tag className="mr-2" size={16} />
-                      Categories
-                    </h3>
-                    <div className="space-y-3">
-                      {results.categories.map((category, index) => (
-                        <motion.div
-                          key={category._id}
-                          initial={{ y: 20, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          transition={{ delay: index * 0.1 }}
-                          className="group flex items-center p-4 hover:bg-primary-50 rounded-2xl cursor-pointer transition-all duration-200"
-                          onClick={() => handleCategoryClick(category)}
-                        >
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900 group-hover:text-primary-700 transition-colors">
-                              {category.name}
-                            </h4>
-                            {category.description && (
-                              <p className="text-sm text-gray-500 mt-1 line-clamp-1">{category.description}</p>
-                            )}
-                          </div>
-                          <ArrowRight className="text-gray-400 group-hover:text-primary-600 transition-colors" size={16} />
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
-                {/* Products */}
-                {results.products.length > 0 && (
-                  <div>
+                                {/* Products */}
+                                {results.products.length > 0 && (
+                  <div className='mb-8'>
                     <h3 className="text-sm font-semibold text-gray-600 mb-4 flex items-center">
                       <Grid className="mr-2" size={16} />
                       Products
@@ -389,7 +358,7 @@ export default function SearchComponent({ isOpen, onClose, isMobile = false }: S
                       <div className="mt-6">
                         <Button
                           onClick={() => handleSearch(query)}
-                          className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 rounded-2xl transition-all duration-200"
+                          className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-5 rounded-2xl transition-all duration-200"
                         >
                           View all results for "{query}"
                           <ArrowRight className="ml-2" size={16} />
@@ -398,6 +367,41 @@ export default function SearchComponent({ isOpen, onClose, isMobile = false }: S
                     )}
                   </div>
                 )}
+
+
+
+                {/* Categories */}
+                {results.categories.length > 0 && (
+                  <div className="mb-4">
+                    <h3 className="text-sm font-semibold text-gray-600 mb-4 flex items-center">
+                      <Tag className="mr-2" size={16} />
+                      Categories
+                    </h3>
+                    <div className="space-y-3">
+                      {results.categories.map((category, index) => (
+                        <motion.div
+                          key={category._id}
+                          initial={{ y: 20, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="group flex items-center p-4 hover:bg-primary-50 rounded-2xl cursor-pointer transition-all duration-200"
+                          onClick={() => handleCategoryClick(category)}
+                        >
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-gray-900 group-hover:text-primary-700 transition-colors">
+                              {category.name}
+                            </h4>
+                            {category.description && (
+                              <p className="text-sm text-gray-500 mt-1 line-clamp-1">{category.description}</p>
+                            )}
+                          </div>
+                          <ArrowRight className="text-gray-400 group-hover:text-primary-600 transition-colors" size={16} />
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
               </motion.div>
             )}
           </AnimatePresence>
