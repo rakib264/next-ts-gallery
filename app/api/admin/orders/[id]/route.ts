@@ -4,6 +4,7 @@ import Courier from '@/lib/models/Courier';
 import CourierSettings from '@/lib/models/CourierSettings';
 import Order from '@/lib/models/Order';
 import connectDB from '@/lib/mongodb';
+import { cleanupCouriersForOrder } from '@/lib/utils/courierCleanup';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
@@ -279,9 +280,13 @@ export async function DELETE(
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
+    // First, cleanup all associated courier records using utility function
+    const courierCleanup = await cleanupCouriersForOrder(id);
+
+    // Then delete the order
     await Order.findByIdAndDelete(id);
 
-    // Log audit
+    // Log audit with courier cleanup information
     await AuditLog.create({
       user: session.user.id,
       action: 'DELETE',
@@ -290,13 +295,22 @@ export async function DELETE(
       changes: [],
       metadata: { 
         orderNumber: order.orderNumber,
-        reason: 'Manual deletion via admin panel'
+        reason: 'Manual deletion via admin panel',
+        cascadeDeleted: {
+          couriers: {
+            count: courierCleanup.deletedCount,
+            courierIds: courierCleanup.deletedCourierIds
+          }
+        }
       }
     });
 
     return NextResponse.json({ 
-      message: 'Order deleted successfully',
-      orderNumber: order.orderNumber
+      message: courierCleanup.deletedCount > 0 
+        ? 'Order and associated courier records deleted successfully'
+        : 'Order deleted successfully',
+      orderNumber: order.orderNumber,
+      deletedCouriers: courierCleanup.deletedCount
     });
   } catch (error) {
     console.error('Delete order error:', error);

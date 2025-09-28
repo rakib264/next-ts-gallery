@@ -104,6 +104,13 @@ const CourierSchema = new Schema<ICourier>({
   timestamps: true
 });
 
+// Indexes for efficient queries
+CourierSchema.index({ order: 1 }); // For finding couriers by order ID
+CourierSchema.index({ courierId: 1 }); // For finding by courier ID (already unique)
+CourierSchema.index({ status: 1 }); // For filtering by status
+CourierSchema.index({ createdAt: -1 }); // For sorting by creation date
+CourierSchema.index({ 'order': 1, 'status': 1 }); // Compound index for order-status queries
+
 // Pre-save middleware to track status changes
 CourierSchema.pre('save', function(next) {
   if (this.isModified('status')) {

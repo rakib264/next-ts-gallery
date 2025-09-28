@@ -15,28 +15,28 @@ import { toast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import { gsap } from 'gsap';
 import {
-  BarChart3,
-  Calendar,
-  CheckCircle,
-  Clock,
-  CreditCard,
-  DollarSign,
-  Download,
-  Edit,
-  FileText,
-  Mail,
-  MapPin,
-  Package,
-  Phone,
-  Printer,
-  Send,
-  ShoppingBag,
-  ShoppingBasket,
-  Sparkles,
-  TrendingUp,
-  Truck,
-  User,
-  XCircle
+    BarChart3,
+    Calendar,
+    CheckCircle,
+    Clock,
+    CreditCard,
+    DollarSign,
+    Download,
+    Edit,
+    FileText,
+    Mail,
+    MapPin,
+    Package,
+    Phone,
+    Printer,
+    Send,
+    ShoppingBag,
+    ShoppingBasket,
+    Sparkles,
+    TrendingUp,
+    Truck,
+    User,
+    XCircle
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -300,9 +300,12 @@ export default function AdminOrders() {
       });
       
       if (response.ok) {
+        const result = await response.json();
         toast({
           title: 'Order deleted',
-          description: `Order ${orderToDelete.orderNumber} has been deleted successfully.`
+          description: result.deletedCouriers > 0 
+            ? `Order ${orderToDelete.orderNumber} and ${result.deletedCouriers} associated courier record(s) have been deleted successfully.`
+            : `Order ${orderToDelete.orderNumber} has been deleted successfully.`
         });
         fetchOrders();
         setDeleteOpen(false);
@@ -383,9 +386,12 @@ export default function AdminOrders() {
       });
       
       if (response.ok) {
+        const result = await response.json();
         toast({
           title: 'Orders deleted',
-          description: `${selectedOrders.length} orders have been deleted successfully.`
+          description: result.deletedCouriers > 0 
+            ? `${result.deletedCount} orders and ${result.deletedCouriers} associated courier records have been deleted successfully.`
+            : `${result.deletedCount} orders have been deleted successfully.`
         });
         fetchOrders();
         setSelectedOrders([]);
@@ -1767,7 +1773,7 @@ export default function AdminOrders() {
           onOpenChange={setDeleteOpen}
           onConfirm={confirmDelete}
           title="Delete Order"
-          description={`Are you sure you want to delete order ${orderToDelete?.orderNumber}? This action cannot be undone and will permanently remove the order from the system.`}
+          description={`Are you sure you want to delete order ${orderToDelete?.orderNumber}? This action cannot be undone and will permanently remove the order and any associated courier records from the system.`}
           entityName="order"
           isLoading={deleting}
         />
@@ -1778,7 +1784,7 @@ export default function AdminOrders() {
           onOpenChange={setBulkDeleteOpen}
           onConfirm={confirmBulkDelete}
           title="Delete Selected Orders"
-          description={`Are you sure you want to delete ${selectedOrders.length} selected orders? This action cannot be undone and will permanently remove all selected orders from the system.`}
+          description={`Are you sure you want to delete ${selectedOrders.length} selected orders? This action cannot be undone and will permanently remove all selected orders and any associated courier records from the system.`}
           entityName="order"
           entityCount={selectedOrders.length}
           isLoading={deleting}

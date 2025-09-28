@@ -36,7 +36,7 @@ interface Courier {
     _id: string;
     orderNumber: string;
     total: number;
-  };
+  } | null;
   sender: {
     name: string;
     phone: string;
@@ -209,9 +209,18 @@ export default function AdminCourier() {
     try {
       const response = await fetch('/api/admin/courier');
       const data = await response.json();
-      setCouriers(data.couriers || []);
+      // Filter out any invalid courier records
+      const validCouriers = (data.couriers || []).filter((courier: any) => 
+        courier && 
+        courier.courierId && 
+        courier.parcel && 
+        courier.receiver && 
+        courier.sender
+      );
+      setCouriers(validCouriers);
     } catch (error) {
       console.error('Error fetching couriers:', error);
+      setCouriers([]);
     } finally {
       setLoading(false);
     }
@@ -300,7 +309,7 @@ export default function AdminCourier() {
   const handleEdit = (courier: Courier) => {
     setEditingCourier(courier);
     setFormData({
-      orderId: courier.order._id,
+      orderId: courier.order?._id || '',
       senderName: courier.sender.name,
       senderPhone: courier.sender.phone,
       senderAddress: courier.sender.address,
@@ -338,7 +347,7 @@ export default function AdminCourier() {
   const handleUpdate = (courier: Courier) => {
     setEditingCourier(courier);
     setFormData({
-      orderId: courier.order._id,
+      orderId: courier.order?._id || '',
       senderName: courier.sender.name,
       senderPhone: courier.sender.phone,
       senderAddress: courier.sender.address,
@@ -507,87 +516,102 @@ export default function AdminCourier() {
       key: 'courierId',
       label: 'Courier ID',
       sortable: true,
-      render: (value: string, row: Courier) => (
-        <div>
-          <p className="font-mono font-medium">{value}</p>
-          <p className="text-sm text-gray-500">{row.order.orderNumber}</p>
-        </div>
-      )
+      render: (value: string, row: Courier) => {
+        if (!row || !value) return <span>N/A</span>;
+        return (
+          <div>
+            <p className="font-mono font-medium">{value}</p>
+            <p className="text-sm text-gray-500">{row.order?.orderNumber || 'N/A'}</p>
+          </div>
+        );
+      }
     },
     {
       key: 'receiver',
       label: 'Receiver',
-      render: (value: any) => (
-        <div>
-          <p className="font-medium">{value.name}</p>
-          <p className="text-sm text-gray-500">{value.phone}</p>
-          <p className="text-sm text-gray-500">{value.division}, {value.district}</p>
-        </div>
-      )
+      render: (value: any) => {
+        if (!value) return <span>N/A</span>;
+        return (
+          <div>
+            <p className="font-medium">{value.name || 'N/A'}</p>
+            <p className="text-sm text-gray-500">{value.phone || 'N/A'}</p>
+            <p className="text-sm text-gray-500">{value.division || 'N/A'}, {value.district || 'N/A'}</p>
+          </div>
+        );
+      }
     },
     {
       key: 'parcel',
       label: 'Parcel',
-      render: (value: any, row: Courier) => (
-        <div>
-          <div className="flex items-center space-x-2 mb-1">
-            <Badge variant="outline" className="capitalize">
-              {value.type}
-            </Badge>
-            {row.isCOD && <Badge variant="secondary">COD</Badge>}
-            {row.isFragile && <Badge variant="destructive">Fragile</Badge>}
+      render: (value: any, row: Courier) => {
+        if (!value || !row) return <span>N/A</span>;
+        return (
+          <div>
+            <div className="flex items-center space-x-2 mb-1">
+              <Badge variant="outline" className="capitalize">
+                {value.type || 'N/A'}
+              </Badge>
+              {row.isCOD && <Badge variant="secondary">COD</Badge>}
+              {row.isFragile && <Badge variant="destructive">Fragile</Badge>}
+            </div>
+            <p className="text-sm text-gray-600">
+              {value.quantity || 0} items • {value.weight || 0}kg
+            </p>
+            <p className="text-sm text-gray-600">
+              Value: {formatCurrency(value.value || 0)}
+            </p>
           </div>
-          <p className="text-sm text-gray-600">
-            {value.quantity} items • {value.weight}kg
-          </p>
-          <p className="text-sm text-gray-600">
-            Value: {formatCurrency(value.value)}
-          </p>
-        </div>
-      )
+        );
+      }
     },
     {
       key: 'charges',
       label: 'Charges',
-      render: (value: any, row: Courier) => (
-        <div>
-          <p className="font-medium">{formatCurrency(value.totalCharge)}</p>
-          <p className="text-sm text-gray-500">
-            Delivery: {formatCurrency(value.deliveryCharge)}
-          </p>
-          {row.isCOD && (
+      render: (value: any, row: Courier) => {
+        if (!value || !row) return <span>N/A</span>;
+        return (
+          <div>
+            <p className="font-medium">{formatCurrency(value.totalCharge || 0)}</p>
             <p className="text-sm text-gray-500">
-              COD: {formatCurrency(value.codCharge)}
+              Delivery: {formatCurrency(value.deliveryCharge || 0)}
             </p>
-          )}
-        </div>
-      )
+            {row.isCOD && (
+              <p className="text-sm text-gray-500">
+                COD: {formatCurrency(value.codCharge || 0)}
+              </p>
+            )}
+          </div>
+        );
+      }
     },
     {
       key: 'status',
       label: 'Status & Progress',
       filterable: true,
-      render: (value: string, row: Courier) => (
-        <div className="space-y-2">
-          <Badge className={`${getStatusColor(value)} flex items-center space-x-1 border`}>
-            {getStatusIcon(value)}
-            <span className="capitalize">{value.replace('_', ' ')}</span>
-          </Badge>
-          {!['returned', 'cancelled'].includes(value) && (
-            <div className="w-full bg-gray-200 rounded-full h-1.5">
-              <div 
-                className="bg-blue-500 h-1.5 rounded-full transition-all duration-300" 
-                style={{ width: `${getStatusProgress(value)}%` }}
-              ></div>
-            </div>
-          )}
-          {row.trackingNumber && (
-            <div className="text-xs text-gray-500 font-mono">
-              {row.trackingNumber}
-            </div>
-          )}
-        </div>
-      )
+      render: (value: string, row: Courier) => {
+        if (!value || !row) return <span>N/A</span>;
+        return (
+          <div className="space-y-2">
+            <Badge className={`${getStatusColor(value)} flex items-center space-x-1 border`}>
+              {getStatusIcon(value)}
+              <span className="capitalize">{value.replace('_', ' ')}</span>
+            </Badge>
+            {!['returned', 'cancelled'].includes(value) && (
+              <div className="w-full bg-gray-200 rounded-full h-1.5">
+                <div 
+                  className="bg-blue-500 h-1.5 rounded-full transition-all duration-300" 
+                  style={{ width: `${getStatusProgress(value)}%` }}
+                ></div>
+              </div>
+            )}
+            {row.trackingNumber && (
+              <div className="text-xs text-gray-500 font-mono">
+                {row.trackingNumber}
+              </div>
+            )}
+          </div>
+        );
+      }
     },
     {
       key: 'courierPartner',
@@ -625,9 +649,11 @@ export default function AdminCourier() {
 
   // Transform data to flatten nested properties for filtering
   const transformedCouriers = useMemo(() => {
-    return couriers.map(courier => ({
+    return couriers.filter(courier => courier && courier.parcel).map(courier => ({
       ...courier,
       parcelType: courier.parcel.type, // Flatten parcel.type to parcelType
+      // Ensure order is properly handled
+      order: courier.order || null,
     }));
   }, [couriers]);
 
@@ -747,7 +773,7 @@ export default function AdminCourier() {
 
     const rows = selectedRows.map(courier => [
       courier.courierId,
-      courier.order.orderNumber,
+      courier.order?.orderNumber || 'N/A',
       courier.receiver.name,
       courier.receiver.phone,
       `${courier.receiver.address}, ${courier.receiver.district}, ${courier.receiver.division}`,
@@ -1444,11 +1470,11 @@ export default function AdminCourier() {
                   <CardContent className="grid grid-cols-2 gap-4">
                     <div>
                       <Label className="text-gray-600">Order Number</Label>
-                      <p className="font-medium">{courierToView.order.orderNumber}</p>
+                      <p className="font-medium">{courierToView.order?.orderNumber || 'N/A'}</p>
                     </div>
                     <div>
                       <Label className="text-gray-600">Order Total</Label>
-                      <p className="font-medium">{formatCurrency(courierToView.order.total)}</p>
+                      <p className="font-medium">{courierToView.order?.total ? formatCurrency(courierToView.order.total) : 'N/A'}</p>
                     </div>
                   </CardContent>
                 </Card>
