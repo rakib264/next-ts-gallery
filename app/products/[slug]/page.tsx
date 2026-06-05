@@ -14,10 +14,12 @@ import ProductCard from '@/components/ui/product-card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { useMetaEvent } from '@/hooks/useMetaEvent';
 import { useToast } from '@/hooks/use-toast';
 import { addToCart } from '@/lib/store/slices/cartSlice';
 import { addToWishlist, removeFromWishlist } from '@/lib/store/slices/wishlistSlice';
 import { RootState } from '@/lib/store/store';
+import type { AddToCartMetaEventData, ViewContentMetaEventData } from '@/types/meta';
 import { formatBDTCurrency, formatDhakaDate } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import {
@@ -127,6 +129,7 @@ export default function ProductPage() {
   const dispatch = useDispatch();
   const wishlistItems = useSelector((state: RootState) => state.wishlist.items);
   const { toast } = useToast();
+  const { trackMetaEvent } = useMetaEvent();
   
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([]);
@@ -147,6 +150,7 @@ export default function ProductPage() {
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const isSwiping = useRef(false);
+  const trackedViewContentRef = useRef<string | null>(null);
   const SWIPE_THRESHOLD = 40;
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
@@ -190,6 +194,22 @@ export default function ProductPage() {
     }
   }, [params.slug]);
 
+  useEffect(() => {
+    if (!product || trackedViewContentRef.current === product._id) {
+      return;
+    }
+
+    const viewContentEventData: ViewContentMetaEventData = {
+      content_ids: [product._id],
+      content_type: 'product',
+      value: product.price,
+      currency: 'BDT',
+    };
+
+    trackMetaEvent('ViewContent', viewContentEventData);
+    trackedViewContentRef.current = product._id;
+  }, [product, trackMetaEvent]);
+
   const fetchProduct = async () => {
     try {
       const response = await fetch(`/api/products/${params.slug}`);
@@ -212,6 +232,7 @@ export default function ProductPage() {
   const handleAddToCart = () => {
     if (!product) return;
 
+    const selectedPrice = getSelectedPrice();
     const variants = Object.entries(selectedVariants)
       .map(([key, value]) => `${key}: ${value}`);
     
@@ -224,12 +245,20 @@ export default function ProductPage() {
     dispatch(addToCart({
       id: product._id,
       name: product.name,
-      price: getSelectedPrice(),
+      price: selectedPrice,
       quantity,
       image: galleryImages[selectedImage] || product.thumbnailImage,
       variant: variantString || undefined,
       maxQuantity: getAvailableStock()
     }));
+
+    const addToCartEventData: AddToCartMetaEventData = {
+      content_ids: [product._id],
+      value: selectedPrice * quantity,
+      currency: 'BDT',
+    };
+
+    trackMetaEvent('AddToCart', addToCartEventData);
   };
 
   const handleWishlistToggle = () => {

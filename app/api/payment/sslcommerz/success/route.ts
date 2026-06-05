@@ -61,6 +61,23 @@ export async function POST(request: NextRequest) {
       'paymentDetails.gatewayResponse': validation.data
     });
 
+    // Future online payment tracking scaffold:
+    // Uncomment this Purchase CAPI call once payment confirmation tracking is enabled.
+    // await fetch(new URL('/api/meta-event', request.nextUrl.origin), {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify({
+    //     eventName: 'Purchase',
+    //     eventId: order._id.toString(),
+    //     eventData: {
+    //       value: order.total,
+    //       currency: 'BDT',
+    //       content_ids: order.items.map((item: any) => item.product?.toString?.() || ''),
+    //       num_items: order.items.reduce((sum: number, item: any) => sum + item.quantity, 0),
+    //     },
+    //   }),
+    // });
+
     // Redirect to success page
     return NextResponse.redirect(new URL(`/orders/${order._id}?payment=success`, request.url));
   } catch (error) {

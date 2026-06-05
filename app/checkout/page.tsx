@@ -11,10 +11,12 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { useMetaEvent } from '@/hooks/useMetaEvent';
 import { useCourierSettings } from '@/hooks/use-settings';
 import GeonamesService from '@/lib/geonames';
 import { applyCoupon, clearCart, removeCoupon } from '@/lib/store/slices/cartSlice';
 import { RootState } from '@/lib/store/store';
+import type { InitiateCheckoutMetaEventData, PurchaseMetaEventData } from '@/types/meta';
 import { formatNumber } from '@/lib/utils';
 import { useFormik } from 'formik';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -28,7 +30,7 @@ import {
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import * as Yup from 'yup';
 
@@ -37,6 +39,7 @@ export default function CheckoutPage() {
   const { data: session } = useSession();
   const dispatch = useDispatch();
   const { items, total, discount, couponCode: appliedCoupon } = useSelector((state: RootState) => state.cart);
+  const { trackMetaEvent } = useMetaEvent();
   
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -47,8 +50,8 @@ export default function CheckoutPage() {
     isPaymentGatewayEnabled: false,
     codEnabled: true
   });
-  const [validationTrigger, setValidationTrigger] = useState(0);
   const [displayErrors, setDisplayErrors] = useState<{[key: string]: string}>({});
+  const hasTrackedInitiateCheckout = useRef(false);
 
   // Function to clear specific field error when user starts typing
   const clearFieldError = (fieldName: string) => {
@@ -144,10 +147,8 @@ export default function CheckoutPage() {
       return 0;
     }
     
-    console.log("shipping district", formik.values);
     const district = (formik.values.district || formik.values.city || '').toLowerCase().trim();
     const isDhaka = district.includes('dhaka');
-    console.log("isDhaka", isDhaka);
     const inside = courierSettings?.insideDhaka ?? 60;
     const outside = courierSettings?.outsideDhaka ?? 120;
     return isDhaka ? inside : outside;
@@ -236,9 +237,6 @@ export default function CheckoutPage() {
         });
         formik.setTouched(touched);
         
-        // Trigger re-render to show errors
-        setValidationTrigger(prev => prev + 1);
-        
         console.log('Formik errors after setting:', errors);
         console.log('Display errors set:', errors);
       }
@@ -297,6 +295,22 @@ export default function CheckoutPage() {
 
   const shipping = calculateShipping();
   const finalTotal = total - discount + shipping;
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+
+  useEffect(() => {
+    if (!hasHydrated || items.length === 0 || hasTrackedInitiateCheckout.current) {
+      return;
+    }
+
+    const initiateCheckoutEventData: InitiateCheckoutMetaEventData = {
+      num_items: totalItems,
+      value: Math.max(total - discount, 0),
+      currency: 'BDT',
+    };
+
+    trackMetaEvent('InitiateCheckout', initiateCheckoutEventData);
+    hasTrackedInitiateCheckout.current = true;
+  }, [discount, hasHydrated, items.length, total, totalItems, trackMetaEvent]);
 
   const steps = [
     { number: 1, title: 'Billing Information', icon: User },
@@ -360,6 +374,18 @@ export default function CheckoutPage() {
 
       if (response.ok) {
         const orderId = data.order._id;
+        const purchaseEventData: PurchaseMetaEventData = {
+          value: typeof data.order.total === 'number' ? data.order.total : finalTotal,
+          currency: 'BDT',
+          content_ids: items.map((item) => item.id),
+          num_items: totalItems,
+        };
+        const purchaseUserData = {
+          email: formik.values.email || undefined,
+          phone: formik.values.phone || undefined,
+          firstName: formik.values.firstName || undefined,
+          lastName: formik.values.lastName || undefined,
+        };
         
         // Handle payment method
         if (formik.values.method === 'sslcommerz') {
@@ -373,6 +399,7 @@ export default function CheckoutPage() {
           const paymentData = await paymentResponse.json();
 
           if (paymentResponse.ok && paymentData.success) {
+            // TODO: fire Purchase event here after payment gateway confirms success
             // Clear cart and redirect to payment gateway
             dispatch(clearCart());
             window.location.href = paymentData.paymentUrl;
@@ -380,6 +407,11 @@ export default function CheckoutPage() {
             throw new Error(paymentData.error || 'Payment initiation failed');
           }
         } else {
+          trackMetaEvent('Purchase', purchaseEventData, {
+            eventId: orderId,
+            userData: purchaseUserData,
+          });
+
           // COD - redirect to order confirmation first to avoid checkout empty-cart redirect
           setOrderPlaced(true);
           router.push(`/orders/${orderId}?success=true`);
@@ -395,12 +427,6 @@ export default function CheckoutPage() {
       setLoading(false);
     }
   };
-
-  console.log("formik.errors", formik.errors);
-  console.log("formik.touched", formik.touched);
-  console.log("displayErrors", displayErrors);
-  console.log("currentStep", currentStep);
-  console.log("validationTrigger", validationTrigger);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -858,7 +884,7 @@ export default function CheckoutPage() {
                     {/* Items Count */}
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600" suppressHydrationWarning>
-                        Items ({items.reduce((sum, item) => sum + item.quantity, 0)})
+                        Items ({totalItems})
                       </span>
                       <span className="font-semibold text-gray-900" suppressHydrationWarning>৳{formatNumber(total)}</span>
                     </div>

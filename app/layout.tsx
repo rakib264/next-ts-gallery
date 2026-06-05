@@ -1,3 +1,4 @@
+import MetaPixel from '@/components/MetaPixel';
 import ClientOnly from '@/components/providers/ClientOnly';
 import { AutoStartup, FaviconProvider, NextAuthProvider, ShoppingBasket, ThemeProvider, Toaster } from '@/components/providers/ClientProviders';
 import StoreProvider from '@/lib/providers/StoreProvider';
@@ -277,6 +278,7 @@ export default function RootLayout({
               <ClientOnly>
                 <AutoStartup />
               </ClientOnly>
+              <MetaPixel />
             </StoreProvider>
           </ThemeProvider>
         </NextAuthProvider>
