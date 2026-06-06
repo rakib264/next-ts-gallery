@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { mapProductToGA4Item, trackPurchase } from "@/lib/analytics";
 import { motion } from "framer-motion";
 import {
     Calendar,
@@ -23,7 +24,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Order {
   _id: string;
@@ -70,12 +71,70 @@ export default function OrderDetailsPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const isSuccess = searchParams.get("success") === "true";
+  const isPaymentSuccess = searchParams.get("payment") === "success";
+  const hasTrackedPurchaseRef = useRef(false);
 
   useEffect(() => {
     if (params.id) {
       fetchOrder();
     }
   }, [params.id]);
+
+  useEffect(() => {
+    const shouldTrackPurchase = isSuccess || isPaymentSuccess;
+    if (!order || !shouldTrackPurchase || hasTrackedPurchaseRef.current) {
+      return;
+    }
+
+    const transactionId = order.orderNumber || order._id;
+    const storageKey = `ga4_purchase_tracked_${transactionId}`;
+
+    try {
+      if (sessionStorage.getItem(storageKey) === "1") {
+        hasTrackedPurchaseRef.current = true;
+        return;
+      }
+    } catch {
+      // Ignore storage access errors in restricted environments.
+    }
+
+    const gaItems = order.items
+      .map((item) =>
+        mapProductToGA4Item(
+          {
+            id: item.product?._id,
+            name: item.name || item.product?.name,
+            price: item.price,
+            quantity: item.quantity,
+          },
+          {
+            quantity: item.quantity,
+            fallbackCategory: "Ecommerce Product",
+          },
+        ),
+      )
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+
+    if (gaItems.length === 0) {
+      return;
+    }
+
+    trackPurchase({
+      transactionId,
+      value: order.total,
+      shipping: order.shippingCost,
+      tax: order.tax,
+      items: gaItems,
+    });
+
+    hasTrackedPurchaseRef.current = true;
+
+    try {
+      sessionStorage.setItem(storageKey, "1");
+    } catch {
+      // Ignore storage access errors in restricted environments.
+    }
+  }, [isPaymentSuccess, isSuccess, order]);
 
   const fetchOrder = async () => {
     try {

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useSettings } from '@/hooks/use-settings';
+import { trackLogin } from '@/lib/analytics';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { motion } from 'framer-motion';
 import { ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
@@ -89,6 +90,7 @@ export default function SignIn() {
       if (result?.error) {
         setError('Invalid credentials');
       } else {
+        trackLogin('credentials');
         const session = await getSession();
         if (session?.user?.role === 'admin' || session?.user?.role === 'manager') {
           router.push('/admin');
@@ -106,6 +108,7 @@ export default function SignIn() {
 
   const handleSocialSignIn = async (provider: 'google' | 'facebook') => {
     try {
+      trackLogin(provider);
       await signIn(provider, { callbackUrl: '/' });
     } catch (error) {
       console.error('Social sign-in error:', error);

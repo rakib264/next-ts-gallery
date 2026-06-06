@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useHydration } from '@/hooks/use-hydration';
+import { mapCartItemToGA4Item, trackViewCart } from '@/lib/analytics';
 import {
     applyCoupon,
     clearCart,
@@ -35,7 +36,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 export default function CartPage() {
@@ -47,12 +48,39 @@ export default function CartPage() {
   const [couponCode, setCouponCode] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
   const [error, setError] = useState('');
+  const hasTrackedViewCartRef = useRef(false);
 
   useEffect(() => {
     // Load cart and wishlist from localStorage on mount
     dispatch(reloadCartFromStorage());
     dispatch(loadWishlistFromStorage());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (!isHydrated || hasTrackedViewCartRef.current || items.length === 0) {
+      return;
+    }
+
+    const gaItems = items
+      .map((item) => mapCartItemToGA4Item(item))
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+
+    if (gaItems.length === 0) {
+      return;
+    }
+
+    const cartValue = gaItems.reduce(
+      (total, item) => total + item.price * item.quantity,
+      0,
+    );
+
+    trackViewCart({
+      items: gaItems,
+      value: cartValue,
+    });
+
+    hasTrackedViewCartRef.current = true;
+  }, [isHydrated, items]);
 
   const handleQuantityChange = (id: string, variant: string | undefined, quantity: number) => {
     if (quantity <= 0) {

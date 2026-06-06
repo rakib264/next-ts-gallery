@@ -1,3 +1,4 @@
+import PageViewTracker from '@/components/analytics/PageViewTracker';
 import MetaPixel from '@/components/MetaPixel';
 import ClientOnly from '@/components/providers/ClientOnly';
 import { AutoStartup, FaviconProvider, NextAuthProvider, ShoppingBasket, ThemeProvider, Toaster } from '@/components/providers/ClientProviders';
@@ -14,6 +15,10 @@ const inter = Inter({
   preload: true,
   fallback: ['system-ui', 'arial']
 });
+
+const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? '';
+const shouldLoadGoogleAnalytics =
+  process.env.NODE_ENV === 'production' && gaMeasurementId.length > 0;
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.tsrgallery.com'),
@@ -260,6 +265,29 @@ export default function RootLayout({
             `,
           }}
         />
+
+        {shouldLoadGoogleAnalytics && (
+          <>
+            <Script
+              id="ga4-src"
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
+              strategy="afterInteractive"
+            />
+            <Script
+              id="ga4-init"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){window.dataLayer.push(arguments);}
+                  window.gtag = gtag;
+                  gtag('js', new Date());
+                  gtag('config', '${gaMeasurementId}', { send_page_view: false });
+                `,
+              }}
+            />
+          </>
+        )}
       </head>
       <body suppressHydrationWarning>
         <NextAuthProvider>
@@ -278,6 +306,7 @@ export default function RootLayout({
               <ClientOnly>
                 <AutoStartup />
               </ClientOnly>
+              {shouldLoadGoogleAnalytics && <PageViewTracker />}
               <MetaPixel />
             </StoreProvider>
           </ThemeProvider>

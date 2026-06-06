@@ -11,6 +11,12 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  mapCartItemToGA4Item,
+  trackAddPaymentInfo,
+  trackAddShippingInfo,
+  trackBeginCheckout,
+} from '@/lib/analytics';
 import { useMetaEvent } from '@/hooks/useMetaEvent';
 import { useCourierSettings } from '@/hooks/use-settings';
 import GeonamesService from '@/lib/geonames';
@@ -52,6 +58,9 @@ export default function CheckoutPage() {
   });
   const [displayErrors, setDisplayErrors] = useState<{[key: string]: string}>({});
   const hasTrackedInitiateCheckout = useRef(false);
+  const hasTrackedBeginCheckout = useRef(false);
+  const hasTrackedAddShippingInfo = useRef(false);
+  const hasTrackedAddPaymentInfo = useRef(false);
 
   // Function to clear specific field error when user starts typing
   const clearFieldError = (fieldName: string) => {
@@ -141,17 +150,43 @@ export default function CheckoutPage() {
 
   const { settings: courierSettings } = useCourierSettings();
 
+  const checkoutGaItems = useMemo(() => {
+    return items
+      .map((item) => mapCartItemToGA4Item(item))
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+  }, [items]);
+
+  const checkoutSubtotalAfterDiscount = useMemo(() => {
+    const subtotal = items.reduce(
+      (totalValue, item) => totalValue + item.price * item.quantity,
+      0,
+    );
+
+    return Math.max(subtotal - discount, 0);
+  }, [discount, items]);
+
+  const getEstimatedShippingCost = () => {
+    if (!formik.values.district?.trim()) {
+      return 0;
+    }
+
+    const district = (formik.values.district || formik.values.city || '')
+      .toLowerCase()
+      .trim();
+    const isDhaka = district.includes('dhaka');
+    const inside = courierSettings?.insideDhaka ?? 60;
+    const outside = courierSettings?.outsideDhaka ?? 120;
+
+    return isDhaka ? inside : outside;
+  };
+
   const calculateShipping = () => {
     // Only calculate shipping if we're past step 1 and have district information
     if (currentStep === 1 || !formik.values.district?.trim()) {
       return 0;
     }
-    
-    const district = (formik.values.district || formik.values.city || '').toLowerCase().trim();
-    const isDhaka = district.includes('dhaka');
-    const inside = courierSettings?.insideDhaka ?? 60;
-    const outside = courierSettings?.outsideDhaka ?? 120;
-    return isDhaka ? inside : outside;
+
+    return getEstimatedShippingCost();
   };
 
   const getDeliveryType = () => {
@@ -285,6 +320,38 @@ export default function CheckoutPage() {
   const nextStep = async () => {
     if (validateStep(currentStep)) {
       await ensureGeocodedIfNeeded();
+
+      const gaItems = checkoutGaItems;
+      const checkoutValue = checkoutSubtotalAfterDiscount + getEstimatedShippingCost();
+
+      if (
+        gaItems.length > 0 &&
+        currentStep === 1 &&
+        !hasTrackedAddShippingInfo.current
+      ) {
+        trackAddShippingInfo({
+          items: gaItems,
+          value: checkoutValue,
+          coupon: appliedCoupon || undefined,
+          shippingTier: getDeliveryType(),
+        });
+        hasTrackedAddShippingInfo.current = true;
+      }
+
+      if (
+        gaItems.length > 0 &&
+        currentStep === 2 &&
+        !hasTrackedAddPaymentInfo.current
+      ) {
+        trackAddPaymentInfo({
+          items: gaItems,
+          value: checkoutValue,
+          coupon: appliedCoupon || undefined,
+          paymentType: formik.values.method,
+        });
+        hasTrackedAddPaymentInfo.current = true;
+      }
+
       setCurrentStep(prev => Math.min(prev + 1, 3));
     }
   };
@@ -298,7 +365,22 @@ export default function CheckoutPage() {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
   useEffect(() => {
-    if (!hasHydrated || items.length === 0 || hasTrackedInitiateCheckout.current) {
+    if (!hasHydrated || items.length === 0) {
+      return;
+    }
+
+    if (!hasTrackedBeginCheckout.current) {
+      if (checkoutGaItems.length > 0) {
+        trackBeginCheckout({
+          items: checkoutGaItems,
+          value: checkoutSubtotalAfterDiscount,
+          coupon: appliedCoupon || undefined,
+        });
+        hasTrackedBeginCheckout.current = true;
+      }
+    }
+
+    if (hasTrackedInitiateCheckout.current) {
       return;
     }
 
@@ -307,10 +389,19 @@ export default function CheckoutPage() {
       value: Math.max(total - discount, 0),
       currency: 'BDT',
     };
-
     trackMetaEvent('InitiateCheckout', initiateCheckoutEventData);
     hasTrackedInitiateCheckout.current = true;
-  }, [discount, hasHydrated, items.length, total, totalItems, trackMetaEvent]);
+  }, [
+    appliedCoupon,
+    checkoutGaItems,
+    checkoutSubtotalAfterDiscount,
+    discount,
+    hasHydrated,
+    items.length,
+    total,
+    totalItems,
+    trackMetaEvent,
+  ]);
 
   const steps = [
     { number: 1, title: 'Billing Information', icon: User },

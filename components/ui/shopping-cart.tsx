@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useHydration } from '@/hooks/use-hydration';
+import { mapCartItemToGA4Item, trackViewCart } from '@/lib/analytics';
 import { clearCart, reloadCartFromStorage, removeFromCart, toggleCart, updateQuantity } from '@/lib/store/slices/cartSlice';
 import { addToWishlist, loadWishlistFromStorage } from '@/lib/store/slices/wishlistSlice';
 import { RootState } from '@/lib/store/store';
@@ -10,19 +11,44 @@ import { formatBDTCurrency } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Heart, Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 export default function ShoppingBasket() {
   const dispatch = useDispatch();
-  const { items, total, itemCount, isOpen, shippingCost, tax, discount, couponCode } = useSelector((state: RootState) => state.cart);
+  const { items, itemCount, isOpen, shippingCost, tax, discount, couponCode } = useSelector((state: RootState) => state.cart);
   const isHydrated = useHydration();
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
     // Load cart and wishlist from localStorage on mount
     dispatch(reloadCartFromStorage());
     dispatch(loadWishlistFromStorage());
   }, [dispatch]);
+
+  useEffect(() => {
+    const openedCartDrawer = isOpen && !wasOpenRef.current;
+
+    if (openedCartDrawer && items.length > 0) {
+      const gaItems = items
+        .map((item) => mapCartItemToGA4Item(item))
+        .filter((item): item is NonNullable<typeof item> => item !== null);
+
+      if (gaItems.length > 0) {
+        const cartValue = gaItems.reduce(
+          (totalValue, item) => totalValue + item.price * item.quantity,
+          0,
+        );
+
+        trackViewCart({
+          items: gaItems,
+          value: cartValue,
+        });
+      }
+    }
+
+    wasOpenRef.current = isOpen;
+  }, [isOpen, items]);
 
   const formatPrice = (price: number) => formatBDTCurrency(price);
 

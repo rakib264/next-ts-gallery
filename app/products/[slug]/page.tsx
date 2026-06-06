@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useMetaEvent } from '@/hooks/useMetaEvent';
 import { useToast } from '@/hooks/use-toast';
+import { mapProductToGA4Item, trackViewItem } from '@/lib/analytics';
 import { addToCart } from '@/lib/store/slices/cartSlice';
 import { addToWishlist, removeFromWishlist } from '@/lib/store/slices/wishlistSlice';
 import { RootState } from '@/lib/store/store';
@@ -151,6 +152,7 @@ export default function ProductPage() {
   const touchStartY = useRef<number | null>(null);
   const isSwiping = useRef(false);
   const trackedViewContentRef = useRef<string | null>(null);
+  const trackedViewItemRef = useRef<string | null>(null);
   const SWIPE_THRESHOLD = 40;
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
@@ -195,7 +197,29 @@ export default function ProductPage() {
   }, [params.slug]);
 
   useEffect(() => {
-    if (!product || trackedViewContentRef.current === product._id) {
+    if (!product) {
+      return;
+    }
+
+    if (trackedViewItemRef.current !== product._id) {
+      const gaItem = mapProductToGA4Item({
+        _id: product._id,
+        name: product.name,
+        price: product.price,
+        category: product.category,
+      });
+
+      if (gaItem) {
+        trackViewItem({
+          items: [gaItem],
+          value: gaItem.price,
+        });
+      }
+
+      trackedViewItemRef.current = product._id;
+    }
+
+    if (trackedViewContentRef.current === product._id) {
       return;
     }
 

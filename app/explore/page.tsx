@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Slider } from '@/components/ui/slider';
+import { mapProductToGA4Item, trackViewItemList } from '@/lib/analytics';
 import { addToCart } from '@/lib/store/slices/cartSlice';
 import { addToWishlist, removeFromWishlist } from '@/lib/store/slices/wishlistSlice';
 import { RootState } from '@/lib/store/store';
@@ -19,7 +20,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Filter, Grid, Heart, List, Search, ShoppingBasket, Star, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 interface Category {
@@ -80,6 +81,7 @@ function ExplorePageContent() {
   const [minRating, setMinRating] = useState(0);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 0 });
+  const trackedExploreListRef = useRef<string>('');
 
   // Initialize categories first
   useEffect(() => {
@@ -163,6 +165,50 @@ function ExplorePageContent() {
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
+
+  useEffect(() => {
+    if (loading || products.length === 0) {
+      return;
+    }
+
+    const gaItems = products
+      .map((product) =>
+        mapProductToGA4Item(
+          {
+            _id: product._id,
+            name: product.name,
+            price: product.price,
+            category: product.category,
+          },
+          {
+            fallbackCategory: selectedCategory?.name,
+          },
+        ),
+      )
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+
+    if (gaItems.length === 0) {
+      return;
+    }
+
+    const selectedCategorySlug = selectedCategory?.slug ?? 'all';
+    const itemListId = `explore_${selectedCategorySlug}`;
+    const signature = `${itemListId}_${pagination.page}_${searchQuery}_${sortBy}_${gaItems
+      .map((item) => item.item_id)
+      .join(',')}`;
+
+    if (trackedExploreListRef.current === signature) {
+      return;
+    }
+
+    trackViewItemList({
+      itemListId,
+      itemListName: selectedCategory?.name || 'Explore Products',
+      items: gaItems,
+    });
+
+    trackedExploreListRef.current = signature;
+  }, [loading, pagination.page, products, searchQuery, selectedCategory, sortBy]);
 
   const handleCategorySelect = (category: Category | null) => {
     setSelectedCategory(category);

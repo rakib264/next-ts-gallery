@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useSettings } from '@/hooks/use-settings';
+import { trackSignUp } from '@/lib/analytics';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { motion } from 'framer-motion';
 import { ArrowRight, Eye, EyeOff, Lock, Mail, Phone, User } from 'lucide-react';
@@ -119,6 +120,7 @@ export default function SignUp() {
       });
 
       if (response.ok) {
+        trackSignUp('email');
         router.push('/auth/signin?message=Account created successfully');
       } else {
         const data = await response.json();
@@ -138,6 +140,7 @@ export default function SignUp() {
 
   const handleSocialSignIn = async (provider: 'google' | 'facebook') => {
     try {
+      trackSignUp(provider);
       await signIn(provider, { callbackUrl: '/' });
     } catch (error) {
       console.error('Social sign-in error:', error);

@@ -1,4 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
+import { cartAnalyticsMiddleware } from './middleware/cartAnalyticsMiddleware';
 import authSlice from './slices/authSlice';
 import cartSlice from './slices/cartSlice';
 import courierSlice from './slices/courierSlice';
@@ -22,7 +23,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: ['persist/PERSIST'],
       },
-    }),
+    }).concat(cartAnalyticsMiddleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

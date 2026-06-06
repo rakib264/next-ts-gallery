@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
+import { mapProductToGA4Item, trackViewItemList } from '@/lib/analytics';
 import { addToCart } from '@/lib/store/slices/cartSlice';
 import { addToWishlist, removeFromWishlist } from '@/lib/store/slices/wishlistSlice';
 import { formatBDTCurrency } from '@/lib/utils';
@@ -11,7 +12,8 @@ import { motion } from 'framer-motion';
 import { Heart, ShoppingBasket, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 export interface Product {
@@ -42,6 +44,27 @@ interface ProductCardProps {
   className?: string;
 }
 
+const trackedItemListViews = new Set<string>();
+
+const getItemListName = (
+  pathname: string,
+  variant: NonNullable<ProductCardProps['variant']>,
+): string => {
+  if (variant === 'featured') return 'Featured Products';
+  if (variant === 'best-selling') return 'Best Selling Products';
+  if (variant === 'new-arrival') return 'New Arrivals';
+  if (variant === 'limited-edition') return 'Limited Edition Products';
+
+  if (pathname === '/') {
+    return 'Homepage Products';
+  }
+
+  return pathname
+    .split('/')
+    .filter(Boolean)
+    .join(' > ');
+};
+
 export default function ProductCard({ 
   product, 
   variant = 'default', 
@@ -49,9 +72,38 @@ export default function ProductCard({
   className = '' 
 }: ProductCardProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const pathname = usePathname();
   const dispatch = useDispatch();
   const { items: wishlistItems } = useSelector((state: any) => state.wishlist);
   const { items: cartItems } = useSelector((state: any) => state.cart);
+
+  useEffect(() => {
+    const gaItem = mapProductToGA4Item({
+      _id: product._id,
+      name: product.name,
+      price: product.price,
+      category: product.category,
+    });
+
+    if (!gaItem) {
+      return;
+    }
+
+    const itemListId = `${pathname || '/'}:${variant}`;
+    const dedupeKey = `${itemListId}:${gaItem.item_id}`;
+
+    if (trackedItemListViews.has(dedupeKey)) {
+      return;
+    }
+
+    trackViewItemList({
+      itemListId,
+      itemListName: getItemListName(pathname || '/', variant),
+      items: [gaItem],
+    });
+
+    trackedItemListViews.add(dedupeKey);
+  }, [pathname, product._id, product.category, product.name, product.price, variant]);
 
   const isInWishlist = wishlistItems.some((item: any) => item.id === product._id);
   const isInCart = cartItems.some((item: any) => item.id === product._id);

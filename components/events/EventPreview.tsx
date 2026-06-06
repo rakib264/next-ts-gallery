@@ -3,6 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { mapProductToGA4Item, trackViewItemList } from '@/lib/analytics';
 import { addToCart } from '@/lib/store/slices/cartSlice';
 import { addToWishlist, removeFromWishlist } from '@/lib/store/slices/wishlistSlice';
 import { RootState } from '@/lib/store/store';
@@ -10,7 +11,7 @@ import { motion } from 'framer-motion';
 import { Clock, Heart, Package, ShoppingBasket, Star, Tag } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 interface Product {
@@ -57,6 +58,7 @@ export default function EventPreview({
   const [mounted, setMounted] = useState(false);
   const dispatch = useDispatch();
   const wishlistItems = useSelector((state: RootState) => state.wishlist.items);
+  const trackedEventListSignatureRef = useRef<string>('');
 
   useEffect(() => {
     setMounted(true);
@@ -90,6 +92,45 @@ export default function EventPreview({
 
     return () => clearInterval(interval);
   }, [event.startDate, event.endDate, event.status, mounted]);
+
+  useEffect(() => {
+    if (!showProducts || event.products.length === 0) {
+      return;
+    }
+
+    const listedProducts = event.products.slice(0, 8);
+    const gaItems = listedProducts
+      .map((product) =>
+        mapProductToGA4Item(
+          {
+            _id: product._id,
+            name: product.name,
+            price: product.price,
+          },
+          {
+            fallbackCategory: 'Event Products',
+          },
+        ),
+      )
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+
+    if (gaItems.length === 0) {
+      return;
+    }
+
+    const signature = `${event._id}_${gaItems.map((item) => item.item_id).join(',')}`;
+    if (trackedEventListSignatureRef.current === signature) {
+      return;
+    }
+
+    trackViewItemList({
+      itemListId: `event_${event._id}`,
+      itemListName: `${event.title} Products`,
+      items: gaItems,
+    });
+
+    trackedEventListSignatureRef.current = signature;
+  }, [event._id, event.products, event.title, showProducts]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-BD', {
